@@ -8,6 +8,23 @@ export interface BuilderBalloon {
   value: number
 }
 
+export interface RentabilityConfig {
+  dailyRate: number | ''
+  occupancyRate: number | '' // 0-100
+  platformFeePercent: number | ''
+  cleaningFee: number | ''
+  monthlyCondo: number | ''
+  monthlyMaintenance: number | ''
+  averageStaysPerMonth: number | ''
+}
+
+export interface AirbnbResult {
+  grossRevenue: number
+  totalExpenses: number
+  netOperatingIncome: number
+  cashFlow: number
+}
+
 export interface SimulationScenario {
   id?: string
   name?: string
@@ -39,6 +56,7 @@ export interface SimulationScenario {
 
   monthsToReady?: number | ''
   appreciationRate?: number | ''
+  rentability?: RentabilityConfig
 }
 
 export interface MonthlyResult {

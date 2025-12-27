@@ -6,11 +6,13 @@ import {
   Plus,
   Trash2,
   BarChart3,
-  Check
+  Check,
+  Hotel
 } from 'lucide-react'
 import DetailedReportView from '../Reports/DetailedReportView'
 import ComparisonView from '../Comparison/ComparisonView'
 import EditorWizard from '../Wizard/EditorWizard'
+import RentabilityView from '../Rentability/RentabilityView'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import { CaixaMCMV } from '../../../core/engines/CaixaMCMV'
 
@@ -18,6 +20,7 @@ export default function SimulatorLayout(): ReactElement {
   const [scenarios, setScenarios] = useState<SimulationScenario[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<'EDITOR' | 'COMPARE'>('EDITOR')
+  const [editorTab, setEditorTab] = useState<'FINANCING' | 'AIRBNB'>('FINANCING')
   const [showSuccess, setShowSuccess] = useState(false)
   const [step, setStep] = useState(0)
   const [currentName, setCurrentName] = useState('')
@@ -57,6 +60,7 @@ export default function SimulatorLayout(): ReactElement {
     setStep(0)
     setCurrentName('')
     setViewMode('EDITOR')
+    setEditorTab('FINANCING')
     setData({ ...defaultData })
     setIsMobileMenuOpen(false)
   }
@@ -81,6 +85,7 @@ export default function SimulatorLayout(): ReactElement {
     setCurrentName(cenario.name || '')
     setStep(0)
     setViewMode('EDITOR')
+    setEditorTab('FINANCING')
     setIsMobileMenuOpen(false)
   }
   const formatMoney = (val: number | ''): string => {
@@ -190,6 +195,26 @@ export default function SimulatorLayout(): ReactElement {
             <Plus size={18} /> Nova Simulação
           </button>
 
+          {viewMode === 'EDITOR' && (
+            <div className="flex flex-col gap-1 mt-4">
+              <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2">
+                Modo de Edição
+              </h3>
+              <button
+                onClick={() => setEditorTab('FINANCING')}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all font-bold text-sm ${editorTab === 'FINANCING' ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'bg-transparent text-gray-500 hover:bg-gray-100'}`}
+              >
+                <LayoutDashboard size={18} /> Editor Financeiro
+              </button>
+              <button
+                onClick={() => setEditorTab('AIRBNB')}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all font-bold text-sm ${editorTab === 'AIRBNB' ? 'bg-rose-500 text-white shadow-md shadow-rose-200' : 'bg-transparent text-gray-500 hover:bg-gray-100'}`}
+              >
+                <Hotel size={18} /> Análise Airbnb
+              </button>
+            </div>
+          )}
+
           <div className="space-y-2.5">
             <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-3">
               Minhas Simulações
@@ -278,6 +303,12 @@ export default function SimulatorLayout(): ReactElement {
             onBack={() => setViewMode('EDITOR')}
             getCardMetrics={getCardMetrics}
             onGenerateReport={(s: SimulationScenario) => setReportScenario(s)}
+          />
+        ) : editorTab === 'AIRBNB' ? (
+          <RentabilityView
+            scenario={data}
+            onChange={setData}
+            financingMonthlyCost={getCardMetrics(data).parcelaFinanciamento}
           />
         ) : (
           <EditorWizard
