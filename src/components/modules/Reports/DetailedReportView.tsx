@@ -9,8 +9,8 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts'
-import { FinancialMath } from '../../services/FinancialMath'
-import type { SimulationScenario } from '../../services/FinancialMath'
+import { CaixaMCMV } from '../../../core/engines/CaixaMCMV'
+import type { SimulationScenario } from '../../../types/ScenarioTypes'
 
 const DetailedReportView = ({
   scenario,
@@ -21,7 +21,7 @@ const DetailedReportView = ({
 }): ReactElement => {
   // 1. Calcular a linha do tempo completa
   const timeline = useMemo(() => {
-    return FinancialMath.calculate(scenario)
+    return new CaixaMCMV().calculate(scenario)
   }, [scenario])
 
   // 2. Métricas de Resumo

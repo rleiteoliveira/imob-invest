@@ -1,62 +1,9 @@
 import Decimal from 'decimal.js'
+import type { SimulationScenario, MonthlyResult } from '../../types/ScenarioTypes'
+import type { CalculationEngine } from '../interfaces/CalculationEngine'
 
-export type FrequencyType = 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL' | 'ANUAL' | 'UNICA'
-export type ScenarioType = 'SAC' | 'PLANTA' | 'FUTURO'
-export type AmortizationSystem = 'SAC' | 'PRICE'
-
-export interface BuilderBalloon {
-  month: number
-  value: number
-}
-
-export interface SimulationScenario {
-  id?: string
-  name?: string
-  propertyValue: number | ''
-  downPayment: number | ''
-  type: ScenarioType
-
-  entrySignal: number | ''
-  entryInstallments: number | ''
-  builderBalloons?: BuilderBalloon[]
-
-  amortizationSystem: AmortizationSystem
-  interestRate: number | ''
-  termMonths: number | ''
-  monthlyAdminFee: number | ''
-  insuranceMIP: number | ''
-  insuranceDFI: number | ''
-
-  hasBalloonPayments: boolean
-  balloonFrequency: FrequencyType
-  balloonCount: number | ''
-  balloonValue: number | ''
-  balloonStartMonth?: number | ''
-
-  constructionTime: number | ''
-  inccRate: number | ''
-  useWorkEvolution: boolean
-  currentWorkPercent: number | ''
-
-  monthsToReady?: number | ''
-  appreciationRate?: number | ''
-}
-
-export interface MonthlyResult {
-  month: number
-  bankBalance: number
-  bankInterest: number
-  bankAmortization: number
-  bankFees: number
-  builderInstallment: number
-  builderBalance: number
-  totalInstallment: number
-  accumulatedPaid: number
-  phase: 'OBRA' | 'AMORTIZACAO'
-}
-
-export class FinancialMath {
-  static calculate(data: SimulationScenario): MonthlyResult[] {
+export class CaixaMCMV implements CalculationEngine {
+  calculate(data: SimulationScenario): MonthlyResult[] {
     const propValue = new Decimal(data.propertyValue || 0)
     const downPaymentTotal = new Decimal(data.downPayment || 0)
 
@@ -128,17 +75,6 @@ export class FinancialMath {
     }
 
     // === 3. Configuração do Banco ===
-    // Financiado = Valor - Entrada
-    // (O FGTS Mês 0 tecnicamente compõe a entrada, então já está no downPaymentTotal, 
-    // mas se o usuário somou visualmente, aqui garantimos o saldo correto).
-    // Na nossa lógica visual, DownPayment é o Recurso Próprio. 
-    // Se Mês 0, ele ajuda a pagar a entrada, não altera o financiado diretamente além do que o downPayment já fez.
-    // Ajuste: Se o user marcou Mês 0, consideramos que ele quer usar isso para ABATER o FINANCIAMENTO ou ENTRADA?
-    // O pedido foi "abatendo junto como sinal".
-
-    // Para simplificar: Valor Financiado = Valor Imóvel - Entrada Total Declarada.
-    // Se o FGTS (Mês 0) for extra entrada, o usuário deve somar no input "Entrada".
-    // Se for abater financiado, subtraímos aqui. Vamos subtrair aqui para garantir.
     const financedAmount = propValue.minus(downPaymentTotal).minus(extraEntryFromBalloonAtZero)
 
     // ... (Taxas Padrão) ...
@@ -178,7 +114,6 @@ export class FinancialMath {
           monthlyBuilderPmt = monthlyBuilderPmt.plus(new Decimal(manualBalloon.value).times(correctionFactor))
         }
         // 3. FGTS/Balão Automático (Se cair neste mês)
-        // Nota: Se é UNICA, count não importa. Se é periodica, verificamos o count.
         let isAutoBalloon = false
         if (hasBalloon) {
           if (data.balloonFrequency === 'UNICA') {
@@ -315,3 +250,11 @@ export class FinancialMath {
     return timeline
   }
 }
+
+// Export singleton instance or class? User asked for class/logic to implement the interface.
+// I will export the class. And maybe a default instance IF needed, but the interface suggests usage by instantiation.
+// Or static method like before.
+// But the interface has `calculate`. I will make it an instance method.
+// To keep backward compatibility if I were just refactoring usage, I'd check how it's used.
+// It was `FinancialMath.calculate`.
+// In new structure, we can instantiate: `const engine = new CaixaMCMV(); engine.calculate(...)`
