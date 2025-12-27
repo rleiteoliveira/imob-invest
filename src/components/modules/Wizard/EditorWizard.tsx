@@ -1,4 +1,4 @@
-import { ReactElement, Dispatch, SetStateAction } from 'react'
+import type { ReactElement, Dispatch, SetStateAction } from 'react'
 import { Save, ArrowLeft, ArrowRight, Printer, Check } from 'lucide-react'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import UnifiedEditor from '../UnifiedEditor'
@@ -24,7 +24,7 @@ const EditorWizard = ({
 }): ReactElement => {
   return (
     <div className="h-full flex items-center justify-center p-0 md:p-4 bg-gray-50">
-      <div className="w-full max-w-4xl bg-white md:rounded-3xl shadow-none md:shadow-xl border-x-0 md:border border-gray-100 overflow-hidden flex flex-col h-[100dvh] md:h-[85vh] md:max-h-[800px] md:min-h-[500px]">
+      <div className="w-full max-w-4xl bg-white md:rounded-3xl shadow-none md:shadow-xl border-x-0 md:border border-gray-100 overflow-hidden flex flex-col h-full md:h-[85vh] md:max-h-[800px] md:min-h-[500px]">
         <div className="bg-white px-6 md:px-8 py-6 border-b border-gray-100 relative shrink-0">
           <div className="flex justify-between items-start mb-4">
             <div className="flex flex-col">

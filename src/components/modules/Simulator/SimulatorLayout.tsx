@@ -1,4 +1,5 @@
-import { ReactElement, useState } from 'react'
+import { useState } from 'react'
+import type { ReactElement } from 'react'
 import {
   LayoutDashboard,
   Menu,
@@ -15,6 +16,14 @@ import EditorWizard from '../Wizard/EditorWizard'
 import RentabilityView from '../Rentability/RentabilityView'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import { CaixaMCMV } from '../../../core/engines/CaixaMCMV'
+
+interface CardMetrics {
+  parcelaEntrada: number
+  parcelaObraBanco: number
+  parcelaFinanciamento: number
+  valorizacao: number
+  totalJurosObra: number
+}
 
 export default function SimulatorLayout(): ReactElement {
   const [scenarios, setScenarios] = useState<SimulationScenario[]>([])
@@ -93,7 +102,7 @@ export default function SimulatorLayout(): ReactElement {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
   }
 
-  const getCardMetrics = (cenario: SimulationScenario): any => {
+  const getCardMetrics = (cenario: SimulationScenario): CardMetrics => {
     const timeline = new CaixaMCMV().calculate(cenario)
     if (!timeline || timeline.length === 0)
       return {
@@ -127,7 +136,7 @@ export default function SimulatorLayout(): ReactElement {
   }
 
   return (
-    <div className="flex h-screen bg-white font-sans text-gray-800 overflow-hidden relative selection:bg-blue-100 flex-col md:flex-row">
+    <div className="flex h-[100dvh] bg-white font-sans text-gray-800 overflow-hidden relative selection:bg-blue-100 flex-col md:flex-row">
       {showSuccess && (
         <div className="absolute inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center border border-emerald-100 scale-110">
