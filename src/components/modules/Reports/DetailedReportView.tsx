@@ -1,4 +1,5 @@
-import { useMemo, ReactElement } from 'react'
+import { useMemo } from 'react'
+import type { ReactElement } from 'react'
 import { X, Printer, LayoutDashboard } from 'lucide-react'
 import {
   AreaChart,
@@ -28,19 +29,37 @@ const DetailedReportView = ({
   const summary = useMemo(() => {
     if (timeline.length === 0) return null
 
-    const totalPaid = timeline.reduce((acc, t) => acc + t.totalInstallment, 0)
-    const totalInterest = timeline.reduce((acc, t) => acc + t.bankInterest, 0)
-    const maxInstallment = Math.max(...timeline.map((t) => t.totalInstallment))
-    const firstFinancing = timeline.find((t) => t.phase === 'AMORTIZACAO')
+    // Cálculos específicos de venda
+    const firstObra = timeline.find(t => t.phase === 'OBRA')
+    const firstFinanc = timeline.find(t => t.phase === 'AMORTIZACAO')
+
+    // 1. Métricas Mensais Iniciais (Linha 1)
+    const firstEntryInstallment = firstObra ? firstObra.builderInstallment : 0
+    // Juros de obra = Juros + Taxas do banco na 1ª parcela
+    const firstObraInstallment = firstObra ? (firstObra.bankInterest + firstObra.bankFees) : 0
+
+    // 2. Totais de Custos (Linha 2)
+    // Total Juros de Obra (Banco durante obra)
+    const totalObraInterest = timeline
+      .filter(t => t.phase === 'OBRA')
+      .reduce((acc, t) => acc + t.bankInterest + t.bankFees, 0)
+
+    // Total Pago à Construtora (com INCC)
+    const totalBuilderPaid = timeline.reduce((acc, t) => acc + t.builderInstallment, 0)
+
+    // Variação INCC = Total Pago - Principal Original (Entrada - Sinal)
+    const originalPrincipal = (Number(scenario.downPayment) || 0) - (Number(scenario.entrySignal) || 0)
+    const totalINCC = Math.max(0, totalBuilderPaid - originalPrincipal)
 
     return {
-      totalPaid,
-      totalInterest,
-      maxInstallment,
-      firstFinancingVal: firstFinancing ? firstFinancing.totalInstallment : 0,
+      firstEntryInstallment,
+      firstObraInstallment,
+      firstFinancInstallment: firstFinanc ? firstFinanc.totalInstallment : 0,
+      totalObraInterest,
+      totalINCC,
       monthsTotal: timeline.length
     }
-  }, [timeline])
+  }, [timeline, scenario])
 
   // Função auxiliar de formatação
   const fmtMoney = (val: number): string =>
@@ -64,14 +83,11 @@ const DetailedReportView = ({
       <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center shadow-sm print:hidden z-20">
         <div className="min-w-0">
           <h2 className="text-sm md:text-lg font-bold text-gray-900 flex flex-wrap items-center gap-2">
-            Extrato Financeiro
+            Planejamento Financeiro
             <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 uppercase truncate max-w-[150px] md:max-w-none">
               {scenario.name}
             </span>
           </h2>
-          <p className="text-[10px] md:text-xs text-gray-500 hidden sm:block">
-            Fluxo detalhado de pagamentos e amortização.
-          </p>
         </div>
         <div className="flex gap-2 md:gap-3">
           <button
@@ -92,66 +108,140 @@ const DetailedReportView = ({
 
       {/* CONTEÚDO DO RELATÓRIO */}
       <div className="max-w-[210mm] mx-auto bg-white min-h-screen my-0 md:my-8 p-4 md:p-12 md:shadow-2xl print:shadow-none print:m-0 print:w-full print:max-w-none">
-        {/* CABEÇALHO DO DOCUMENTO */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b-2 border-gray-900 pb-6 mb-8 gap-4">
-          <div>
-            <h1 className="text-xl md:text-3xl font-black text-gray-900 uppercase tracking-tighter">
-              Relatório de Proposta
-            </h1>
-            <p className="text-xs md:text-sm text-gray-500 mt-1">
-              Simulação gerada em {new Date().toLocaleDateString('pt-BR')}
-            </p>
+        {/* CABEÇALHO DO DOCUMENTO REFORMULADO */}
+        <div className="border-b-2 border-gray-900 pb-6 mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black text-gray-900 uppercase tracking-tighter">
+                Planejamento Financeiro
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Data de Emissão: {new Date().toLocaleDateString('pt-BR')}
+              </p>
+            </div>
           </div>
-          <div className="md:text-right">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-              Identificação
-            </p>
-            <p className="text-lg md:text-xl font-bold text-blue-600 leading-tight">
-              {scenario.name}
-            </p>
+
+          {/* GRID DE DADOS DO CLIENTE */}
+          <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                Cliente
+              </p>
+              <p className="font-bold text-gray-900 text-sm md:text-base truncate">
+                {scenario.clientName || 'Não Informado'}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                Telefone
+              </p>
+              <p className="font-bold text-gray-900 text-sm md:text-base">
+                {scenario.clientPhone || '-'}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                Unidade
+              </p>
+              <p className="font-bold text-gray-900 text-sm md:text-base">
+                {scenario.unitName || '-'}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                Valor do Imóvel
+              </p>
+              <p className="font-bold text-blue-600 text-sm md:text-base">
+                {fmtMoney(Number(scenario.propertyValue))}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* 1. RESUMO (Cards Responsivos) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
-          <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 print:border-gray-300">
-            <p className="text-[10px] font-bold text-gray-500 uppercase mb-1 tracking-wider text-center md:text-left">
-              Imóvel
-            </p>
-            <p className="text-sm md:text-lg font-bold text-gray-900 text-center md:text-left">
-              {fmtMoney(Number(scenario.propertyValue))}
-            </p>
+        {/* 1. FLUXO MENSAL INICIAL (3 Cards) */}
+        <div className="mb-6">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">
+            Fluxo Mensal Inicial
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white p-5 rounded-2xl shadow-lg shadow-blue-200 print:shadow-none print:border print:border-gray-300 print:text-black print:bg-white">
+              <p className="text-[10px] font-bold text-blue-100 uppercase tracking-wider mb-2 print:text-gray-500">
+                1ª Parcela Construtora
+              </p>
+              <p className="text-2xl font-bold tracking-tight">
+                {fmtMoney(summary.firstEntryInstallment)}
+              </p>
+              <p className="text-[9px] text-blue-100 mt-1 opacity-80 print:text-gray-400 font-medium">
+                Mensalidade da Entrada
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-5 rounded-2xl shadow-lg shadow-orange-200 print:shadow-none print:border print:border-gray-300 print:text-black print:bg-white">
+              <p className="text-[10px] font-bold text-orange-100 uppercase tracking-wider mb-2 print:text-gray-500">
+                1ª Evolução de Obra
+              </p>
+              <p className="text-2xl font-bold tracking-tight">
+                {fmtMoney(summary.firstObraInstallment)}
+              </p>
+              <p className="text-[9px] text-orange-100 mt-1 opacity-80 print:text-gray-400 font-medium">
+                Juros do Banco (Estimado)
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 text-white p-5 rounded-2xl shadow-lg shadow-emerald-200 print:shadow-none print:border print:border-gray-300 print:text-black print:bg-white">
+              <p className="text-[10px] font-bold text-emerald-100 uppercase tracking-wider mb-2 print:text-gray-500">
+                1ª Parc. Financiamento
+              </p>
+              <p className="text-2xl font-bold tracking-tight">
+                {fmtMoney(summary.firstFinancInstallment)}
+              </p>
+              <p className="text-[9px] text-emerald-100 mt-1 opacity-80 print:text-gray-400 font-medium">
+                Pós-Chaves
+              </p>
+            </div>
           </div>
-          <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 print:bg-white print:border-gray-300">
-            <p className="text-[10px] font-bold text-blue-600 uppercase mb-1 tracking-wider text-center md:text-left">
-              1ª Parc. Banco
-            </p>
-            <p className="text-sm md:text-lg font-bold text-blue-700 text-center md:text-left">
-              {fmtMoney(summary.firstFinancingVal)}
-            </p>
-          </div>
-          <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 print:bg-white print:border-gray-300">
-            <p className="text-[10px] font-bold text-emerald-600 uppercase mb-1 tracking-wider text-center md:text-left">
-              Total Pago Est.
-            </p>
-            <p className="text-sm md:text-lg font-bold text-emerald-700 text-center md:text-left">
-              {fmtMoney(summary.totalPaid)}
-            </p>
-          </div>
-          <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 print:bg-white print:border-gray-300">
-            <p className="text-[10px] font-bold text-orange-600 uppercase mb-1 tracking-wider text-center md:text-left">
-              Prazo Final
-            </p>
-            <p className="text-sm md:text-lg font-bold text-orange-700 text-center md:text-left">
-              {summary.monthsTotal} Meses
-            </p>
+        </div>
+
+        {/* 2. RESUMO DE CUSTOS DA OBRA (2 Cards) */}
+        <div className="mb-10">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">
+            Resumo de Custos da Obra
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 flex flex-col justify-between print:bg-white print:border-gray-300">
+              <div>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                  Total Juros de Obra
+                </p>
+                <p className="text-xl font-bold text-gray-900">
+                  {fmtMoney(summary.totalObraInterest)}
+                </p>
+              </div>
+              <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">
+                Valor total pago ao banco referente a juros durante a fase de construção.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 flex flex-col justify-between print:bg-white print:border-gray-300">
+              <div>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                  Variação Monetária (INCC)
+                </p>
+                <p className="text-xl font-bold text-gray-900">
+                  {fmtMoney(summary.totalINCC)}
+                </p>
+              </div>
+              <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">
+                Correção monetária estimada sobre as parcelas da entrada devidas à construtora.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* 2. GRÁFICO */}
         <div className="mb-10 break-inside-avoid">
           <h3 className="text-xs md:text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 border-l-4 border-blue-600 pl-3 uppercase tracking-tighter">
-            Curva de Pagamentos Mensais
+            Evolução de Pagamentos
           </h3>
           <div className="h-48 md:h-72 w-full bg-white border border-gray-100 rounded-2xl md:p-4 print:border-gray-300 shadow-sm overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
@@ -172,7 +262,7 @@ const DetailedReportView = ({
                   width={35}
                 />
                 <Tooltip
-                  formatter={(val: number) => fmtMoney(val)}
+                  formatter={(val: number | string | Array<number | string> | undefined) => [fmtMoney(Number(val || 0)), 'Parcela']}
                   labelFormatter={(label) => `Mês ${label}`}
                   contentStyle={{
                     borderRadius: '16px',
@@ -193,15 +283,15 @@ const DetailedReportView = ({
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-[9px] text-gray-400 mt-3 text-center italic leading-relaxed px-4">
-            A projeção acima considera todos os custos mensais (Entrada + Financiamento + Seguros).
+          <p className="text-[9px] text-gray-400 mt-3 text-center italic leading-relaxed">
+            Gráfico demonstrativo da evolução das parcelas ao longo do tempo.
           </p>
         </div>
 
-        {/* 3. TABELA (Mobile adaptada) */}
+        {/* 3. TABELA DETALHADA */}
         <div className="break-before-auto">
           <h3 className="text-xs md:text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 border-l-4 border-emerald-600 pl-3 uppercase tracking-tighter">
-            Cronograma de Pagamentos
+            Cronograma Detalhado
           </h3>
 
           <div className="hidden md:block border rounded-2xl overflow-hidden border-gray-100 shadow-sm print:rounded-none print:border-gray-300">
@@ -282,27 +372,26 @@ const DetailedReportView = ({
             ))}
             {timeline.length > 48 && (
               <div className="text-center py-4 text-gray-400 text-[10px] italic">
-                ... demais {timeline.length - 48} meses omitidos na visualização mobile (disponível
-                no PDF) ...
+                ... demais {timeline.length - 48} meses omitidos na visualização mobile ...
               </div>
             )}
           </div>
         </div>
 
-        {/* RODAPÉ IMPRESSO */}
+        {/* RODAPÉ E AVISO LEGAL */}
         <div className="mt-12 pt-8 border-t border-gray-100 text-center print:block">
-          <p className="text-[9px] md:text-xs text-gray-400 leading-relaxed">
-            * Simulação meramente informativa baseada nos parâmetros fornecidos pelo usuário.{' '}
-            <br className="hidden md:block" />
-            Valores sujeitos a alteração de acordo com as taxas vigentes de mercado e política de
-            crédito do banco.
-          </p>
-          <div className="mt-4 flex flex-col items-center gap-1">
+          <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 mb-6 text-left">
+            <p className="text-[10px] md:text-xs text-yellow-800 leading-relaxed font-medium">
+              <strong>Atenção:</strong> Os valores de financiamento futuro são projeções baseadas na taxa de juros atual e na correção do INCC durante a obra. O valor total final pago depende de indexadores econômicos, amortizações extraordinárias e reajustes anuais de seguro. Esta simulação não possui valor contratual.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center gap-1">
             <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center text-gray-300">
               <LayoutDashboard size={14} />
             </div>
             <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">
-              Financiamento Pro
+              Imob-Invest Simulator
             </p>
           </div>
         </div>

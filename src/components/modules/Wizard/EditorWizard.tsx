@@ -59,18 +59,59 @@ const EditorWizard = ({
                   Identifique esta proposta para consultar ou comparar depois.
                 </p>
               </div>
-              <div className="w-full max-w-sm">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block ml-1">
-                  Nome do Cliente / Unidade
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ex: João Silva - Apto 302"
-                  className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-lg text-center shadow-sm"
-                  value={currentName}
-                  onChange={(e) => setCurrentName(e.target.value)}
-                  autoFocus
-                />
+              <div className="w-full max-w-sm space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block ml-1">
+                    Nome do Cliente
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Nome completo"
+                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium text-gray-800 shadow-sm"
+                    value={data.clientName || ''}
+                    onChange={(e) => setData({ ...data, clientName: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="w-1/2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block ml-1">
+                      Telefone
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="(00) 00000-0000"
+                      className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium text-gray-800 shadow-sm"
+                      value={data.clientPhone || ''}
+                      onChange={(e) => setData({ ...data, clientPhone: e.target.value })}
+                    />
+                  </div>
+                  <div className="w-1/2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block ml-1">
+                      Unidade
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: 302-A"
+                      className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium text-gray-800 shadow-sm"
+                      value={data.unitName || ''}
+                      onChange={(e) => setData({ ...data, unitName: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block ml-1">
+                    Nome da Simulação (Salvar como)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Proposta Inicial"
+                    className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-lg text-center shadow-sm"
+                    value={currentName}
+                    onChange={(e) => setCurrentName(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
           )}

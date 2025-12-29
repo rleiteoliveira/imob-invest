@@ -57,6 +57,12 @@ export interface SimulationScenario {
   monthsToReady?: number | ''
   appreciationRate?: number | ''
   rentability?: RentabilityConfig
+
+  // Client Metadata
+  clientName?: string
+  clientPhone?: string
+  unitName?: string
+  brokerName?: string
 }
 
 export interface MonthlyResult {
