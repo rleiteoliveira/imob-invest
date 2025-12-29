@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import type { SimulationScenario, MonthlyResult } from '../../../types/ScenarioTypes';
 
 // Define fonts if needed. For now using standard Helvetica.
@@ -229,9 +229,11 @@ interface ReportPDFProps {
   scenario: SimulationScenario
   timeline: MonthlyResult[]
   summary: any
+  brandColor?: string
+  companyLogo?: string | null
 }
 
-export const ReportPDF = ({ scenario, timeline, summary }: ReportPDFProps) => {
+export const ReportPDF = ({ scenario, timeline, summary, brandColor = '#2563eb', companyLogo }: ReportPDFProps) => {
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
   return (
@@ -241,11 +243,15 @@ export const ReportPDF = ({ scenario, timeline, summary }: ReportPDFProps) => {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View>
-              <Text style={styles.title}>Planejamento Financeiro</Text>
+              {companyLogo ? (
+                <Image src={companyLogo} style={{ height: 40, marginBottom: 10, objectFit: 'contain' }} />
+              ) : (
+                <Text style={[styles.title, { color: brandColor }]}>Planejamento Financeiro</Text>
+              )}
               <Text style={styles.subTitle}>Simulação Oficial • {new Date().toLocaleDateString('pt-BR')}</Text>
             </View>
             <View>
-              <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#2563eb' }}>{scenario.name}</Text>
+              <Text style={{ fontSize: 14, fontWeight: 'bold', color: brandColor }}>{scenario.name}</Text>
             </View>
           </View>
 
@@ -264,7 +270,7 @@ export const ReportPDF = ({ scenario, timeline, summary }: ReportPDFProps) => {
             </View>
             <View style={styles.clientItem}>
               <Text style={styles.label}>Valor Imóvel</Text>
-              <Text style={styles.valueBlue}>{fmt(Number(scenario.propertyValue))}</Text>
+              <Text style={[styles.valueBlue, { color: brandColor }]}>{fmt(Number(scenario.propertyValue))}</Text>
             </View>
           </View>
         </View>
@@ -273,7 +279,7 @@ export const ReportPDF = ({ scenario, timeline, summary }: ReportPDFProps) => {
         <Text style={styles.sectionTitle}>Fluxo Mensal Inicial</Text>
         <View style={styles.cardsRow}>
           {/* Azul */}
-          <View style={[styles.card, styles.cardBlueDark]}>
+          <View style={[styles.card, styles.cardBlueDark, { backgroundColor: brandColor, borderColor: brandColor }]}>
             <Text style={styles.cardBlueLabelDark}>1ª Parc. Construtora</Text>
             <Text style={styles.cardBlueValueDark}>{fmt(summary.firstEntryInstallment)}</Text>
             <Text style={styles.cardBlueSubDark}>Mensalidade Entrada</Text>
@@ -320,7 +326,7 @@ export const ReportPDF = ({ scenario, timeline, summary }: ReportPDFProps) => {
           {timeline.map((row, i) => (
             <View key={row.month} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? '#ffffff' : '#f9fafb' }]}>
               <Text style={[styles.colMonth, { fontSize: 8, color: '#9ca3af' }]}>{row.month}</Text>
-              <Text style={[styles.colBuilder, { fontSize: 9, color: row.builderInstallment > 0 ? '#2563eb' : '#d1d5db', fontWeight: row.builderInstallment > 0 ? 'bold' : 'normal' }]}>
+              <Text style={[styles.colBuilder, { fontSize: 9, color: row.builderInstallment > 0 ? brandColor : '#d1d5db', fontWeight: row.builderInstallment > 0 ? 'bold' : 'normal' }]}>
                 {row.builderInstallment > 0 ? fmt(row.builderInstallment) : '-'}
               </Text>
               <Text style={[styles.colBank, { fontSize: 9 }]}>

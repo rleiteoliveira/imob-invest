@@ -13,7 +13,8 @@ import {
 import { CaixaMCMV } from '../../../core/engines/CaixaMCMV'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import { PDFDownloadLink } from '@react-pdf/renderer'
-import { ReportPDF } from '../../reports/ReportPDF'
+import { ReportPDF } from './ReportPDF'
+import { useBrand } from '../../../context/BrandContext'
 
 const DetailedReportView = ({
   scenario,
@@ -22,6 +23,8 @@ const DetailedReportView = ({
   scenario: SimulationScenario
   onClose: () => void
 }): ReactElement => {
+  const { brandColor, companyLogo } = useBrand()
+
   // 1. Calcular a linha do tempo completa
   const timeline = useMemo(() => {
     return new CaixaMCMV().calculate(scenario)
@@ -88,7 +91,15 @@ const DetailedReportView = ({
         </div>
         <div className="flex gap-2 md:gap-3">
           <PDFDownloadLink
-            document={<ReportPDF scenario={scenario} timeline={timeline} summary={summary} />}
+            document={
+              <ReportPDF
+                scenario={scenario}
+                timeline={timeline}
+                summary={summary}
+                brandColor={brandColor}
+                companyLogo={companyLogo}
+              />
+            }
             fileName={`Simulacao_${scenario.clientName || 'Imovel'}.pdf`}
             className="flex items-center gap-2 px-3 md:px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-black transition-all font-bold text-xs md:text-sm shadow-lg shadow-gray-200 active:scale-95"
           >

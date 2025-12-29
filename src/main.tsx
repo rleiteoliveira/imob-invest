@@ -1,10 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css' // Importante: O CSS novo do Tailwind v4
+import './index.css'
 import App from './App'
+import { BrandProvider } from './context/BrandContext'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <BrandProvider>
+      <App />
+    </BrandProvider>
   </StrictMode>
 )

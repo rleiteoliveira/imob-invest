@@ -8,12 +8,14 @@ import {
   Trash2,
   BarChart3,
   Check,
-  Hotel
+  Hotel,
+  Settings
 } from 'lucide-react'
 import DetailedReportView from '../Reports/DetailedReportView'
 import ComparisonView from '../Comparison/ComparisonView'
 import EditorWizard from '../Wizard/EditorWizard'
 import RentabilityView from '../Rentability/RentabilityView'
+import BrandSettingsModal from '../Brand/BrandSettingsModal'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import { CaixaMCMV } from '../../../core/engines/CaixaMCMV'
 
@@ -34,6 +36,7 @@ export default function SimulatorLayout(): ReactElement {
   const [step, setStep] = useState(0)
   const [currentName, setCurrentName] = useState('')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [showBrandSettings, setShowBrandSettings] = useState(false)
 
   const [reportScenario, setReportScenario] = useState<SimulationScenario | null>(null)
 
@@ -152,6 +155,8 @@ export default function SimulatorLayout(): ReactElement {
       {reportScenario && (
         <DetailedReportView scenario={reportScenario} onClose={() => setReportScenario(null)} />
       )}
+
+      <BrandSettingsModal isOpen={showBrandSettings} onClose={() => setShowBrandSettings(false)} />
 
       <header className="md:hidden bg-white border-b border-gray-100 p-4 flex justify-between items-center z-40 shrink-0">
         <div className="flex items-center gap-2.5">
@@ -287,6 +292,15 @@ export default function SimulatorLayout(): ReactElement {
                 </div>
               ))
             )}
+          </div>
+
+          <div className="mt-2">
+            <button
+              onClick={() => setShowBrandSettings(true)}
+              className="w-full flex items-center gap-3 p-3 rounded-xl transition-all font-bold text-sm text-gray-500 hover:bg-gray-50 hover:text-blue-600"
+            >
+              <Settings size={18} /> Configurações
+            </button>
           </div>
         </div>
 
