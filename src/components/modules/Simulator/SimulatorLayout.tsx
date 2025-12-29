@@ -18,6 +18,7 @@ import RentabilityView from '../Rentability/RentabilityView'
 import BrandSettingsModal from '../Brand/BrandSettingsModal'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import { CaixaMCMV } from '../../../core/engines/CaixaMCMV'
+import { useSimulationHistory } from '../../../hooks/useSimulationHistory'
 
 interface CardMetrics {
   parcelaEntrada: number
@@ -28,7 +29,7 @@ interface CardMetrics {
 }
 
 export default function SimulatorLayout(): ReactElement {
-  const [scenarios, setScenarios] = useState<SimulationScenario[]>([])
+  const { recentSimulations, saveSimulation, deleteSimulation } = useSimulationHistory()
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<'EDITOR' | 'COMPARE'>('EDITOR')
   const [editorTab, setEditorTab] = useState<'FINANCING' | 'AIRBNB'>('FINANCING')
@@ -78,13 +79,11 @@ export default function SimulatorLayout(): ReactElement {
   }
   const handleSave = (): void => {
     if (!currentName) return
-    const newId = data.id || Date.now().toString()
+    const newId = data.id || crypto.randomUUID()
     const newScenario = { ...data, id: newId, name: currentName }
-    setScenarios((prev) => {
-      const exists = prev.find((s: SimulationScenario) => s.id === newId)
-      if (exists) return prev.map((s: SimulationScenario) => (s.id === newId ? newScenario : s))
-      return [...prev, newScenario]
-    })
+
+    saveSimulation(newScenario)
+
     if (!selectedIds.includes(newId)) setSelectedIds((prev) => [...prev, newId])
     setShowSuccess(true)
     setTimeout(() => {
@@ -233,27 +232,27 @@ export default function SimulatorLayout(): ReactElement {
             <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-3">
               Minhas Simulações
             </h3>
-            {scenarios.length === 0 ? (
+            {recentSimulations.length === 0 ? (
               <div className="text-center py-8 px-4 border border-dashed border-gray-100 rounded-2xl">
                 <p className="text-xs text-gray-400">Nenhum cenário salvo ainda.</p>
               </div>
             ) : (
-              scenarios.map((cenario: SimulationScenario) => (
+              recentSimulations.map((item) => (
                 <div
-                  key={cenario.id}
-                  className={`group relative border rounded-2xl p-4 transition-all cursor-pointer ${data.id === cenario.id ? 'bg-blue-50/50 border-blue-500/50 shadow-sm' : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-sm'}`}
-                  onClick={() => loadScenario(cenario)}
+                  key={item.id}
+                  className={`group relative border rounded-2xl p-4 transition-all cursor-pointer ${data.id === item.scenario.id ? 'bg-blue-50/50 border-blue-500/50 shadow-sm' : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-sm'}`}
+                  onClick={() => loadScenario(item.scenario)}
                 >
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
-                        checked={selectedIds.includes(cenario.id!)}
+                        checked={selectedIds.includes(item.scenario.id!)}
                         onChange={() =>
                           setSelectedIds((prev) =>
-                            prev.includes(cenario.id!)
-                              ? prev.filter((x) => x !== cenario.id!)
-                              : [...prev, cenario.id!]
+                            prev.includes(item.scenario.id!)
+                              ? prev.filter((x) => x !== item.scenario.id!)
+                              : [...prev, item.scenario.id!]
                           )
                         }
                         className="w-4 h-4 rounded-md text-blue-600 focus:ring-blue-500 border-gray-300"
@@ -262,14 +261,15 @@ export default function SimulatorLayout(): ReactElement {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
                         <span className="font-bold text-sm text-gray-900 truncate leading-tight">
-                          {cenario.name}
+                          {item.scenario.name}
                         </span>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            setScenarios((s) => s.filter((x) => x.id !== cenario.id))
+                            deleteSimulation(item.id)
                           }}
                           className="text-gray-300 hover:text-red-500 p-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Excluir"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -277,15 +277,20 @@ export default function SimulatorLayout(): ReactElement {
                       <div className="mt-2 flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <span
-                            className={`w-2 h-2 rounded-full ${cenario.type === 'PLANTA' ? 'bg-orange-500' : 'bg-blue-500'}`}
+                            className={`w-2 h-2 rounded-full ${item.scenario.type === 'PLANTA' ? 'bg-orange-500' : 'bg-blue-500'}`}
                           ></span>
                           <span className="uppercase font-bold text-[9px] text-gray-500 tracking-wide">
-                            {cenario.type}
+                            {item.scenario.type}
                           </span>
                         </div>
-                        <span className="font-bold text-xs text-gray-700">
-                          {formatMoney(cenario.propertyValue)}
-                        </span>
+                        <div className="flex flex-col items-end">
+                          <span className="font-bold text-xs text-gray-700">
+                            {formatMoney(item.scenario.propertyValue)}
+                          </span>
+                          <span className="text-[10px] text-gray-400">
+                            {new Date(item.date).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -321,7 +326,7 @@ export default function SimulatorLayout(): ReactElement {
       <main className="flex-1 overflow-hidden relative w-full bg-gray-50/30">
         {viewMode === 'COMPARE' ? (
           <ComparisonView
-            scenarios={scenarios}
+            scenarios={recentSimulations.map(item => item.scenario)}
             selectedIds={selectedIds}
             onBack={() => setViewMode('EDITOR')}
             getCardMetrics={getCardMetrics}
