@@ -1,17 +1,7 @@
-import { ReactElement, useMemo } from 'react'
+import { ReactElement } from 'react'
 import { ArrowLeft, Building2, Settings2, Key, TrendingUp, Wallet, FileText } from 'lucide-react'
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from 'recharts'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
-import { CaixaMCMV } from '../../../core/engines/CaixaMCMV'
+import EvolutionChart from './EvolutionChart'
 
 const ComparisonView = ({
   scenarios,
@@ -26,31 +16,8 @@ const ComparisonView = ({
   getCardMetrics: (cenario: SimulationScenario) => any
   onGenerateReport: (s: SimulationScenario) => void
 }): ReactElement => {
-  const selectedScenarios = scenarios.filter((s: any) => selectedIds.includes(s.id))
+  const selectedScenarios = scenarios.filter((s: SimulationScenario) => selectedIds.includes(s.id!))
   const colors = ['#2563eb', '#dc2626', '#059669', '#d97706', '#7c3aed']
-
-  const chartData = useMemo(() => {
-    if (selectedScenarios.length === 0) return []
-    let maxMonths = 0
-    const engine = new CaixaMCMV()
-
-    const timelines = selectedScenarios.map((s: any) => {
-      const timeline = engine.calculate(s)
-      if (timeline.length > maxMonths) maxMonths = timeline.length
-      return { id: s.id, timeline }
-    })
-    const points: any[] = []
-    const step = maxMonths > 120 ? 12 : 1
-    for (let m = 1; m <= maxMonths; m += step) {
-      const point: any = { name: `Mês ${m}` }
-      timelines.forEach((t: any) => {
-        const exactData = t.timeline.find((x: any) => x.month === m)
-        if (exactData) point[t.id] = exactData.accumulatedPaid
-      })
-      points.push(point)
-    }
-    return points
-  }, [selectedScenarios])
 
   return (
     <div className="h-full overflow-y-auto p-4 md:p-8 animate-in fade-in zoom-in-95 duration-300 custom-scrollbar pb-24">
@@ -70,52 +37,11 @@ const ComparisonView = ({
       </div>
 
       <div className="bg-white p-3 md:p-6 rounded-3xl shadow-sm border border-gray-100 mb-8 h-[250px] md:h-[350px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f8f8f8" />
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 9, fill: '#94a3b8' }}
-              hide={chartData.length > 50}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 9, fill: '#94a3b8' }}
-              tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`}
-            />
-            <Tooltip
-              contentStyle={{
-                borderRadius: '16px',
-                border: 'none',
-                boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                fontSize: '11px'
-              }}
-              formatter={(value: number) =>
-                new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-              }
-            />
-            <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
-            {selectedScenarios.map((s: any, idx: number) => (
-              <Line
-                key={s.id}
-                type="monotone"
-                dataKey={s.id}
-                name={s.name}
-                stroke={colors[idx % colors.length]}
-                strokeWidth={3}
-                dot={false}
-                activeDot={{ r: 6 }}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
+        <EvolutionChart scenarios={selectedScenarios} height={300} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-10">
-        {selectedScenarios.map((s: any, idx: number) => {
+        {selectedScenarios.map((s: SimulationScenario, idx: number) => {
           const metrics = getCardMetrics(s)
           const borderColor = colors[idx % colors.length]
           const isPlanta = s.type === 'PLANTA'

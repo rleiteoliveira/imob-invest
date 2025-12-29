@@ -17,9 +17,10 @@ import {
 import type { SimulationScenario, BuilderBalloon } from '../../../types/ScenarioTypes'
 import BuilderBalloonModal from './BuilderBalloonModal'
 import TypeCard from '../../ui/TypeCard'
-import CurrencyInput from '../../ui/CurrencyInput'
+import SmartInput from '../../ui/SmartInput'
 import NumberInput from '../../ui/NumberInput'
 import ToggleSwitch from '../../ui/ToggleSwitch'
+import EvolutionChart from '../Comparison/EvolutionChart'
 
 const UnifiedEditor = ({
   data,
@@ -132,33 +133,37 @@ const UnifiedEditor = ({
       </div>
 
       <div className="bg-gray-50 p-4 md:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-5">
-        <CurrencyInput
+        <SmartInput
           label="Valor do Imóvel"
           prefix="R$"
           value={data.propertyValue}
-          onChange={(v: any) => setData({ ...data, propertyValue: v })}
+          onChange={(v: number) => setData({ ...data, propertyValue: v })}
+          max={Math.max(1000000, propertyValue * 1.5)}
+          disableSlider
         />
         <div className="flex flex-col md:flex-row gap-4 md:items-end relative">
           <div className="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-400 bg-white shadow-sm w-6 h-6 items-center justify-center rounded-full z-10 border border-gray-100">
             <Plus size={14} />
           </div>
           <div className="flex-1 bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 hover:border-blue-300 transition-colors">
-            <CurrencyInput
+            <SmartInput
               label="Financiamento"
               highlight={`${financedPercent.toFixed(0)}%`}
               prefix="R$"
               value={financedAmount}
               onChange={handleFinancedChange}
+              max={propertyValue}
               subtitle={isBalloonAtZero ? 'Saldo Dev. (Descontado FGTS/Ato)' : 'Saldo Devedor'}
             />
           </div>
           <div className="flex-1 bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100/50 hover:border-emerald-300 transition-colors">
-            <CurrencyInput
+            <SmartInput
               label="Entrada Total"
               highlight={`${downPaymentPercent.toFixed(0)}%`}
               prefix="R$"
               value={data.downPayment}
-              onChange={(v: any) => setData({ ...data, downPayment: v })}
+              onChange={(v: number) => setData({ ...data, downPayment: v })}
+              max={propertyValue}
               subtitle="Recursos Próprios"
             />
           </div>
@@ -209,7 +214,7 @@ const UnifiedEditor = ({
                 {/* Grid de Inputs */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {/* 1. ATO */}
-                  <CurrencyInput label="Ato / Sinal" prefix="R$" value={data.entrySignal} onChange={(v: any) => setData({ ...data, entrySignal: v })} subtitle="Pago na assinatura" />
+                  <SmartInput label="Ato / Sinal" prefix="R$" value={data.entrySignal ?? ''} onChange={(v: number) => setData({ ...data, entrySignal: v })} max={downPayment} subtitle="Pago na assinatura" />
 
                   {/* 2. INTERCALADAS MANUAIS */}
                   <div className="bg-blue-50/50 border border-blue-100 p-3 rounded-xl flex items-center justify-between group cursor-pointer hover:bg-blue-50 transition-colors" onClick={() => setShowBalloonModal(true)}>
@@ -251,7 +256,7 @@ const UnifiedEditor = ({
                           {data.balloonFrequency === 'UNICA' ? (
                             <>
                               <label className="text-[10px] text-gray-500 uppercase font-bold mb-1 block">Mês (0 = Ato)</label>
-                              <NumberInput placeholder="0" className="w-full p-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-emerald-500" value={data.balloonStartMonth} onChange={(val) => setData({ ...data, balloonStartMonth: val })} />
+                              <NumberInput placeholder="0" className="w-full p-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-emerald-500" value={data.balloonStartMonth ?? ''} onChange={(val) => setData({ ...data, balloonStartMonth: val })} />
                             </>
                           ) : (
                             <>
@@ -261,7 +266,7 @@ const UnifiedEditor = ({
                           )}
                         </div>
                       </div>
-                      <CurrencyInput prefix="R$" label="Valor" value={data.balloonValue} onChange={(v: any) => setData({ ...data, balloonValue: v })} subtitle={balloonsInConstructionValue > 0 ? `Abatendo R$ ${balloonsInConstructionValue.toLocaleString('pt-BR')} da Entrada` : "Abatendo do Financiamento/Pós-Obra"} />
+                      <SmartInput prefix="R$" label="Valor" value={data.balloonValue ?? ''} onChange={(v: number) => setData({ ...data, balloonValue: v })} subtitle={balloonsInConstructionValue > 0 ? `Abatendo R$ ${balloonsInConstructionValue.toLocaleString('pt-BR')} da Entrada` : "Abatendo do Financiamento/Pós-Obra"} />
                     </div>
                   )}
                 </div>
@@ -311,6 +316,17 @@ const UnifiedEditor = ({
         </div>
       )}
 
+      {/* CHART SECTION IN EDITOR */}
+      <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-bottom-3">
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="text-blue-600" size={20} />
+          <h3 className="font-bold text-gray-800 text-lg">Projeção de Evolução</h3>
+        </div>
+        <div className="h-[250px]">
+          <EvolutionChart scenarios={[data]} height={250} />
+        </div>
+      </div>
+
       {/* ... (Seções de Financiamento e Futuro mantidas) ... */}
       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
         <div className="flex items-center gap-2 px-1 border-t border-gray-100 pt-6"><Landmark className="text-blue-600" size={20} /><h3 className="font-bold text-gray-800 text-lg">Financiamento Bancário</h3></div>
@@ -322,9 +338,9 @@ const UnifiedEditor = ({
             </div>
             <div className="space-y-4">
               <div><label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Juros Nominais (% a.a)</label><NumberInput allowFloat={true} className="w-full p-3 border border-gray-200 rounded-lg" value={data.interestRate} onChange={(val) => setData({ ...data, interestRate: val })} /></div>
-              <CurrencyInput label="Taxa Adm. (R$)" prefix="R$" value={data.monthlyAdminFee} onChange={(v: any) => setData({ ...data, monthlyAdminFee: v })} />
+              <SmartInput label="Taxa Adm. (R$)" prefix="R$" value={data.monthlyAdminFee ?? ''} onChange={(v: number) => setData({ ...data, monthlyAdminFee: v })} max={200} sliderStep={5} />
             </div>
-            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 h-full"><label className="text-[10px] font-bold text-gray-500 uppercase mb-3 block flex items-center gap-1"><Shield size={10} /> Seguros (Mensal)</label><div className="space-y-3"><CurrencyInput label="MIP (R$)" prefix="R$" value={data.insuranceMIP} onChange={(v: any) => setData({ ...data, insuranceMIP: v })} subtitle="Morte/Invalidez" /><CurrencyInput label="DFI (R$)" prefix="R$" value={data.insuranceDFI} onChange={(v: any) => setData({ ...data, insuranceDFI: v })} subtitle="Danos Físicos" /></div></div>
+            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 h-full"><label className="text-[10px] font-bold text-gray-500 uppercase mb-3 block flex items-center gap-1"><Shield size={10} /> Seguros (Mensal)</label><div className="space-y-3"><SmartInput label="MIP (R$)" prefix="R$" value={data.insuranceMIP ?? ''} onChange={(v: number) => setData({ ...data, insuranceMIP: v })} max={200} subtitle="Morte/Invalidez" sliderStep={5} /><SmartInput label="DFI (R$)" prefix="R$" value={data.insuranceDFI ?? ''} onChange={(v: number) => setData({ ...data, insuranceDFI: v })} max={200} subtitle="Danos Físicos" sliderStep={5} /></div></div>
           </div>
         </div>
       </div>
@@ -332,8 +348,8 @@ const UnifiedEditor = ({
       {data.type === 'FUTURO' && (
         <div className="bg-purple-50 p-5 rounded-xl border border-purple-100 animate-in fade-in">
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="text-xs font-bold text-purple-700 uppercase mb-1 block">Espera (Meses)</label><NumberInput className="w-full p-2 border border-purple-200 rounded-lg" value={data.monthsToReady} onChange={(val) => setData({ ...data, monthsToReady: val })} /></div>
-            <div><label className="text-xs font-bold text-purple-700 uppercase mb-1 block">Valorização (% a.a)</label><NumberInput allowFloat={true} className="w-full p-2 border border-purple-200 rounded-lg" value={data.appreciationRate} onChange={(val) => setData({ ...data, appreciationRate: val })} /></div>
+            <div><label className="text-xs font-bold text-purple-700 uppercase mb-1 block">Espera (Meses)</label><NumberInput className="w-full p-2 border border-purple-200 rounded-lg" value={data.monthsToReady ?? ''} onChange={(val) => setData({ ...data, monthsToReady: val })} /></div>
+            <div><label className="text-xs font-bold text-purple-700 uppercase mb-1 block">Valorização (% a.a)</label><NumberInput allowFloat={true} className="w-full p-2 border border-purple-200 rounded-lg" value={data.appreciationRate ?? ''} onChange={(val) => setData({ ...data, appreciationRate: val })} /></div>
           </div>
         </div>
       )}
