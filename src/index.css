@@ -15,3 +15,16 @@ body {
   background-color: #f9fafb;
   /* bg-gray-50 para combinar com seu app */
 }
+
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  body {
+    background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

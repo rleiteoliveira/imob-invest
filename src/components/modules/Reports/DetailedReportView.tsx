@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { ReactElement } from 'react'
-import { X, Printer, LayoutDashboard } from 'lucide-react'
+import { X, FileDown, LayoutDashboard, Coins, TrendingUp } from 'lucide-react'
 import {
   AreaChart,
   Area,
@@ -12,6 +12,8 @@ import {
 } from 'recharts'
 import { CaixaMCMV } from '../../../core/engines/CaixaMCMV'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
+import { PDFDownloadLink } from '@react-pdf/renderer'
+import { ReportPDF } from '../../reports/ReportPDF'
 
 const DetailedReportView = ({
   scenario,
@@ -65,11 +67,6 @@ const DetailedReportView = ({
   const fmtMoney = (val: number): string =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
 
-  // Ação de Imprimir
-  const handlePrint = (): void => {
-    window.print()
-  }
-
   if (!summary)
     return (
       <div className="p-8 text-center text-gray-500">
@@ -78,9 +75,9 @@ const DetailedReportView = ({
     )
 
   return (
-    <div className="fixed inset-0 z-[100] bg-gray-50 overflow-y-auto custom-scrollbar">
+    <div className="fixed inset-0 z-[100] bg-gray-50 overflow-y-auto custom-scrollbar print:relative print:inset-auto print:bg-white print:overflow-visible print:h-auto print:z-auto">
       {/* BARRA DE AÇÕES (Não sai na impressão) */}
-      <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center shadow-sm print:hidden z-20">
+      <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center shadow-sm print:hidden z-[110]">
         <div className="min-w-0">
           <h2 className="text-sm md:text-lg font-bold text-gray-900 flex flex-wrap items-center gap-2">
             Planejamento Financeiro
@@ -90,13 +87,18 @@ const DetailedReportView = ({
           </h2>
         </div>
         <div className="flex gap-2 md:gap-3">
-          <button
-            onClick={handlePrint}
+          <PDFDownloadLink
+            document={<ReportPDF scenario={scenario} timeline={timeline} summary={summary} />}
+            fileName={`Simulacao_${scenario.clientName || 'Imovel'}.pdf`}
             className="flex items-center gap-2 px-3 md:px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-black transition-all font-bold text-xs md:text-sm shadow-lg shadow-gray-200 active:scale-95"
           >
-            <Printer size={16} />
-            <span className="hidden xs:inline">Imprimir</span>
-          </button>
+            {({ loading }: { loading: boolean }) => (
+              <>
+                <FileDown size={16} />
+                <span className="hidden xs:inline">{loading ? 'Gerando...' : 'Baixar PDF'}</span>
+              </>
+            )}
+          </PDFDownloadLink>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
@@ -107,7 +109,7 @@ const DetailedReportView = ({
       </div>
 
       {/* CONTEÚDO DO RELATÓRIO */}
-      <div className="max-w-[210mm] mx-auto bg-white min-h-screen my-0 md:my-8 p-4 md:p-12 md:shadow-2xl print:shadow-none print:m-0 print:w-full print:max-w-none">
+      <div className="w-full bg-white min-h-screen p-4 md:max-w-[210mm] md:mx-auto md:my-8 md:p-12 md:shadow-2xl print:shadow-none print:m-0 print:w-full print:max-w-none print:p-8">
         {/* CABEÇALHO DO DOCUMENTO REFORMULADO */}
         <div className="border-b-2 border-gray-900 pb-6 mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
@@ -163,7 +165,7 @@ const DetailedReportView = ({
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">
             Fluxo Mensal Inicial
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 break-inside-avoid">
             <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white p-5 rounded-2xl shadow-lg shadow-blue-200 print:shadow-none print:border print:border-gray-300 print:text-black print:bg-white">
               <p className="text-[10px] font-bold text-blue-100 uppercase tracking-wider mb-2 print:text-gray-500">
                 1ª Parcela Construtora
@@ -207,31 +209,37 @@ const DetailedReportView = ({
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">
             Resumo de Custos da Obra
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 flex flex-col justify-between print:bg-white print:border-gray-300">
-              <div>
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                  Total Juros de Obra
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 break-inside-avoid">
+            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 flex flex-col justify-between print:bg-white print:border-gray-300 relative overflow-hidden group hover:border-gray-300 transition-colors">
+              <div className="absolute top-3 right-3 text-gray-200 group-hover:text-gray-300 transition-colors">
+                <Coins size={40} strokeWidth={1.5} />
+              </div>
+              <div className="relative z-10">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                  <Coins size={12} /> Total Juros de Obra
                 </p>
                 <p className="text-xl font-bold text-gray-900">
                   {fmtMoney(summary.totalObraInterest)}
                 </p>
               </div>
-              <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">
+              <p className="text-[10px] text-gray-400 mt-2 leading-relaxed relative z-10">
                 Valor total pago ao banco referente a juros durante a fase de construção.
               </p>
             </div>
 
-            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 flex flex-col justify-between print:bg-white print:border-gray-300">
-              <div>
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                  Variação Monetária (INCC)
+            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 flex flex-col justify-between print:bg-white print:border-gray-300 relative overflow-hidden group hover:border-gray-300 transition-colors">
+              <div className="absolute top-3 right-3 text-gray-200 group-hover:text-gray-300 transition-colors">
+                <TrendingUp size={40} strokeWidth={1.5} />
+              </div>
+              <div className="relative z-10">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                  <TrendingUp size={12} /> Variação Monetária (INCC)
                 </p>
                 <p className="text-xl font-bold text-gray-900">
                   {fmtMoney(summary.totalINCC)}
                 </p>
               </div>
-              <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">
+              <p className="text-[10px] text-gray-400 mt-2 leading-relaxed relative z-10">
                 Correção monetária estimada sobre as parcelas da entrada devidas à construtora.
               </p>
             </div>
@@ -243,7 +251,7 @@ const DetailedReportView = ({
           <h3 className="text-xs md:text-sm font-bold text-gray-900 mb-4 flex items-center gap-2 border-l-4 border-blue-600 pl-3 uppercase tracking-tighter">
             Evolução de Pagamentos
           </h3>
-          <div className="h-48 md:h-72 w-full bg-white border border-gray-100 rounded-2xl md:p-4 print:border-gray-300 shadow-sm overflow-hidden">
+          <div className="h-[300px] w-full bg-white border border-gray-100 rounded-2xl md:p-4 print:border-gray-300 shadow-sm overflow-hidden min-w-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={timeline} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
@@ -309,7 +317,7 @@ const DetailedReportView = ({
               {timeline.map((row) => (
                 <div
                   key={row.month}
-                  className="grid grid-cols-12 p-4 text-xs items-center hover:bg-gray-50/50 transition-colors"
+                  className="grid grid-cols-12 p-4 text-xs items-center hover:bg-gray-50/50 transition-colors break-inside-avoid print:break-inside-avoid"
                 >
                   <div className="col-span-1 text-center font-bold text-gray-400 text-[10px]">
                     {row.month}
@@ -379,7 +387,7 @@ const DetailedReportView = ({
         </div>
 
         {/* RODAPÉ E AVISO LEGAL */}
-        <div className="mt-12 pt-8 border-t border-gray-100 text-center print:block">
+        <div className="mt-12 pt-8 border-t border-gray-100 text-center print:block break-inside-avoid">
           <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 mb-6 text-left">
             <p className="text-[10px] md:text-xs text-yellow-800 leading-relaxed font-medium">
               <strong>Atenção:</strong> Os valores de financiamento futuro são projeções baseadas na taxa de juros atual e na correção do INCC durante a obra. O valor total final pago depende de indexadores econômicos, amortizações extraordinárias e reajustes anuais de seguro. Esta simulação não possui valor contratual.

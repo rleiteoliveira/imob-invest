@@ -8,4 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(), // <--- A mágica acontece aqui
   ],
+  define: {
+    global: 'window',
+  },
 })
