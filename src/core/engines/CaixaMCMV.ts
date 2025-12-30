@@ -7,7 +7,7 @@ export class CaixaMCMV implements CalculationEngine {
     const propValue = new Decimal(data.propertyValue || 0)
     const downPaymentTotal = new Decimal(data.downPayment || 0)
 
-    const constructionMonths = data.type === 'PLANTA' ? Number(data.constructionTime) || 0 : 0
+    const constructionMonths = (data.type === 'MCMV' || data.type === 'DIRETO') ? Number(data.constructionTime) || 0 : 0
     const balloonVal = new Decimal(data.balloonValue || 0)
     const hasBalloon = data.hasBalloonPayments
 
@@ -100,7 +100,9 @@ export class CaixaMCMV implements CalculationEngine {
     let bankBalloonsPaidCount = 0
 
     // === FASE 1: OBRA ===
-    if (data.type === 'PLANTA' && constructionMonths > 0) {
+    // === FASE 1: OBRA ===
+    const isConstructionScenario = data.type === 'MCMV' || data.type === 'DIRETO'
+    if (isConstructionScenario && constructionMonths > 0) {
       const startPercent = Number(data.currentWorkPercent || 0) / 100
       const remainingPercent = 1.0 - startPercent
       const evolutionStep = remainingPercent / constructionMonths
@@ -136,7 +138,16 @@ export class CaixaMCMV implements CalculationEngine {
           monthlyBuilderPmt = monthlyBuilderPmt.plus(balloonVal.times(correctionFactor))
         }
 
-        // Banco (Evolução)
+        // --- LÓGICA DIRETO COM INCORPORADORA ---
+        if (data.type === 'DIRETO') {
+          // Correção do Saldo Devedor pelo INCC
+          // Saldo cresce a cada mês pela taxa INCC
+          const monthlyINCCDecimal = new Decimal(data.inccRate || 0).div(100)
+          currentBankBalance = currentBankBalance.times(new Decimal(1).plus(monthlyINCCDecimal))
+        }
+        // ----------------------------------------
+
+        // Banco (Evolução / Juros de Obra)
         let bankInterest = new Decimal(0)
 
         let shouldChargeEvolution = data.useWorkEvolution
@@ -163,9 +174,39 @@ export class CaixaMCMV implements CalculationEngine {
         } else {
           // Lógica Padrão (Obra já iniciada ou não especificado)
           if (shouldChargeEvolution) {
-            const currentProgress = Math.min(startPercent + evolutionStep * i, 1)
-            const amountReleased = financedAmount.times(currentProgress)
-            bankInterest = amountReleased.times(monthlyInterestRate)
+            // Se for DIRETO, a lógica pode ser diferente (juros sobre saldo acumulado total ou liberado?)
+            // O pedido diz: "INCC corrige tanto a Entrada quanto o Saldo Devedor... antes de calcular a parcela."
+            // Se é financiamento DIRETO, geralmente cobra juros sobre o saldo devedor TOTAL corrigido (Price/SACTable) ou apenas correção?
+            // "INCC corrige ... Saldo Devedor ... antes de calcular a parcela."
+            // Geralmente, na obra direto com incorporadora, paga-se correção monetária (INCC) sobre o saldo apenas, ou Juros + Correção?
+            // Considerando que "bankInterest" aqui é "Juros de Obra" (pago ao banco), no caso DIRETO seria "Juros/Correção pagos à incorporadora".
+            // Se o usuário diz "Juros de Obra no banco" para MCMV e "Direto" separado,
+            // vamos assumir que no DIRETO a parcela de "Financiamento" durante a obra é composta pelo juro sobre o saldo (se houver juro definido) OU
+            // Apenas correção.
+            // Mas o código abaixo calcula `bankInterest`.
+            // Se DIRETO, o saldo (currentBankBalance) já foi corrigido acima.
+            // Se houver interestRate definido, cobramos juros sobre esse saldo corrigido?
+            // O padrão geralmente é: Correção Monetária APENAS, e juros só na entrega das chaves.
+            // OU Juros + Correção.
+            // O usuário não especificou se paga juros mensais NO DIRETO durante a obra, apenas "INCC corrige...".
+            // Vou manter o cálculo de Juros (bankInterest) mas usando o saldo corrigido como base se for o caso.
+            // Mas cuidado: No MCMV (Caixa), `amountReleased` é gradual (evolução).
+            // No DIRETO, a dívida é com a construtora integralmente desde o início? Ou evolução?
+            // Geralmente direto é integral.
+            // Se for DIRETO, vamos assumir que o saldo TODO sofre incidência de juros se tiver taxa de juros configurada.
+            // Se `interestRate` > 0.
+
+            if (data.type === 'DIRETO') {
+              // Juros sobre o saldo corrigido integral (sem evolução de obra física afetando liberação financeira, pois a dívida é assumida)
+              // Ou mantém evolução? Geralmente "Direto" não tem evolução de repasse (banco), a dívida é total.
+              // Vou assumir dívida total para cálculo de juros se houver.
+              bankInterest = currentBankBalance.times(monthlyInterestRate)
+            } else {
+              // MCMV (Caixa) - Mantém Evolução
+              const currentProgress = Math.min(startPercent + evolutionStep * i, 1)
+              const amountReleased = financedAmount.times(currentProgress)
+              bankInterest = amountReleased.times(monthlyInterestRate)
+            }
           }
         }
 

@@ -1,4 +1,4 @@
-import { ReactElement } from 'react'
+import type { ReactElement } from 'react'
 import * as Slider from '@radix-ui/react-slider'
 import CurrencyInput from './CurrencyInput'
 
@@ -14,6 +14,7 @@ interface SmartInputProps {
   readOnly?: boolean
   sliderStep?: number
   disableSlider?: boolean
+  allowFloat?: boolean
 }
 
 const SmartInput = ({

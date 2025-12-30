@@ -48,7 +48,7 @@ export default function SimulatorLayout(): ReactElement {
     entrySignal: 15000,
     entryInstallments: 36,
     builderBalloons: [],
-    type: 'PLANTA',
+    type: 'MCMV',
     amortizationSystem: 'PRICE',
     interestRate: 8.66,
     termMonths: 420,
@@ -131,7 +131,7 @@ export default function SimulatorLayout(): ReactElement {
 
     let valorizacao = 0
     const originalVal = Number(cenario.propertyValue) || 0
-    if (cenario.type === 'PLANTA') {
+    if (cenario.type === 'MCMV' || cenario.type === 'DIRETO') {
       valorizacao = originalVal * 0.3
     }
 
@@ -279,7 +279,7 @@ export default function SimulatorLayout(): ReactElement {
                       <div className="mt-1 flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <span
-                            className={`w-1.5 h-1.5 rounded-full ${item.scenario.type === 'PLANTA' ? 'bg-orange-500' : 'bg-blue-500'}`}
+                            className={`w-1.5 h-1.5 rounded-full ${['MCMV', 'DIRETO'].includes(item.scenario.type) ? 'bg-orange-500' : 'bg-blue-500'}`}
                           ></span>
                           <span className="uppercase font-bold text-[9px] text-gray-500 tracking-wide">
                             {item.scenario.type}
