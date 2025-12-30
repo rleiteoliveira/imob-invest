@@ -3,6 +3,7 @@ import { useState } from 'react'
 import type { SimulationScenario, BuilderBalloon } from '../../../../types/ScenarioTypes'
 import BuilderBalloonModal from '../../UnifiedEditor/BuilderBalloonModal'
 import SmartInput from '../../../ui/SmartInput'
+import SmartTimeInput from '../../../ui/SmartTimeInput'
 import NumberInput from '../../../ui/NumberInput'
 import { Settings, ChevronDown, ChevronUp, Construction, Banknote } from 'lucide-react'
 
@@ -69,24 +70,16 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                 subtitle="Pago na assinatura"
               />
 
-              {/* Parcelas Mensais */}
+              {/* Smart Time Input for Installments */}
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Parcelamento da Entrada</label>
-                <div className="flex gap-4">
-                  <div className="w-1/3">
-                    <NumberInput
-                      className="w-full p-3 border border-gray-200 rounded-xl font-bold text-center"
-                      value={data.entryInstallments ?? ''}
-                      onChange={(v) => setData({ ...data, entryInstallments: v })}
-                    />
-                    <span className="text-[10px] text-gray-400 font-bold uppercase block text-center mt-1">Meses</span>
-                  </div>
-                  <div className="flex-1 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center">
-                    <span className="font-bold text-gray-700">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyInstallment)} / mês
-                    </span>
-                  </div>
-                </div>
+                <SmartTimeInput
+                  label="Parcelamento da Entrada"
+                  subLabel={`Parcela: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyInstallment)}`}
+                  value={data.entryInstallments || 12}
+                  onChange={(v) => setData({ ...data, entryInstallments: v })}
+                  presets={[12, 18, 24, 30, 36, 48]}
+                  max={60}
+                />
               </div>
             </div>
 
@@ -112,7 +105,7 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
             {/* Status da Obra Selection */}
             <div>
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Status da Obra</label>
-              <div className="flex bg-gray-100 p-1 rounded-lg">
+              <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
                 <button
                   className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${(!data.constructionStatus || data.constructionStatus === 'EM_ANDAMENTO') ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                   onClick={() => setData({ ...data, constructionStatus: 'EM_ANDAMENTO' })}
@@ -126,16 +119,34 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                   Lançamento (Pré-Obra)
                 </button>
               </div>
-              {data.constructionStatus === 'PRE_OBRA' && (
-                <div className="mt-4 grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+              {/* Construction Duration Inputs */}
+              {data.constructionStatus === 'PRE_OBRA' ? (
+                <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                  {/* Using standard inputs for now as these are secondary */}
                   <div>
                     <label className="text-[10px] font-bold text-gray-500 uppercase">Meses para Início</label>
                     <NumberInput className="w-full p-2 border border-gray-200 rounded-lg" value={data.monthsUntilConstructionStart ?? ''} onChange={(v) => setData({ ...data, monthsUntilConstructionStart: v })} />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-gray-500 uppercase">Duração da Obra</label>
-                    <NumberInput className="w-full p-2 border border-gray-200 rounded-lg" value={data.constructionDuration ?? ''} onChange={(v) => setData({ ...data, constructionDuration: v, constructionTime: (Number(data.monthsUntilConstructionStart) || 0) + Number(v) })} />
+                    <SmartTimeInput
+                      label="Duração da Obra"
+                      value={data.constructionDuration || 36}
+                      onChange={(v) => setData({ ...data, constructionDuration: v, constructionTime: (Number(data.monthsUntilConstructionStart) || 0) + Number(v) })}
+                      presets={[12, 24, 36]}
+                      max={60}
+                    />
                   </div>
+                </div>
+              ) : (
+                /* If construction is ongoing, we usually just need Remaining Time (constructionTime) */
+                <div className="animate-in fade-in slide-in-from-top-2">
+                  <SmartTimeInput
+                    label="Tempo Restante de Obra"
+                    value={data.constructionTime || 24}
+                    onChange={(v) => setData({ ...data, constructionTime: v })}
+                    presets={[6, 12, 18, 24, 30, 36]}
+                    max={60}
+                  />
                 </div>
               )}
             </div>
@@ -159,11 +170,14 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
             </div>
 
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Prazo (Meses)</label>
-              <NumberInput
-                className="w-full p-3 border border-gray-200 rounded-xl font-bold bg-gray-50 focus:bg-white transition-colors outline-none focus:ring-2 focus:ring-blue-100"
-                value={data.termMonths ?? ''}
+              <SmartTimeInput
+                label="Prazo do Financiamento"
+                value={data.termMonths || 360}
                 onChange={(v) => setData({ ...data, termMonths: v })}
+                presets={[120, 240, 360, 420]}
+                max={420}
+                step={12}
+                subLabel={`${(data.termMonths || 360) / 12} Anos`}
               />
             </div>
           </div>
