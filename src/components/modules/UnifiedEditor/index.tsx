@@ -338,44 +338,77 @@ const UnifiedEditor = ({
           <h3 className="font-bold text-gray-900 text-xl tracking-tight">Financiamento Bancário</h3>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="space-y-6">
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative">
+
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+            <div>
+              <h4 className="font-bold text-gray-800 text-sm">Configuração do Empréstimo</h4>
+              <p className="text-xs text-gray-500">Defina as condições do financiamento aprovado ou simulado.</p>
+            </div>
+            <div className="flex items-center gap-2 bg-blue-50/50 p-2 rounded-lg border border-blue-100">
+              <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">Modo Manual (Simulação Externa)?</span>
+              <ToggleSwitch checked={!!data.useManualBankInstallment} onChange={(c) => setData({ ...data, useManualBankInstallment: c })} />
+            </div>
+          </div>
+
+          {data.useManualBankInstallment ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-2">
               <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block tracking-wide">Sistema de Amortização</label>
-                <div className="flex bg-gray-100 p-1 rounded-lg">
-                  <button className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'SAC' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'SAC' })}>SAC</button>
-                  <button className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'PRICE' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'PRICE' })}>PRICE</button>
-                </div>
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block tracking-wide">Prazo (Meses)</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block tracking-wide">Prazo do Financiamento</label>
                 <div className="relative">
                   <NumberInput className="w-full p-3.5 border border-gray-200 rounded-xl font-bold text-gray-700 shadow-sm bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" value={data.termMonths} onChange={(val) => setData({ ...data, termMonths: val })} />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">MESES</div>
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-6">
               <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block tracking-wide">Juros Nominais (% a.a)</label>
-                <div className="relative">
-                  <NumberInput allowFloat={true} className="w-full p-3.5 border border-gray-200 rounded-xl font-bold text-lg text-gray-900 shadow-sm bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" value={data.interestRate} onChange={(val) => setData({ ...data, interestRate: val })} />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">% A.A</div>
+                <SmartInput
+                  label="Valor da 1ª Parcela (Aprovada)"
+                  prefix="R$"
+                  value={data.manualBankInstallmentValue ?? ''}
+                  onChange={(v: number) => setData({ ...data, manualBankInstallmentValue: v })}
+                  subtitle="Informe o valor exato da parcela inicial"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-top-2">
+              <div className="space-y-6">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block tracking-wide">Sistema de Amortização</label>
+                  <div className="flex bg-gray-100 p-1 rounded-lg">
+                    <button className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'SAC' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'SAC' })}>SAC</button>
+                    <button className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'PRICE' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'PRICE' })}>PRICE</button>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block tracking-wide">Prazo (Meses)</label>
+                  <div className="relative">
+                    <NumberInput className="w-full p-3.5 border border-gray-200 rounded-xl font-bold text-gray-700 shadow-sm bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" value={data.termMonths} onChange={(val) => setData({ ...data, termMonths: val })} />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">MESES</div>
+                  </div>
                 </div>
               </div>
-              <SmartInput label="Taxa Adm. (R$)" prefix="R$" value={data.monthlyAdminFee ?? ''} onChange={(v: number) => setData({ ...data, monthlyAdminFee: v })} max={200} sliderStep={5} />
-            </div>
 
-            <div className="bg-gray-50/50 p-5 rounded-xl border border-gray-100 h-full">
-              <label className="text-[10px] font-bold text-gray-500 uppercase mb-4 block flex items-center gap-1 tracking-wide"><Shield size={12} /> Seguros (Mensal)</label>
-              <div className="space-y-4">
-                <SmartInput label="MIP (R$)" prefix="R$" value={data.insuranceMIP ?? ''} onChange={(v: number) => setData({ ...data, insuranceMIP: v })} max={200} subtitle="Morte/Invalidez" sliderStep={5} />
-                <SmartInput label="DFI (R$)" prefix="R$" value={data.insuranceDFI ?? ''} onChange={(v: number) => setData({ ...data, insuranceDFI: v })} max={200} subtitle="Danos Físicos" sliderStep={5} />
+              <div className="space-y-6">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 block tracking-wide">Juros Nominais (% a.a)</label>
+                  <div className="relative">
+                    <NumberInput allowFloat={true} className="w-full p-3.5 border border-gray-200 rounded-xl font-bold text-lg text-gray-900 shadow-sm bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all" value={data.interestRate} onChange={(val) => setData({ ...data, interestRate: val })} />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">% A.A</div>
+                  </div>
+                </div>
+                <SmartInput label="Taxa Adm. (R$)" prefix="R$" value={data.monthlyAdminFee ?? ''} onChange={(v: number) => setData({ ...data, monthlyAdminFee: v })} max={200} sliderStep={5} />
+              </div>
+
+              <div className="bg-gray-50/50 p-5 rounded-xl border border-gray-100 h-full">
+                <label className="text-[10px] font-bold text-gray-500 uppercase mb-4 block flex items-center gap-1 tracking-wide"><Shield size={12} /> Seguros (Mensal)</label>
+                <div className="space-y-4">
+                  <SmartInput label="MIP (R$)" prefix="R$" value={data.insuranceMIP ?? ''} onChange={(v: number) => setData({ ...data, insuranceMIP: v })} max={200} subtitle="Morte/Invalidez" sliderStep={5} />
+                  <SmartInput label="DFI (R$)" prefix="R$" value={data.insuranceDFI ?? ''} onChange={(v: number) => setData({ ...data, insuranceDFI: v })} max={200} subtitle="Danos Físicos" sliderStep={5} />
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

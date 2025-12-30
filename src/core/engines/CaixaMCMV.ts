@@ -78,11 +78,16 @@ export class CaixaMCMV implements CalculationEngine {
     const financedAmount = propValue.minus(downPaymentTotal).minus(extraEntryFromBalloonAtZero)
 
     // ... (Taxas Padrão) ...
-    const annualRate = new Decimal(data.interestRate || 0).div(100)
+    // Se for manual, assume 8% se não houver taxa, pra não quebrar cálculo de juros
+    const defaultRate = data.useManualBankInstallment ? 8 : 0
+    const annualRate = new Decimal(data.interestRate || defaultRate).div(100)
     const monthlyInterestRate = annualRate.div(12)
-    const monthlyAdminFee = new Decimal(data.monthlyAdminFee || 0)
-    const insuranceMIP = new Decimal(data.insuranceMIP || 0)
-    const insuranceDFI = new Decimal(data.insuranceDFI || 0)
+
+    // Se for manual, zera taxas pois já estão inclusas na parcela ou ignoradas
+    const isManual = !!data.useManualBankInstallment
+    const monthlyAdminFee = new Decimal(isManual ? 0 : data.monthlyAdminFee || 0)
+    const insuranceMIP = new Decimal(isManual ? 0 : data.insuranceMIP || 0)
+    const insuranceDFI = new Decimal(isManual ? 0 : data.insuranceDFI || 0)
     const totalBankFees = monthlyAdminFee.plus(insuranceMIP).plus(insuranceDFI)
     const monthlyINCC = new Decimal(data.inccRate || 0).div(100)
     const totalMonths = Number(data.termMonths) || 360
@@ -178,7 +183,25 @@ export class CaixaMCMV implements CalculationEngine {
       let amortization = new Decimal(0)
       let baseInstallment = new Decimal(0)
 
-      if (data.amortizationSystem === 'PRICE') {
+      if (data.useManualBankInstallment) {
+        const manualVal = new Decimal(data.manualBankInstallmentValue || 0)
+        // Amortização = Valor Manual - Juros
+        // Se juro > valor manual, amortização = 0 (não aumenta divida, juro simples acumulado ou pago parcial)
+        amortization = manualVal.minus(interest)
+        if (amortization.lessThan(0)) amortization = new Decimal(0)
+
+        // Se amortização > saldo, quita
+        if (amortization.greaterThan(currentBankBalance)) {
+          amortization = currentBankBalance
+        }
+
+        // A base da parcela é o valor manual (fixo)
+        if (currentBankBalance.lessThanOrEqualTo(0) && amortization.lessThanOrEqualTo(0)) {
+          baseInstallment = new Decimal(0)
+        } else {
+          baseInstallment = manualVal
+        }
+      } else if (data.amortizationSystem === 'PRICE') {
         baseInstallment = pricePMT
         amortization = baseInstallment.minus(interest)
         if (amortization.greaterThan(currentBankBalance)) {

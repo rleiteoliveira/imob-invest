@@ -43,6 +43,9 @@ export interface SimulationScenario {
   insuranceMIP: number | ''
   insuranceDFI: number | ''
 
+  useManualBankInstallment?: boolean
+  manualBankInstallmentValue?: number | ''
+
   hasBalloonPayments: boolean
   balloonFrequency: FrequencyType
   balloonCount: number | ''
