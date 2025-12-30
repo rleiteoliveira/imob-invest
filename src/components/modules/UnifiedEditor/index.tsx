@@ -184,20 +184,70 @@ const UnifiedEditor = ({
               <div className="flex justify-between items-center mb-2">
                 <span className="text-xs font-bold text-orange-800 uppercase flex items-center gap-1 tracking-wide"><Clock size={14} /> Cronograma</span>
               </div>
-              <div>
-                <label className="text-xs font-bold text-orange-700 block mb-1 uppercase tracking-wide">Prazo Restante</label>
-                <div className="flex items-center gap-2">
-                  <NumberInput
-                    className="w-full p-3 border border-orange-200 rounded-xl font-bold text-2xl text-orange-900 bg-white focus:ring-2 focus:ring-orange-200 outline-none shadow-sm"
-                    value={data.constructionTime}
-                    onChange={(val) => setData({ ...data, constructionTime: val })}
-                  />
-                  <span className="text-sm font-bold text-orange-800">Meses</span>
-                </div>
+
+              {/* Seletor de Status da Obra */}
+              <div className="bg-white p-1 rounded-lg border border-orange-200 flex mb-3">
+                <button
+                  className={`flex-1 py-1.5 text-[10px] font-bold uppercase rounded-md transition-all ${(!data.constructionStatus || data.constructionStatus === 'EM_ANDAMENTO') ? 'bg-orange-100 text-orange-700 shadow-sm' : 'text-gray-400 hover:text-orange-600'}`}
+                  onClick={() => setData({ ...data, constructionStatus: 'EM_ANDAMENTO', monthsUntilConstructionStart: 0, constructionDuration: data.constructionTime })}
+                >
+                  Obra Iniciada
+                </button>
+                <button
+                  className={`flex-1 py-1.5 text-[10px] font-bold uppercase rounded-md transition-all ${data.constructionStatus === 'PRE_OBRA' ? 'bg-orange-100 text-orange-700 shadow-sm' : 'text-gray-400 hover:text-orange-600'}`}
+                  onClick={() => setData({ ...data, constructionStatus: 'PRE_OBRA', currentWorkPercent: 0 })}
+                >
+                  Lançamento
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-3 pt-2">
+
+              {data.constructionStatus === 'PRE_OBRA' ? (
+                <div className="space-y-3 animate-in fade-in slide-in-from-left-2">
+                  <div>
+                    <label className="text-[10px] font-bold text-orange-700 block mb-1 uppercase tracking-wide">Meses até Início (Pré-Obra)</label>
+                    <NumberInput
+                      className="w-full p-2.5 border border-orange-200 rounded-lg bg-white shadow-sm font-medium focus:ring-1 focus:ring-orange-300"
+                      value={data.monthsUntilConstructionStart ?? 0}
+                      onChange={(val) => {
+                        const gap = Number(val) || 0
+                        const duration = Number(data.constructionDuration) || 0
+                        setData({ ...data, monthsUntilConstructionStart: gap, constructionTime: gap + duration })
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-orange-700 block mb-1 uppercase tracking-wide">Duração da Obra (Meses)</label>
+                    <NumberInput
+                      className="w-full p-2.5 border border-orange-200 rounded-lg bg-white shadow-sm font-medium focus:ring-1 focus:ring-orange-300"
+                      value={data.constructionDuration ?? 0}
+                      onChange={(val) => {
+                        const duration = Number(val) || 0
+                        const gap = Number(data.monthsUntilConstructionStart) || 0
+                        setData({ ...data, constructionDuration: duration, constructionTime: gap + duration })
+                      }}
+                    />
+                  </div>
+                  <div className="bg-orange-100/50 p-2 rounded-lg border border-orange-200/50 text-center">
+                    <span className="text-[10px] text-orange-800 font-bold uppercase">Entrega das Chaves: {data.constructionTime} Meses</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="animate-in fade-in slide-in-from-right-2">
+                  <label className="text-xs font-bold text-orange-700 block mb-1 uppercase tracking-wide">Prazo Restante</label>
+                  <div className="flex items-center gap-2 mb-3">
+                    <NumberInput
+                      className="w-full p-3 border border-orange-200 rounded-xl font-bold text-2xl text-orange-900 bg-white focus:ring-2 focus:ring-orange-200 outline-none shadow-sm"
+                      value={data.constructionTime}
+                      onChange={(val) => setData({ ...data, constructionTime: val })}
+                    />
+                    <span className="text-sm font-bold text-orange-800">Meses</span>
+                  </div>
+                  <div><label className="text-[10px] font-bold text-orange-700 block mb-1 uppercase tracking-wide">Executado (%)</label><NumberInput className="w-full p-2.5 border border-orange-200 rounded-lg bg-white shadow-sm font-medium" value={data.currentWorkPercent} onChange={(val) => setData({ ...data, currentWorkPercent: val })} /></div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-3 pt-2">
                 <div><label className="text-[10px] font-bold text-orange-700 block mb-1 uppercase tracking-wide">INCC (% a.m)</label><NumberInput allowFloat={true} className="w-full p-2.5 border border-orange-200 rounded-lg bg-white shadow-sm font-medium" value={data.inccRate} onChange={(val) => setData({ ...data, inccRate: val })} /></div>
-                <div><label className="text-[10px] font-bold text-orange-700 block mb-1 uppercase tracking-wide">Executado (%)</label><NumberInput className="w-full p-2.5 border border-orange-200 rounded-lg bg-white shadow-sm font-medium" value={data.currentWorkPercent} onChange={(val) => setData({ ...data, currentWorkPercent: val })} /></div>
               </div>
               <div className="pt-3 border-t border-orange-200/50">
                 <div className="flex items-center justify-between"><span className="text-xs font-bold text-orange-900">Cobrar Juros de Obra?</span><ToggleSwitch checked={data.useWorkEvolution} onChange={(c) => setData({ ...data, useWorkEvolution: c })} /></div>

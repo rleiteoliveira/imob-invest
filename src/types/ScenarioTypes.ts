@@ -57,6 +57,10 @@ export interface SimulationScenario {
   useWorkEvolution: boolean
   currentWorkPercent: number | ''
 
+  constructionStatus?: 'PRE_OBRA' | 'EM_ANDAMENTO'
+  monthsUntilConstructionStart?: number | ''
+  constructionDuration?: number | ''
+
   monthsToReady?: number | ''
   appreciationRate?: number | ''
   rentability?: RentabilityConfig

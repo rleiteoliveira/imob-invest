@@ -138,10 +138,35 @@ export class CaixaMCMV implements CalculationEngine {
 
         // Banco (Evolução)
         let bankInterest = new Decimal(0)
-        if (data.useWorkEvolution) {
-          const currentProgress = Math.min(startPercent + evolutionStep * i, 1)
-          const amountReleased = financedAmount.times(currentProgress)
-          bankInterest = amountReleased.times(monthlyInterestRate)
+
+        let shouldChargeEvolution = data.useWorkEvolution
+
+        // Lógica de Pré-Obra
+        if (data.constructionStatus === 'PRE_OBRA') {
+          const gap = Number(data.monthsUntilConstructionStart) || 0
+
+          if (i <= gap) {
+            // Fase Pré-Obra: Não cobra juros de obra (Evolução 0%)
+            shouldChargeEvolution = false
+          } else {
+            // Fase Obra Iniciada (após gap)
+            if (data.useWorkEvolution) {
+              // Recalcula evolução considerando apenas o período efetivo de obra
+              // i_obra vai de 1 até constructionDuration
+              const i_obra = i - gap
+              const duration = Number(data.constructionDuration) || constructionMonths // fallback se não vier preenchido
+              const currentProgress = Math.min(i_obra / duration, 1)
+              const amountReleased = financedAmount.times(currentProgress)
+              bankInterest = amountReleased.times(monthlyInterestRate)
+            }
+          }
+        } else {
+          // Lógica Padrão (Obra já iniciada ou não especificado)
+          if (shouldChargeEvolution) {
+            const currentProgress = Math.min(startPercent + evolutionStep * i, 1)
+            const amountReleased = financedAmount.times(currentProgress)
+            bankInterest = amountReleased.times(monthlyInterestRate)
+          }
         }
 
         const totalMonth = monthlyBuilderPmt.plus(bankInterest).plus(totalBankFees)
