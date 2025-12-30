@@ -1,10 +1,9 @@
 import type { ReactElement } from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { SimulationScenario, BuilderBalloon } from '../../../../types/ScenarioTypes'
 import BuilderBalloonModal from '../../UnifiedEditor/BuilderBalloonModal'
 import SmartInput from '../../../ui/SmartInput'
 import SmartTimeInput from '../../../ui/SmartTimeInput'
-import NumberInput from '../../../ui/NumberInput'
 import { Settings, ChevronDown, ChevronUp, Construction, Banknote } from 'lucide-react'
 
 interface StepProps {
@@ -31,11 +30,35 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
     balloonsInConstructionValue = balloonVal
   }
 
+  // Calculate 'monthsToKeys' (Total time user has to pay entry installments)
+  const isPreObra = data.constructionStatus === 'PRE_OBRA'
+  let monthsToKeys = 0
+
+  if (isPreObra) {
+    monthsToKeys = (Number(data.monthsUntilConstructionStart) || 0) + (Number(data.constructionDuration) || 0)
+  } else {
+    // If EM_ANDAMENTO, constructionTime is already the "time remaining"
+    monthsToKeys = Number(data.constructionTime) || 1
+  }
+
+  // Ensure validity just in case
+  if (monthsToKeys < 1) monthsToKeys = 1
+
+  // Effect to ensure installments don't exceed time to keys
+  useEffect(() => {
+    const currentInstallments = Number(data.entryInstallments) || 0
+    if (currentInstallments > monthsToKeys) {
+      setData({ ...data, entryInstallments: monthsToKeys })
+    }
+  }, [monthsToKeys, data.entryInstallments])
+
   // Calculate monthly installment base
   const entrySignal = Number(data.entrySignal) || 0
-  const monthlyInstallmentsValue = (Number(data.entryInstallments) || 1)
+  // use constrained value for display calc immediately if needed, though effect will fix it next render
+  const safeInstallments = Math.min((Number(data.entryInstallments) || 1), monthsToKeys)
+
   const entryBalance = Math.max(0, downPayment - entrySignal - monthlyBalloonsTotal - balloonsInConstructionValue)
-  const monthlyInstallment = entryBalance / monthlyInstallmentsValue
+  const monthlyInstallment = entryBalance / safeInstallments
 
   return (
     <div className="h-full animate-in fade-in slide-in-from-right-4 duration-300 pb-20">
@@ -77,9 +100,12 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                   subLabel={`Parcela: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyInstallment)}`}
                   value={data.entryInstallments || 12}
                   onChange={(v) => setData({ ...data, entryInstallments: v })}
-                  presets={[12, 18, 24, 30, 36, 48]}
-                  max={60}
+                  presets={[12, 24, 30, 36, 48].filter(x => x <= monthsToKeys)}
+                  max={monthsToKeys}
                 />
+                <span className="text-[10px] text-gray-400 font-medium ml-2">
+                  Máximo: {monthsToKeys} meses (até Chaves)
+                </span>
               </div>
             </div>
 
@@ -122,16 +148,34 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
               {/* Construction Duration Inputs */}
               {data.constructionStatus === 'PRE_OBRA' ? (
                 <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                  {/* Using standard inputs for now as these are secondary */}
                   <div>
-                    <label className="text-[10px] font-bold text-gray-500 uppercase">Meses para Início</label>
-                    <NumberInput className="w-full p-2 border border-gray-200 rounded-lg" value={data.monthsUntilConstructionStart ?? ''} onChange={(v) => setData({ ...data, monthsUntilConstructionStart: v })} />
+                    <SmartTimeInput
+                      label="Espera (Pré-Obra)"
+                      value={data.monthsUntilConstructionStart || 0}
+                      onChange={(v) => {
+                        const duration = Number(data.constructionDuration) || 0
+                        setData({
+                          ...data,
+                          monthsUntilConstructionStart: v,
+                          constructionTime: v + duration
+                        })
+                      }}
+                      presets={[6, 12, 18, 24]}
+                      max={60}
+                    />
                   </div>
                   <div>
                     <SmartTimeInput
                       label="Duração da Obra"
                       value={data.constructionDuration || 36}
-                      onChange={(v) => setData({ ...data, constructionDuration: v, constructionTime: (Number(data.monthsUntilConstructionStart) || 0) + Number(v) })}
+                      onChange={(v) => {
+                        const start = Number(data.monthsUntilConstructionStart) || 0
+                        setData({
+                          ...data,
+                          constructionDuration: v,
+                          constructionTime: start + v
+                        })
+                      }}
                       presets={[12, 24, 36]}
                       max={60}
                     />
