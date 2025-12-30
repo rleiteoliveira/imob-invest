@@ -44,7 +44,7 @@ const ComparisonView = ({
         {selectedScenarios.map((s: SimulationScenario, idx: number) => {
           const metrics = getCardMetrics(s)
           const borderColor = colors[idx % colors.length]
-          const isPlanta = s.type === 'PLANTA'
+          const isPlanta = s.type === 'PLANTA' || s.type === 'MCMV' || s.type === 'DIRETO'
 
           return (
             <div
@@ -62,7 +62,7 @@ const ComparisonView = ({
                   <span
                     className={`text-[10px] font-bold px-2 py-1 rounded border uppercase whitespace-nowrap ${isPlanta ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}
                   >
-                    {isPlanta ? 'Na Planta' : s.type}
+                    {isPlanta ? (s.type === 'PLANTA' ? 'Na Planta' : s.type) : s.type}
                   </span>
                 </div>
 
