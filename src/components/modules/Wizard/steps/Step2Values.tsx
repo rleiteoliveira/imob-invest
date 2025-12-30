@@ -20,8 +20,35 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
   const financedPercent = propertyValue > 0 ? (financedAmount / propertyValue) * 100 : 0
   const downPaymentPercent = propertyValue > 0 ? (downPayment / propertyValue) * 100 : 0
 
+  const handlePropertyValueChange = (newVal: number) => {
+    // Keep 'downPayment' percentage fixed relative to new 'propertyValue'
+    // If propertyValue is 0 (or new value is 0), handle gracefully
+    let newDownPayment = 0
+    const currentPropValue = Number(data.propertyValue)
+    const currentDownPayment = Number(data.downPayment)
+
+    if (currentPropValue > 0) {
+      const currentRatio = currentDownPayment / currentPropValue
+      newDownPayment = newVal * currentRatio
+    } else {
+      // Only if starting from 0, maybe keep 0 or set a default 20%? 
+      // Sticking to 20% default if previously 0 is safer UX
+      newDownPayment = newVal * 0.20
+    }
+
+    // Round to 2 decimal places to avoid float issues
+    newDownPayment = Math.round(newDownPayment * 100) / 100
+
+    setData({
+      ...data,
+      propertyValue: newVal,
+      downPayment: newDownPayment
+    })
+  }
+
   const handleFinancedChange = (val: number): void => {
     // If user changes financed amount, we adjust down payment
+    // Financing slider is disabled, but if we ever enable typing:
     const newDownPayment = Math.max(0, propertyValue - val)
     setData({ ...data, downPayment: newDownPayment })
   }
@@ -48,9 +75,8 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
           label="Valor do Imóvel"
           prefix="R$"
           value={data.propertyValue}
-          onChange={(v: number) => setData({ ...data, propertyValue: v })}
-          max={2000000} // Dynamic max could be better but fixed is ok
-          sliderStep={5000}
+          onChange={handlePropertyValueChange}
+          disableSlider
         />
 
         <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
@@ -65,6 +91,7 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
             onChange={(v: number) => setData({ ...data, downPayment: v })}
             max={propertyValue}
             subtitle="Sinal + FGTS + Parcelas durante obra"
+            sliderStep={1000}
           />
         </div>
 
@@ -80,6 +107,7 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
             onChange={handleFinancedChange}
             max={propertyValue}
             subtitle="Saldo Devedor"
+            disableSlider
           />
         </div>
       </div>
