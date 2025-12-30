@@ -1,4 +1,13 @@
-import React, { useState, useEffect, ReactElement } from 'react'
+import { useState } from 'react'
+import type { ReactElement, ChangeEvent, FocusEvent } from 'react'
+
+const formatFinal = (val: number) => {
+  if (val === undefined || val === null) return ''
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(val)
+}
 
 const CurrencyInput = ({
   label,
@@ -17,24 +26,16 @@ const CurrencyInput = ({
   highlight?: string
   readOnly?: boolean
 }): ReactElement => {
-  const [displayValue, setDisplayValue] = useState('')
+  const [displayValue, setDisplayValue] = useState(() => (value === 0 || value === '') ? '0,00' : formatFinal(value as number))
   const [active, setActive] = useState(false)
+  const [prevValue, setPrevValue] = useState(value)
 
-  const formatFinal = (val: number) => {
-    if (val === undefined || val === null) return ''
-    return new Intl.NumberFormat('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(val)
+  if (value !== prevValue && !active) {
+    setPrevValue(value)
+    setDisplayValue(value === 0 || value === '' ? '0,00' : formatFinal(value as number))
   }
 
-  useEffect(() => {
-    if (!active) {
-      setDisplayValue(value === 0 || value === '' ? '0,00' : formatFinal(value))
-    }
-  }, [value, active])
-
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleFocus = (e: FocusEvent<HTMLInputElement>) => {
     if (readOnly) return
     setActive(true)
     // Ao focar, se for 0,00 limpa para facilitar digitação
@@ -45,7 +46,7 @@ const CurrencyInput = ({
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (readOnly) return
     const val = e.target.value
     if (val === '') {
@@ -86,7 +87,7 @@ const CurrencyInput = ({
   return (
     <div className="flex-1 w-full">
       {label && (
-        <label className="text-xs font-bold text-gray-500 uppercase mb-1 flex justify-between">
+        <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 flex justify-between">
           {label}{' '}
           {highlight && (
             <span className="text-blue-600 bg-blue-50 px-1.5 rounded text-[10px]">{highlight}</span>
@@ -102,7 +103,7 @@ const CurrencyInput = ({
         <input
           type="text"
           disabled={readOnly}
-          className={`w-full pl-2 pr-3 py-3 outline-none font-bold text-lg bg-transparent ${readOnly ? 'text-gray-500 cursor-not-allowed' : 'text-gray-800'}`}
+          className={`w-full pl-2 pr-3 py-3 outline-none font-bold text-xl bg-transparent ${readOnly ? 'text-gray-500 cursor-not-allowed' : 'text-gray-900'}`}
           value={displayValue}
           onFocus={handleFocus}
           onChange={handleChange}

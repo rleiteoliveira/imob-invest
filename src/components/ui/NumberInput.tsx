@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactElement } from 'react'
+import { useState, type ReactElement, type ChangeEvent } from 'react'
 
 const NumberInput = ({
   value,
@@ -18,17 +18,17 @@ const NumberInput = ({
   className?: string
 }): ReactElement => {
   // Estado local string para permitir "0", "0.", "0,4" enquanto digita
-  const [localValue, setLocalValue] = useState<string>('')
+  const [localValue, setLocalValue] = useState<string>(() => value === '' || value === undefined ? '' : String(value))
   const [isEditing, setIsEditing] = useState(false)
+  const [prevValue, setPrevValue] = useState(value)
 
   // Sincroniza quando o valor externo muda (e o usuário não está digitando)
-  useEffect(() => {
-    if (!isEditing) {
-      setLocalValue(value === '' || value === undefined ? '' : String(value))
-    }
-  }, [value, isEditing])
+  if (value !== prevValue && !isEditing) {
+    setPrevValue(value)
+    setLocalValue(value === '' || value === undefined ? '' : String(value))
+  }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value
 
     // Substitui vírgula por ponto para facilitar a digitação brasileira
