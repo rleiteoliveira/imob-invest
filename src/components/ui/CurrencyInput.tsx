@@ -16,7 +16,10 @@ const CurrencyInput = ({
   prefix,
   subtitle,
   highlight,
-  readOnly
+  readOnly,
+  className,
+  inputClassName,
+  placeholder
 }: {
   label?: string
   value: number | ''
@@ -25,6 +28,9 @@ const CurrencyInput = ({
   subtitle?: string
   highlight?: string
   readOnly?: boolean
+  className?: string
+  inputClassName?: string
+  placeholder?: string
 }): ReactElement => {
   const [displayValue, setDisplayValue] = useState(() => (value === 0 || value === '') ? '0,00' : formatFinal(value as number))
   const [active, setActive] = useState(false)
@@ -95,7 +101,7 @@ const CurrencyInput = ({
         </label>
       )}
       <div
-        className={`relative flex items-center border rounded-xl transition-all ${readOnly ? 'bg-gray-100 border-gray-200' : active ? 'bg-white border-blue-500 ring-2 ring-blue-100' : 'bg-white border-gray-300 hover:border-gray-400'}`}
+        className={`relative flex items-center border rounded-xl transition-all ${readOnly ? 'bg-gray-100 border-gray-200' : active ? 'bg-white border-blue-500 ring-2 ring-blue-100' : 'bg-white border-gray-300 hover:border-gray-400'} ${className}`}
       >
         {prefix && (
           <span className="pl-3 text-gray-400 font-bold text-sm select-none">{prefix}</span>
@@ -103,12 +109,12 @@ const CurrencyInput = ({
         <input
           type="text"
           disabled={readOnly}
-          className={`w-full pl-2 pr-3 py-3 outline-none font-bold text-xl bg-transparent ${readOnly ? 'text-gray-500 cursor-not-allowed' : 'text-gray-900'}`}
+          className={`w-full pl-2 pr-3 outline-none font-bold bg-transparent ${readOnly ? 'text-gray-500 cursor-not-allowed' : 'text-gray-900'} ${inputClassName || 'py-3 text-xl'}`}
           value={displayValue}
           onFocus={handleFocus}
           onChange={handleChange}
           onBlur={handleBlur}
-          placeholder="0,00"
+          placeholder={placeholder || "0,00"}
           inputMode="numeric"
         />
       </div>
