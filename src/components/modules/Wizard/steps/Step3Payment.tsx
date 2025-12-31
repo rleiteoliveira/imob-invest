@@ -35,10 +35,14 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
   let monthsToKeys = 0
 
   if (isPreObra) {
-    monthsToKeys = (Number(data.monthsUntilConstructionStart) || 0) + (Number(data.constructionDuration) || 0)
+    // Fix: Ensure we use the default duration (36) if not set, preventing it from being 0
+    const waitTime = Number(data.monthsUntilConstructionStart) || 0
+    const duration = Number(data.constructionDuration) || 36
+    monthsToKeys = waitTime + duration
   } else {
     // If EM_ANDAMENTO, constructionTime is already the "time remaining"
-    monthsToKeys = Number(data.constructionTime) || 1
+    // Fix: Default to 24 if not set (matches default in input)
+    monthsToKeys = Number(data.constructionTime) || 24
   }
 
   // Ensure validity just in case
@@ -47,18 +51,18 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
   // Effect to ensure installments don't exceed time to keys
   useEffect(() => {
     const currentInstallments = Number(data.entryInstallments) || 0
+
+    // Auto-adjust if exceeding limit
     if (currentInstallments > monthsToKeys) {
       setData({ ...data, entryInstallments: monthsToKeys })
     }
-  }, [monthsToKeys, data.entryInstallments])
+  }, [monthsToKeys, data.entryInstallments, data, setData])
 
   // Calculate monthly installment base
   const entrySignal = Number(data.entrySignal) || 0
-  // use constrained value for display calc immediately if needed, though effect will fix it next render
-  const safeInstallments = Math.min((Number(data.entryInstallments) || 1), monthsToKeys)
 
   const entryBalance = Math.max(0, downPayment - entrySignal - monthlyBalloonsTotal - balloonsInConstructionValue)
-  const monthlyInstallment = entryBalance / safeInstallments
+  const monthlyInstallment = entryBalance / (Number(data.entryInstallments) || 1)
 
   return (
     <div className="h-full animate-in fade-in slide-in-from-right-4 duration-300 pb-20">
@@ -100,7 +104,7 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                   subLabel={`Parcela: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyInstallment)}`}
                   value={data.entryInstallments || 12}
                   onChange={(v) => setData({ ...data, entryInstallments: v })}
-                  max={100}
+                  max={monthsToKeys}
                 />
                 <span className="text-[10px] text-gray-400 font-medium ml-2">
                   Sugestão: até {monthsToKeys} meses
