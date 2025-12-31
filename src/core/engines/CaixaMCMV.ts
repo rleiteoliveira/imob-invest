@@ -79,12 +79,12 @@ export class CaixaMCMV implements CalculationEngine {
 
     // ... (Taxas Padrão) ...
     // Se for manual, assume 8% se não houver taxa, pra não quebrar cálculo de juros
-    const defaultRate = data.useManualBankInstallment ? 8 : 0
+    const defaultRate = data.useExternalSimulation ? 8 : 0
     const annualRate = new Decimal(data.interestRate || defaultRate).div(100)
     const monthlyInterestRate = annualRate.div(12)
 
     // Se for manual, zera taxas pois já estão inclusas na parcela ou ignoradas
-    const isManual = !!data.useManualBankInstallment
+    const isManual = !!data.useExternalSimulation
     const monthlyAdminFee = new Decimal(isManual ? 0 : data.monthlyAdminFee || 0)
     const insuranceMIP = new Decimal(isManual ? 0 : data.insuranceMIP || 0)
     const insuranceDFI = new Decimal(isManual ? 0 : data.insuranceDFI || 0)
@@ -249,8 +249,8 @@ export class CaixaMCMV implements CalculationEngine {
       let amortization = new Decimal(0)
       let baseInstallment = new Decimal(0)
 
-      if (data.useManualBankInstallment) {
-        const manualVal = new Decimal(data.manualBankInstallmentValue || 0)
+      if (data.useExternalSimulation) {
+        const manualVal = new Decimal(data.externalInstallmentValue || 0)
         // Amortização = Valor Manual - Juros
         // Se juro > valor manual, amortização = 0 (não aumenta divida, juro simples acumulado ou pago parcial)
         amortization = manualVal.minus(interest)

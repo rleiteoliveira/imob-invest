@@ -43,8 +43,11 @@ export interface SimulationScenario {
   insuranceMIP: number | ''
   insuranceDFI: number | ''
 
-  useManualBankInstallment?: boolean
+  useManualBankInstallment?: boolean // Deprecated, keep for safety
   manualBankInstallmentValue?: number | ''
+
+  useExternalSimulation?: boolean
+  externalInstallmentValue?: number | ''
 
   hasBalloonPayments: boolean
   balloonFrequency: FrequencyType

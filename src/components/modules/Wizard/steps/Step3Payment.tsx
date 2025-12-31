@@ -4,6 +4,7 @@ import type { SimulationScenario, BuilderBalloon } from '../../../../types/Scena
 import BuilderBalloonModal from '../../UnifiedEditor/BuilderBalloonModal'
 import SmartInput from '../../../ui/SmartInput'
 import TimeSliderInput from '../../../ui/TimeSliderInput'
+import ToggleSwitch from '../../../ui/ToggleSwitch'
 import { Settings, ChevronDown, ChevronUp, Construction, Banknote } from 'lucide-react'
 
 interface StepProps {
@@ -199,19 +200,42 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
 
         {/* READY / BANK MAIN SETTINGS */}
         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-          <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
-            <Banknote className="text-blue-500" size={20} />
-            <h3 className="font-bold text-gray-800">Financiamento Bancário</h3>
+          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+            <div className="flex items-center gap-2">
+              <Banknote className="text-blue-500" size={20} />
+              <h3 className="font-bold text-gray-800">Financiamento Bancário</h3>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] md:text-xs text-gray-500 font-medium text-right leading-tight">
+                Simulação Aprovada<br />(Inserir parcela fixa)
+              </span>
+              <ToggleSwitch
+                checked={!!data.useExternalSimulation}
+                onChange={(v) => setData({ ...data, useExternalSimulation: v })}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Sistema de Amortização</label>
-              <div className="flex bg-gray-100 p-1 rounded-lg">
-                <button className={`flex-1 py-2.5 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'PRICE' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'PRICE' })}>PRICE</button>
-                <button className={`flex-1 py-2.5 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'SAC' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'SAC' })}>SAC</button>
+            {data.useExternalSimulation ? (
+              <div className="animate-in fade-in slide-in-from-left-2">
+                <SmartInput
+                  label="Valor da 1ª Parcela"
+                  prefix="R$"
+                  value={data.externalInstallmentValue ?? ''}
+                  onChange={(v) => setData({ ...data, externalInstallmentValue: v })}
+                  subtitle="Valor fixo inicial"
+                />
               </div>
-            </div>
+            ) : (
+              <div className="space-y-2 animate-in fade-in slide-in-from-left-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Sistema de Amortização</label>
+                <div className="flex bg-gray-100 p-1 rounded-lg">
+                  <button className={`flex-1 py-2.5 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'PRICE' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'PRICE' })}>PRICE</button>
+                  <button className={`flex-1 py-2.5 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'SAC' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'SAC' })}>SAC</button>
+                </div>
+              </div>
+            )}
 
             <div>
               <TimeSliderInput
@@ -240,15 +264,21 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
 
           {showAdvanced && (
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-4">
-              <SmartInput label="Taxa de Juros (% a.a)" value={data.interestRate ?? ''} onChange={(v) => setData({ ...data, interestRate: v })} prefix="%" allowFloat subtitle="Nominal" disableSlider />
+              {!data.useExternalSimulation && (
+                <SmartInput label="Taxa de Juros (% a.a)" value={data.interestRate ?? ''} onChange={(v) => setData({ ...data, interestRate: v })} prefix="%" allowFloat subtitle="Nominal" disableSlider />
+              )}
 
               {isConstruction && (
                 <SmartInput label="INCC (% a.m)" value={data.inccRate ?? ''} onChange={(v) => setData({ ...data, inccRate: v })} prefix="%" allowFloat subtitle="Correção Obra" disableSlider />
               )}
 
-              <SmartInput label="Taxa Adm. Mensal" value={data.monthlyAdminFee ?? ''} onChange={(v) => setData({ ...data, monthlyAdminFee: v })} prefix="R$" disableSlider />
-              <SmartInput label="Seguro MIP" value={data.insuranceMIP ?? ''} onChange={(v) => setData({ ...data, insuranceMIP: v })} prefix="R$" disableSlider />
-              <SmartInput label="Seguro DFI" value={data.insuranceDFI ?? ''} onChange={(v) => setData({ ...data, insuranceDFI: v })} prefix="R$" disableSlider />
+              {!data.useExternalSimulation && (
+                <>
+                  <SmartInput label="Taxa Adm. Mensal" value={data.monthlyAdminFee ?? ''} onChange={(v) => setData({ ...data, monthlyAdminFee: v })} prefix="R$" disableSlider />
+                  <SmartInput label="Seguro MIP" value={data.insuranceMIP ?? ''} onChange={(v) => setData({ ...data, insuranceMIP: v })} prefix="R$" disableSlider />
+                  <SmartInput label="Seguro DFI" value={data.insuranceDFI ?? ''} onChange={(v) => setData({ ...data, insuranceDFI: v })} prefix="R$" disableSlider />
+                </>
+              )}
 
               <SmartInput label="Taxa de Valorização (% a.a)" value={data.appreciationRate ?? ''} onChange={(v) => setData({ ...data, appreciationRate: v })} prefix="%" allowFloat disableSlider />
             </div>

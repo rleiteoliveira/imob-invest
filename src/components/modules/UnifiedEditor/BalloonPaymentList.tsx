@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { ReactElement } from 'react'
-import { Trash2, Copy, Plus } from 'lucide-react'
+import { Trash2, PlusCircle, Plus } from 'lucide-react'
 import NumberInput from '../../ui/NumberInput'
 import CurrencyInput from '../../ui/CurrencyInput'
 import type { BuilderBalloon } from '../../../types/ScenarioTypes'
@@ -145,7 +145,7 @@ const BalloonPaymentList = ({
                 title="Duplicar (final da lista)"
                 className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
               >
-                <Copy size={16} />
+                <PlusCircle size={16} />
               </button>
               <button
                 onClick={() => handleRemove(item.id)}
