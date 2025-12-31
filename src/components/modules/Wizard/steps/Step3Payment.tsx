@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import type { SimulationScenario, BuilderBalloon } from '../../../../types/ScenarioTypes'
 import BuilderBalloonModal from '../../UnifiedEditor/BuilderBalloonModal'
 import SmartInput from '../../../ui/SmartInput'
-import SmartTimeInput from '../../../ui/SmartTimeInput'
+import TimeSliderInput from '../../../ui/TimeSliderInput'
 import { Settings, ChevronDown, ChevronUp, Construction, Banknote } from 'lucide-react'
 
 interface StepProps {
@@ -93,18 +93,17 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                 subtitle="Pago na assinatura"
               />
 
-              {/* Smart Time Input for Installments */}
+              {/* Time Slider Input for Installments */}
               <div className="space-y-2">
-                <SmartTimeInput
+                <TimeSliderInput
                   label="Parcelamento da Entrada"
                   subLabel={`Parcela: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyInstallment)}`}
                   value={data.entryInstallments || 12}
                   onChange={(v) => setData({ ...data, entryInstallments: v })}
-                  presets={[12, 24, 30, 36, 48].filter(x => x <= monthsToKeys)}
-                  max={monthsToKeys}
+                  max={100}
                 />
                 <span className="text-[10px] text-gray-400 font-medium ml-2">
-                  Máximo: {monthsToKeys} meses (até Chaves)
+                  Sugestão: até {monthsToKeys} meses
                 </span>
               </div>
             </div>
@@ -149,7 +148,7 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
               {data.constructionStatus === 'PRE_OBRA' ? (
                 <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
                   <div>
-                    <SmartTimeInput
+                    <TimeSliderInput
                       label="Espera (Pré-Obra)"
                       value={data.monthsUntilConstructionStart || 0}
                       onChange={(v) => {
@@ -160,12 +159,11 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                           constructionTime: v + duration
                         })
                       }}
-                      presets={[6, 12, 18, 24]}
-                      max={60}
+                      max={100}
                     />
                   </div>
                   <div>
-                    <SmartTimeInput
+                    <TimeSliderInput
                       label="Duração da Obra"
                       value={data.constructionDuration || 36}
                       onChange={(v) => {
@@ -176,20 +174,18 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                           constructionTime: start + v
                         })
                       }}
-                      presets={[12, 24, 36]}
-                      max={60}
+                      max={100}
                     />
                   </div>
                 </div>
               ) : (
                 /* If construction is ongoing, we usually just need Remaining Time (constructionTime) */
                 <div className="animate-in fade-in slide-in-from-top-2">
-                  <SmartTimeInput
+                  <TimeSliderInput
                     label="Tempo Restante de Obra"
                     value={data.constructionTime || 24}
                     onChange={(v) => setData({ ...data, constructionTime: v })}
-                    presets={[6, 12, 18, 24, 30, 36]}
-                    max={60}
+                    max={100}
                   />
                 </div>
               )}
@@ -214,14 +210,12 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
             </div>
 
             <div>
-              <SmartTimeInput
+              <TimeSliderInput
                 label="Prazo do Financiamento"
                 value={data.termMonths || 360}
                 onChange={(v) => setData({ ...data, termMonths: v })}
-                presets={[120, 240, 360, 420]}
                 max={420}
-                step={12}
-                subLabel={`${(data.termMonths || 360) / 12} Anos`}
+                subLabel={`${((data.termMonths || 360) / 12).toFixed(1)} Anos`}
               />
             </div>
           </div>
