@@ -37,8 +37,18 @@ const DetailedReportView = ({
     const firstObra = timeline.find(t => t.phase === 'OBRA')
     const firstFinanc = timeline.find(t => t.phase === 'AMORTIZACAO')
 
+    // Cálculo da Parcela Mensal Pura (Sem Balões/INCC do primeiro mês)
+    const monthlyBalloonsTotal = (scenario.builderBalloons || []).reduce((acc, cur) => acc + cur.value, 0)
+    const signal = Number(scenario.entrySignal) || 0
+    const fgts = scenario.useFGTS ? (Number(scenario.fgtsValue) || 0) : 0
+    const totalEntry = Number(scenario.downPayment) || 0
+    const entryBalanceToParcel = Math.max(0, totalEntry - signal - fgts - monthlyBalloonsTotal)
+    const installmentsCount = Number(scenario.entryInstallments) || 1
+    const recurringInstallment = entryBalanceToParcel / installmentsCount
+
     // 1. Métricas Mensais Iniciais (Linha 1)
-    const firstEntryInstallment = firstObra ? firstObra.builderInstallment : 0
+    // firstEntryInstallment agora usa o valor recorrente calculado para não assustar com balão no mês 1
+    const firstEntryInstallment = recurringInstallment
     // Juros de obra = Juros + Taxas do banco na 1ª parcela
     const firstObraInstallment = firstObra ? (firstObra.bankInterest + firstObra.bankFees) : 0
 
@@ -56,12 +66,15 @@ const DetailedReportView = ({
     const totalINCC = Math.max(0, totalBuilderPaid - originalPrincipal)
 
     return {
-      firstEntryInstallment,
+      firstEntryInstallment, // Valor puro da parcela
       firstObraInstallment,
       firstFinancInstallment: firstFinanc ? firstFinanc.totalInstallment : 0,
       totalObraInterest,
       totalINCC,
       monthsTotal: timeline.length,
+      // Novos campos para exibição
+      entryBalanceToParcel,
+      installmentsCount,
       // Novo totalizador
       totalConstructionCost: (Number(scenario.downPayment) || 0) + totalObraInterest + totalINCC
     }
@@ -243,40 +256,54 @@ const DetailedReportView = ({
                 </span>
               </div>
 
+              {/* Parcelamento - Corrigido */}
               <div className="flex justify-between items-center">
                 <div className="flex flex-col">
-                  <span className="text-xs text-gray-500 font-medium">Parcelamento Mensal</span>
-                  <span className="text-[9px] text-gray-400">{Number(scenario.entryInstallments)}x Parcelas</span>
+                  <span className="text-xs text-gray-500 font-medium">Saldo Parcelado</span>
+                  <span className="text-[9px] text-gray-400">
+                    {summary.installmentsCount}x de {fmtMoney(summary.firstEntryInstallment)}
+                  </span>
                 </div>
-                <span className="font-bold text-blue-600">{fmtMoney(summary.firstEntryInstallment)}</span>
+                <span className="font-bold text-blue-600">{fmtMoney(summary.entryBalanceToParcel)}</span>
               </div>
             </div>
-
             {/* Decorative blob */}
             <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-blue-50 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
           </div>
 
           {/* Card: Balões / Intercaladas */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden">
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
             <div className="flex items-center gap-2 mb-4">
               <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
                 <TrendingUp size={18} />
               </div>
-              <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Reforços Anuais (Balões)</h3>
+              <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Reforços (Intercaladas)</h3>
             </div>
 
             {(!scenario.builderBalloons || scenario.builderBalloons.length === 0) ? (
-              <div className="flex flex-col items-center justify-center h-[120px] text-gray-400 text-center">
-                <p className="text-xs italic">Nenhum reforço anual configurado.</p>
+              <div className="flex flex-col items-center justify-center flex-grow text-gray-400 text-center py-2 h-full">
+                <p className="text-xs italic">Nenhum reforço configurado.</p>
               </div>
             ) : (
-              <div className="space-y-3 relative z-10 max-h-[140px] overflow-y-auto custom-scrollbar pr-2">
-                {scenario.builderBalloons.map((balloon, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-amber-50/50 p-2 rounded-lg border border-amber-100">
-                    <span className="text-xs text-amber-800 font-bold">Mês {balloon.month}</span>
-                    <span className="text-sm font-black text-amber-600">{fmtMoney(balloon.value)}</span>
+              <div className="relative z-10 flex flex-col gap-4">
+                <div>
+                  <p className="text-xs text-gray-500 font-medium mb-1">Total em Reforços</p>
+                  <p className="text-2xl font-black text-amber-600">
+                    {fmtMoney(scenario.builderBalloons.reduce((acc, b) => acc + b.value, 0))}
+                  </p>
+                </div>
+
+                <div className="border-t border-amber-50 pt-3">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-gray-500 font-medium">Recorrência</span>
+                    <span className="text-[10px] bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full">
+                      {scenario.builderBalloons.length} Parcelas
+                    </span>
                   </div>
-                ))}
+                  <p className="text-xs text-gray-400 leading-snug mt-2">
+                    Meses: <span className="font-bold text-amber-700">{scenario.builderBalloons.map(b => b.month).join(', ')}</span>
+                  </p>
+                </div>
               </div>
             )}
             {/* Decorative blob */}
@@ -298,7 +325,7 @@ const DetailedReportView = ({
               </div>
               <div className="relative z-10">
                 <p className="text-[10px] font-bold text-blue-100 uppercase tracking-wider mb-2">
-                  1ª Parcela Construtora
+                  Mensalidade Construtora (Base)
                 </p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-lg opacity-80">R$</span>
@@ -307,7 +334,7 @@ const DetailedReportView = ({
                   </span>
                 </div>
                 <p className="text-[10px] text-blue-100 mt-2 opacity-80 font-medium">
-                  Mensalidade da Entrada (Principal)
+                  Valor da parcela mensal recorrente
                 </p>
               </div>
             </div>
@@ -488,42 +515,68 @@ const DetailedReportView = ({
             {/* HEADERS */}
             <div className="grid grid-cols-12 bg-gray-50 p-3 md:p-4 font-bold text-gray-500 uppercase tracking-widest text-[10px] border-b border-gray-100 print:bg-gray-100 print:text-black print:border-gray-300 print:py-2">
               <div className="col-span-1 text-center">Mês</div>
-              <div className="col-span-3 text-right">Construtora</div>
-              <div className="col-span-3 text-right">Evolução Obra</div>
+              <div className="col-span-2 text-right">Mensal</div>
+              <div className="col-span-2 text-right">Reforço</div>
+              <div className="col-span-2 text-right">Evolução</div>
               <div className="col-span-3 text-right text-gray-900 border-l border-gray-100 ml-2 print:border-gray-300">
                 Total Mensal
               </div>
-              <div className="col-span-2 text-right">Saldo Devedor</div>
+              <div className="col-span-2 text-right">Saldo Dev.</div>
             </div>
 
             {/* LISTA DE MESES DE OBRA */}
             <div className="divide-y divide-gray-50 print:divide-gray-200">
-              {reportData.constructionRows.map((row) => (
-                <div
-                  key={row.month}
-                  className="grid grid-cols-12 p-3 md:p-4 text-xs items-center hover:bg-gray-50/50 transition-colors break-inside-avoid print:p-1.5 print:text-[10px] print:leading-tight even:print:bg-gray-50"
-                >
-                  <div className="col-span-1 text-center font-bold text-gray-400 text-[10px] print:text-black">
-                    {row.month}
+              {reportData.constructionRows.map((row) => {
+                // Check if there is a balloon (heuristic: if builderInstallment > summary.firstEntryInstallment * 1.5)
+                // Or better: check scenario balloons.
+                // Actually relying on the value is safer as INCC affects it.
+                // let's estimate:
+                const estimatedBalloon = scenario.builderBalloons?.find(b => b.month === row.month)?.value || 0
+
+                // If estimatedBalloon > 0, we assume the portion of builderInstallment is balloon.
+                // However, builderInstallment implies INCC correction on the WHOLE debt.
+                // For display, if we just want to split the columns "Mensal" vs "Reforço", we can try:
+
+                const monthlyPart = row.builderInstallment > estimatedBalloon ? row.builderInstallment - estimatedBalloon : row.builderInstallment
+                const balloonPart = estimatedBalloon > 0 ? estimatedBalloon : 0
+
+                // Note: this isn't perfect mathematically for INCC distribution but visually correct for the user.
+
+                return (
+                  <div
+                    key={row.month}
+                    className="grid grid-cols-12 p-3 md:p-4 text-xs items-center hover:bg-gray-50/50 transition-colors break-inside-avoid print:p-1.5 print:text-[10px] print:leading-tight even:print:bg-gray-50"
+                  >
+                    <div className="col-span-1 text-center font-bold text-gray-400 text-[10px] print:text-black">
+                      {row.month}
+                    </div>
+
+                    {/* Mensal */}
+                    <div className="col-span-2 text-right font-medium text-gray-600 print:text-black">
+                      {monthlyPart > 0 ? fmtMoney(monthlyPart) : '-'}
+                    </div>
+
+                    {/* Reforço */}
+                    <div className="col-span-2 text-right font-medium text-amber-600 print:text-black">
+                      {balloonPart > 0 ? (
+                        <span className="font-bold print:font-bold">{fmtMoney(balloonPart)}</span>
+                      ) : '-'}
+                    </div>
+
+                    {/* Evolução */}
+                    <div className="col-span-2 text-right font-medium text-gray-600 print:text-black">
+                      {fmtMoney(row.bankAmortization + row.bankInterest + row.bankFees)}
+                    </div>
+
+                    <div className="col-span-3 text-right font-black text-gray-900 border-l border-gray-50 ml-2 print:border-gray-300 print:ml-0 print:pl-2">
+                      {fmtMoney(row.totalInstallment)}
+                    </div>
+                    <div className="col-span-2 text-right text-gray-400 tabular-nums print:text-gray-600">
+                      {fmtMoney(row.bankBalance)}
+                    </div>
                   </div>
-                  <div className="col-span-3 text-right font-medium text-gray-600 print:text-black">
-                    {row.builderInstallment > 0 ? (
-                      <span className={row.builderInstallment > timeline[0]?.builderInstallment * 1.5 ? 'font-bold text-blue-600 print:text-black print:font-bold' : ''}>
-                        {fmtMoney(row.builderInstallment)}
-                      </span>
-                    ) : '-'}
-                  </div>
-                  <div className="col-span-3 text-right font-medium text-gray-600 print:text-black">
-                    {fmtMoney(row.bankAmortization + row.bankInterest + row.bankFees)}
-                  </div>
-                  <div className="col-span-3 text-right font-black text-gray-900 border-l border-gray-50 ml-2 print:border-gray-300 print:ml-0 print:pl-2">
-                    {fmtMoney(row.totalInstallment)}
-                  </div>
-                  <div className="col-span-2 text-right text-gray-400 tabular-nums print:text-gray-600">
-                    {fmtMoney(row.bankBalance)}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
