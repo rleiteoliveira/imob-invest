@@ -1,7 +1,7 @@
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
-import { EmblaCarouselType } from 'embla-carousel'
+import type { EmblaCarouselType } from 'embla-carousel'
 import clsx from 'clsx'
 
 interface WheelPickerProps {
@@ -36,12 +36,6 @@ export default function WheelPicker({
     loop: false,
   })
 
-  // State to force re-render for visual updates if needed, 
-  // though we'll try to use direct DOM manipulation for performance if possible,
-  // or simply rely on React state if the list isn't huge.
-  // For iOS feel, we usually manipulate style directly on scroll.
-  const [isScrolling, setScrolling] = useState(false)
-
   // Update external value when selection changes
   const onSelect = useCallback((emblaApi: EmblaCarouselType) => {
     const selectedIndex = emblaApi.selectedScrollSnap()
@@ -54,10 +48,6 @@ export default function WheelPicker({
   useEffect(() => {
     if (!emblaApi) return
     emblaApi.on('select', onSelect)
-    emblaApi.on('scroll', () => {
-      // Optional: Add haptic feedback logic here if using a native wrapper
-      // functionality for 3D effect is handled in separate effect
-    })
 
     // Sync external value changes (e.g. initial load or reset)
     const currentIndex = emblaApi.selectedScrollSnap()
@@ -71,76 +61,12 @@ export default function WheelPicker({
     }
   }, [emblaApi, onSelect, value, numbers])
 
-  // 3D Effect / Opacity Logic
-  // We reference the slide nodes to apply styles based on distance from center
-  const updateVisuals = useCallback(() => {
-    if (!emblaApi) return
-
-    const engine = emblaApi.internalEngine()
-    const scrollProgress = emblaApi.scrollProgress()
-    const slidesInView = emblaApi.slidesInView()
-    const { scrollSnaps } = emblaApi.scrollSnapList()
-
-    emblaApi.slideNodes().forEach((slideNode, index) => {
-      const target = emblaApi.scrollSnapList()[index]
-
-      // Calculate distance from current scroll position
-      // This is a simplified "distance from center" logic for y-axis
-      // We need to know where the slide is relative to the center of the viewport
-
-      // Get the slide's location relative to scroll
-      // Embla's location logic is a bit internal, but we can approximate:
-      // Distance = |scrollPosition - slidePosition|
-
-      // Correct approach using engine location:
-      let diff = target - scrollProgress
-
-      // Handle loop logic if we were looping, but we aren't.
-
-      // Normalize diff approximately. 
-      // 1 unit of scrollProgress might be full length or something.
-      // Let's use getScrollLocation logic?
-
-      // Simpler approach for React:
-      // Compare index with selectedIndex? No, that's not smooth.
-
-      // Let's rely on standard CSS masking for the "easy" win first
-      // and basic class switching for the "selected" item if we want simplicity.
-      // But the user asked for "Opacidade reduzida e escala menor (efeito 3D)" for numbers above/below.
-
-      // We'll trust a simpler CSS class based approach for the 'selected' item for now 
-      // to avoid complex 'scroll' event paint thrashing without more boilerplate.
-      // However, we can use `emblaApi.on('scroll')` to set a `data-distance` attribute?
-    })
-  }, [emblaApi])
-
-  // Setup loop for animation frame if we want smooth 3D
-  // For this task, let's achieve the look with:
-  // 1. Center highlight (masking + border)
-  // 2. CSS-based Opacity on non-selected items? (Only works if we update classes on scroll)
-  // 3. To make it truly smooth like iOS, we need the scroll listener.
-
-  const rootNodeRef = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
     if (!emblaApi) return
 
     const onScroll = () => {
-      const { scrollBody, location } = emblaApi.internalEngine()
-      // This is getting deep into Embla internals which might break on v8
-      // Let's try a simpler 'distance' check using standard API
-
-      const center = emblaApi.scrollProgress()
       // We can iterate slides
-      emblaApi.slideNodes().forEach((slide, index) => {
-        const slideLocation = emblaApi.scrollSnapList()[index]
-        // This assumes scrollProgress is 0..1 for the whole track? 
-        // Embla v8 'scrollProgress' is indeed 0..1 (or more if unconstrained).
-
-        // But for calculating visual scale, we need distance in "slides".
-        // Let's assume uniform slide height.
-        // It is easier to just calculate offset from center of container.
-
+      emblaApi.slideNodes().forEach((slide) => {
         const slideRect = slide.getBoundingClientRect()
         const rootRect = emblaApi.rootNode().getBoundingClientRect()
         const rootCenter = rootRect.top + rootRect.height / 2
@@ -157,7 +83,6 @@ export default function WheelPicker({
         slide.style.transform = `scale(${scale}) rotateX(${-rotateX}deg)`
         slide.style.opacity = `${opacity}`
         slide.style.zIndex = `${Math.round((1 - normalizeDist) * 10)}`
-        // We can color the text too?
       })
     }
 

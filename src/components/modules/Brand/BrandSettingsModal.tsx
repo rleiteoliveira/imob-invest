@@ -1,4 +1,4 @@
-import { ReactElement, useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ReactElement, type ChangeEvent } from 'react'
 import { X, Check, Trash2, Upload, Palette } from 'lucide-react'
 import { useBrand } from '../../../context/BrandContext'
 
@@ -25,7 +25,7 @@ const BrandSettingsModal = ({
 
   if (!isOpen) return null
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       // Check size (optional, stick to basic)

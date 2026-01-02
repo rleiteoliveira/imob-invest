@@ -1,6 +1,6 @@
 
 export type FrequencyType = 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL' | 'ANUAL' | 'UNICA'
-export type ScenarioType = 'MCMV' | 'DIRETO' | 'PRONTO'
+export type ScenarioType = 'MCMV' | 'DIRETO' | 'PRONTO' | 'PLANTA' | 'SAC' | 'FUTURO'
 export type AmortizationSystem = 'SAC' | 'PRICE'
 
 export interface BuilderBalloon {

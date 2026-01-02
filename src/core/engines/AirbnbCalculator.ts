@@ -1,5 +1,3 @@
-import Decimal from 'decimal.js'
-// AQUI ESTAVA O ERRO: Adicione 'type'
 import type { RentabilityConfig, AirbnbResult } from '../../types/ScenarioTypes'
 
 export const calculateAirbnbReturn = (

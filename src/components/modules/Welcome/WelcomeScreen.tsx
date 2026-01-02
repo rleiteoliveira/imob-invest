@@ -1,4 +1,4 @@
-import { ReactElement } from 'react'
+import type { ReactElement } from 'react'
 import { Building2, ArrowRight } from 'lucide-react'
 
 interface WelcomeScreenProps {

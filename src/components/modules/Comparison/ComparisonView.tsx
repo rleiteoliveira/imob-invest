@@ -1,4 +1,4 @@
-import { ReactElement } from 'react'
+import type { ReactElement } from 'react'
 import { ArrowLeft, Building2, Settings2, Key, TrendingUp, Wallet, FileText } from 'lucide-react'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import EvolutionChart from './EvolutionChart'

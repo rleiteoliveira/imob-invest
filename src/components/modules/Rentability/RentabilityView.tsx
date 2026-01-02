@@ -1,4 +1,4 @@
-import { ReactElement, useMemo } from 'react'
+import { useMemo, type ReactElement } from 'react'
 import {
   BarChart,
   Bar,
