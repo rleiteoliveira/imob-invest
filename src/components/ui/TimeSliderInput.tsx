@@ -9,6 +9,7 @@ interface TimeSliderInputProps {
   subLabel?: string
   max?: number
   min?: number
+  disabled?: boolean
 }
 
 const TimeSliderInput = ({
@@ -18,6 +19,7 @@ const TimeSliderInput = ({
   subLabel,
   max = 100,
   min = 0,
+  disabled = false,
 }: TimeSliderInputProps): ReactElement => {
   // Safety checks
   const safeMax = Math.max(max || 100, 1) // Ensure max is never < 1
@@ -100,12 +102,14 @@ const TimeSliderInput = ({
       {/* Slider Area */}
       <div className="relative flex items-center w-full h-6 touch-none select-none">
         <Slider.Root
-          className="relative flex items-center w-full h-5 cursor-pointer"
+          className={`relative flex items-center w-full h-5 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
           value={sliderValue}
           max={safeMax}
           min={min}
           step={1}
+          disabled={disabled}
           onValueChange={(val) => {
+            if (disabled) return
             onChange(val[0])
             setInputValue(val[0].toString())
           }}

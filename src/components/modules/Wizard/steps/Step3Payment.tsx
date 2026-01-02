@@ -36,19 +36,25 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
   const isPreObra = data.constructionStatus === 'PRE_OBRA'
   let monthsToKeys = 0
 
+  // Calculate outstanding balance for entry installments
+  const signalTmp = Number(data.entrySignal) || 0
+  const fgtsTmp = data.useFGTS ? (Number(data.fgtsValue) || 0) : 0
+  const outstandingEntryBalance = Math.max(0, downPayment - signalTmp - fgtsTmp - monthlyBalloonsTotal - balloonsInConstructionValue)
+
+
+
   if (isPreObra) {
-    // Fix: Ensure we use the default duration (36) if not set, preventing it from being 0
-    const waitTime = Number(data.monthsUntilConstructionStart) || 0
-    const duration = Number(data.constructionDuration) || 36
+    // Fix: Use nullish coalescing to allow 0 if needed (though we might force 1 below)
+    const waitTime = Number(data.monthsUntilConstructionStart ?? 0)
+    const duration = Number(data.constructionDuration ?? 36)
     monthsToKeys = waitTime + duration
   } else {
-    // If EM_ANDAMENTO, constructionTime is already the "time remaining"
-    // Fix: Default to 24 if not set (matches default in input)
-    monthsToKeys = Number(data.constructionTime) || 24
+    // If EM_ANDAMENTO
+    monthsToKeys = Number(data.constructionTime ?? 24)
   }
 
   // Ensure validity just in case
-  if (monthsToKeys < 1) monthsToKeys = 1
+  if (monthsToKeys < 1 && outstandingEntryBalance > 0) monthsToKeys = 1
 
   // Effect to ensure installments don't exceed time to keys
   useEffect(() => {
@@ -126,16 +132,21 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
               </div>
 
               {/* Time Slider Input for Installments */}
-              <div className="space-y-2">
+              <div className={`space-y-2 transition-opacity ${outstandingEntryBalance <= 0 ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
                 <TimeSliderInput
                   label="Parcelamento da Entrada"
-                  subLabel={`Parcela: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyInstallment)}`}
-                  value={data.entryInstallments || 12}
+                  subLabel={outstandingEntryBalance <= 0
+                    ? 'Entrada 100% Paga no Ato'
+                    : `Parcela: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyInstallment)}`
+                  }
+                  value={outstandingEntryBalance <= 0 ? 0 : (data.entryInstallments || 12)}
                   onChange={(v) => setData({ ...data, entryInstallments: v })}
                   max={monthsToKeys}
+                  min={outstandingEntryBalance > 0 ? 1 : 0}
+                  disabled={outstandingEntryBalance <= 0}
                 />
                 <span className="text-[10px] text-gray-400 font-medium ml-2">
-                  Sugestão: até {monthsToKeys} meses
+                  {outstandingEntryBalance > 0 ? `Sugestão: até ${monthsToKeys} meses` : 'Nenhum valor restante para parcelar.'}
                 </span>
               </div>
             </div>
@@ -182,7 +193,7 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                   <div>
                     <TimeSliderInput
                       label="Espera (Pré-Obra)"
-                      value={data.monthsUntilConstructionStart || 0}
+                      value={Number(data.monthsUntilConstructionStart ?? 0)}
                       onChange={(v) => {
                         const duration = Number(data.constructionDuration) || 0
                         setData({
@@ -194,30 +205,32 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                       max={100}
                     />
                   </div>
-                  <div>
-                    <TimeSliderInput
-                      label="Duração da Obra"
-                      value={data.constructionDuration || 36}
-                      onChange={(v) => {
-                        const start = Number(data.monthsUntilConstructionStart) || 0
-                        setData({
-                          ...data,
-                          constructionDuration: v,
-                          constructionTime: start + v
-                        })
-                      }}
-                      max={100}
-                    />
-                  </div>
+                  <TimeSliderInput
+                    label="Duração da Obra"
+                    value={Number(data.constructionDuration ?? 36)}
+                    onChange={(v) => {
+                      const start = Number(data.monthsUntilConstructionStart) || 0
+                      setData({
+                        ...data,
+                        constructionDuration: v,
+                        constructionTime: start + v
+                      })
+                    }}
+                    max={100}
+                    min={outstandingEntryBalance > 100 ? 1 : 0}
+                  />
                 </div>
               ) : (
                 /* If construction is ongoing, we set Remaining Time AND Current Progress */
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
                   <TimeSliderInput
                     label="Tempo Restante de Obra"
-                    value={data.constructionTime || 24}
-                    onChange={(v) => setData({ ...data, constructionTime: v })}
+                    value={Number(data.constructionTime ?? 24)}
+                    onChange={(v) => {
+                      setData({ ...data, constructionTime: v })
+                    }}
                     max={100}
+                    min={outstandingEntryBalance > 100 ? 1 : 0}
                     subLabel="meses"
                   />
                   <PercentageInput
@@ -391,6 +404,6 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
           )}
         </div>
       </div>
-    </div>
+    </div >
   )
 }

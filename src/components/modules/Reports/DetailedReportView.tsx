@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { ReactElement } from 'react'
-import { X, FileDown, LayoutDashboard, Coins, TrendingUp } from 'lucide-react'
+import { X, FileDown, LayoutDashboard, Coins, TrendingUp, Building2 } from 'lucide-react'
 import {
   PieChart,
   Pie,
@@ -153,7 +153,7 @@ const DetailedReportView = ({
           </div>
 
           {/* GRID DE DADOS DO CLIENTE */}
-          <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
                 Cliente
@@ -172,60 +172,162 @@ const DetailedReportView = ({
             </div>
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
-                Unidade
+                Unidade de Interesse
               </p>
               <p className="font-bold text-gray-900 text-sm md:text-base">
                 {scenario.clientLead?.unitOfInterest || scenario.unitName || '-'}
               </p>
             </div>
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
-                Valor do Imóvel
-              </p>
-              <p className="font-bold text-blue-600 text-sm md:text-base">
-                {fmtMoney(Number(scenario.propertyValue))}
-              </p>
+          </div>
+
+          {/* DESTAQUE DO VALOR DO IMÓVEL (HERO) */}
+          <div className="bg-gray-900 rounded-2xl p-6 md:px-10 md:py-8 text-white relative overflow-hidden shadow-2xl shadow-gray-200 print:shadow-none print:text-black print:bg-white print:border print:border-gray-300">
+            <div className="absolute top-0 right-0 p-6 opacity-10 print:hidden pointer-events-none">
+              <Building2 size={160} />
+            </div>
+            {/* Gradient Overlay for style */}
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent z-0 print:hidden"></div>
+
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+              <div>
+                <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2 justify-center md:justify-start">
+                  <Building2 size={14} className="text-blue-500" />
+                  Valor de Avaliação do Imóvel
+                </h2>
+                <p className="text-4xl md:text-5xl font-black tracking-tighter text-white print:text-black">
+                  {fmtMoney(Number(scenario.propertyValue))}
+                </p>
+              </div>
+
+              <div className="hidden md:block h-12 w-[1px] bg-gray-800 print:hidden"></div>
+
+              <div className="max-w-md">
+                <p className="text-xs text-gray-400 leading-relaxed print:text-gray-600">
+                  Este é o valor de tabela considerado para a estruturação desta proposta financeira.
+                  Abaixo, detalhamos como este investimento está distribuído.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 1. FLUXO MENSAL INICIAL (2 Cards) */}
-        <div className="mb-6">
+        {/* 1. SEÇÃO DE DESTAQUES (Entrada & Intercaladas) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 break-inside-avoid">
+
+          {/* Card: Composição da Entrada */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                <Coins size={18} />
+              </div>
+              <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Composição da Entrada</h3>
+            </div>
+
+            <div className="space-y-4 relative z-10">
+              <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                <span className="text-xs text-gray-500 font-medium">Sinal (Ato)</span>
+                <span className="font-bold text-gray-900">{fmtMoney(Number(scenario.entrySignal) || 0)}</span>
+              </div>
+
+              <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 font-medium">FGTS</span>
+                  {scenario.useFGTS ? (
+                    <span className="text-[9px] bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded">UTILIZADO</span>
+                  ) : (
+                    <span className="text-[9px] bg-gray-100 text-gray-400 font-bold px-1.5 py-0.5 rounded">NÃO UTILIZADO</span>
+                  )}
+                </div>
+                <span className={`font-bold ${scenario.useFGTS ? 'text-green-600' : 'text-gray-300'}`}>
+                  {fmtMoney(scenario.useFGTS ? (Number(scenario.fgtsValue) || 0) : 0)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-500 font-medium">Parcelamento Mensal</span>
+                  <span className="text-[9px] text-gray-400">{Number(scenario.entryInstallments)}x Parcelas</span>
+                </div>
+                <span className="font-bold text-blue-600">{fmtMoney(summary.firstEntryInstallment)}</span>
+              </div>
+            </div>
+
+            {/* Decorative blob */}
+            <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-blue-50 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
+          </div>
+
+          {/* Card: Balões / Intercaladas */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm relative overflow-hidden">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                <TrendingUp size={18} />
+              </div>
+              <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Reforços Anuais (Balões)</h3>
+            </div>
+
+            {(!scenario.builderBalloons || scenario.builderBalloons.length === 0) ? (
+              <div className="flex flex-col items-center justify-center h-[120px] text-gray-400 text-center">
+                <p className="text-xs italic">Nenhum reforço anual configurado.</p>
+              </div>
+            ) : (
+              <div className="space-y-3 relative z-10 max-h-[140px] overflow-y-auto custom-scrollbar pr-2">
+                {scenario.builderBalloons.map((balloon, idx) => (
+                  <div key={idx} className="flex justify-between items-center bg-amber-50/50 p-2 rounded-lg border border-amber-100">
+                    <span className="text-xs text-amber-800 font-bold">Mês {balloon.month}</span>
+                    <span className="text-sm font-black text-amber-600">{fmtMoney(balloon.value)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Decorative blob */}
+            <div className="absolute -top-4 -right-4 w-24 h-24 bg-amber-50 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
+          </div>
+
+        </div>
+
+        {/* 2. FLUXO MENSAL INICIAL (IMPACTO IMEDIATO) */}
+        <div className="mb-8">
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">
             Fluxo Mensal Inicial (Fase de Obras)
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 break-inside-avoid">
-            {/* Card 1: Construtora (Blue - Investment/Equity theme) */}
-            <div className="bg-gradient-to-bl from-blue-600 to-indigo-700 text-white p-6 rounded-2xl shadow-lg shadow-blue-200/50 print:shadow-none print:border print:border-gray-300 print:text-black print:bg-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
+            {/* Card 1: Construtora */}
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
                 <Coins size={80} />
               </div>
               <div className="relative z-10">
-                <p className="text-[10px] font-bold text-blue-100 uppercase tracking-wider mb-2 print:text-gray-500">
+                <p className="text-[10px] font-bold text-blue-100 uppercase tracking-wider mb-2">
                   1ª Parcela Construtora
                 </p>
-                <p className="text-3xl font-bold tracking-tight">
-                  {fmtMoney(summary.firstEntryInstallment)}
-                </p>
-                <p className="text-[10px] text-blue-100 mt-2 opacity-80 print:text-gray-400 font-medium">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-lg opacity-80">R$</span>
+                  <span className="text-4xl font-black tracking-tighter">
+                    {new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(summary.firstEntryInstallment)}
+                  </span>
+                </div>
+                <p className="text-[10px] text-blue-100 mt-2 opacity-80 font-medium">
                   Mensalidade da Entrada (Principal)
                 </p>
               </div>
             </div>
 
-            {/* Card 2: Evolução de Obra (Copper/Amber - Cost/Process theme) */}
-            <div className="bg-gradient-to-bl from-orange-500 to-amber-600 text-white p-6 rounded-2xl shadow-lg shadow-orange-200/50 print:shadow-none print:border print:border-gray-300 print:text-black print:bg-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
+            {/* Card 2: Evolução de Obra */}
+            <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
                 <TrendingUp size={80} />
               </div>
               <div className="relative z-10">
-                <p className="text-[10px] font-bold text-amber-50 uppercase tracking-wider mb-2 print:text-gray-500">
+                <p className="text-[10px] font-bold text-amber-50 uppercase tracking-wider mb-2">
                   1ª Evolução de Obra
                 </p>
-                <p className="text-3xl font-bold tracking-tight">
-                  {fmtMoney(summary.firstObraInstallment)}
-                </p>
-                <p className="text-[10px] text-amber-50 mt-2 opacity-80 print:text-gray-400 font-medium">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-lg opacity-80">R$</span>
+                  <span className="text-4xl font-black tracking-tighter">
+                    {new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(summary.firstObraInstallment)}
+                  </span>
+                </div>
+                <p className="text-[10px] text-amber-50 mt-2 opacity-80 font-medium">
                   Juros Bancários (Estimativa Inicial)
                 </p>
               </div>
@@ -233,8 +335,7 @@ const DetailedReportView = ({
           </div>
         </div>
 
-        {/* 2. RESUMO DE CUSTOS DA OBRA (2 Cards) */}
-        {/* 2. RESUMO DE CUSTOS DA OBRA (Totalizador) */}
+        {/* 3. RESUMO DE CUSTOS DA OBRA (Totalizador) */}
         <div className="mb-10">
 
           {/* CARD DE TOTAL TOTALIZADOR (NOVO) */}
