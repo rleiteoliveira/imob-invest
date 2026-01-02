@@ -4,6 +4,7 @@ import type { SimulationScenario, BuilderBalloon } from '../../../../types/Scena
 import BuilderBalloonModal from '../../UnifiedEditor/BuilderBalloonModal'
 import SmartInput from '../../../ui/SmartInput'
 import TimeSliderInput from '../../../ui/TimeSliderInput'
+import PercentageInput from '../../../ui/PercentageInput'
 import ToggleSwitch from '../../../ui/ToggleSwitch'
 import { Settings, ChevronDown, ChevronUp, Construction, Banknote } from 'lucide-react'
 
@@ -184,13 +185,19 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                   </div>
                 </div>
               ) : (
-                /* If construction is ongoing, we usually just need Remaining Time (constructionTime) */
-                <div className="animate-in fade-in slide-in-from-top-2">
+                /* If construction is ongoing, we set Remaining Time AND Current Progress */
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
                   <TimeSliderInput
                     label="Tempo Restante de Obra"
                     value={data.constructionTime || 24}
                     onChange={(v) => setData({ ...data, constructionTime: v })}
                     max={100}
+                    subLabel="meses"
+                  />
+                  <PercentageInput
+                    label="Obra Concluída"
+                    value={data.currentWorkPercent || 0}
+                    onChange={(v) => setData({ ...data, currentWorkPercent: v })}
                   />
                 </div>
               )}
