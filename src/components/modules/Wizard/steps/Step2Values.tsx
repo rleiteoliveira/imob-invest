@@ -128,12 +128,12 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
           <div className="text-center">
             <span className="block w-3 h-3 bg-emerald-500 rounded-full mx-auto mb-2"></span>
             <p className="text-xs font-bold text-gray-400 uppercase">Entrada</p>
-            <p className="text-lg font-bold text-emerald-600">{downPaymentPercent.toFixed(0)}%</p>
+            <p className="text-lg font-bold text-emerald-600">{downPaymentPercent.toFixed(1)}%</p>
           </div>
           <div className="text-center">
             <span className="block w-3 h-3 bg-blue-500 rounded-full mx-auto mb-2"></span>
             <p className="text-xs font-bold text-gray-400 uppercase">Financiamento</p>
-            <p className="text-lg font-bold text-blue-600">{financedPercent.toFixed(0)}%</p>
+            <p className="text-lg font-bold text-blue-600">{financedPercent.toFixed(1)}%</p>
           </div>
         </div>
       </div>

@@ -33,6 +33,8 @@ export interface SimulationScenario {
   type: ScenarioType
 
   entrySignal: number | ''
+  useFGTS?: boolean
+  fgtsValue?: number | ''
   entryInstallments: number | ''
   builderBalloons?: BuilderBalloon[]
 

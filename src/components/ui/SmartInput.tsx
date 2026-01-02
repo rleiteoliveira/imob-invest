@@ -15,6 +15,7 @@ interface SmartInputProps {
   sliderStep?: number
   disableSlider?: boolean
   allowFloat?: boolean
+  placeholder?: string
 }
 
 const SmartInput = ({

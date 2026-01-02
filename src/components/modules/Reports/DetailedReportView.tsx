@@ -51,8 +51,8 @@ const DetailedReportView = ({
     // Total Pago à Construtora (com INCC)
     const totalBuilderPaid = timeline.reduce((acc, t) => acc + t.builderInstallment, 0)
 
-    // Variação INCC = Total Pago - Principal Original (Entrada - Sinal)
-    const originalPrincipal = (Number(scenario.downPayment) || 0) - (Number(scenario.entrySignal) || 0)
+    // Variação INCC = Total Pago - Principal Original (Entrada - Sinal - FGTS)
+    const originalPrincipal = (Number(scenario.downPayment) || 0) - (Number(scenario.entrySignal) || 0) - (scenario.useFGTS ? (Number(scenario.fgtsValue) || 0) : 0)
     const totalINCC = Math.max(0, totalBuilderPaid - originalPrincipal)
 
     return {

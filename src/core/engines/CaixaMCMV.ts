@@ -54,14 +54,17 @@ export class CaixaMCMV implements CalculationEngine {
 
     // === 2. Configuração da Construtora ===
     const signal = new Decimal(data.entrySignal || 0)
+    const fgts = new Decimal(data.useFGTS ? data.fgtsValue || 0 : 0)
+
     let totalBuilderManualBalloons = new Decimal(0)
       ; (data.builderBalloons || []).forEach((b) => {
         totalBuilderManualBalloons = totalBuilderManualBalloons.plus(b.value)
       })
 
-    // Dívida com Construtora = EntradaTotal - Sinal - FGTS(Mês 0) - Intercaladas Manuais - FGTS(Durante Obra)
+    // Dívida com Construtora = EntradaTotal - Sinal - FGTS - FGTS(Mês 0) - Intercaladas Manuais - FGTS(Durante Obra)
     let builderDebtMensal = downPaymentTotal
       .minus(signal)
+      .minus(fgts)
       .minus(extraEntryFromBalloonAtZero) // Se for Mês 0, abate como sinal
       .minus(totalBuilderManualBalloons)
       .minus(totalBalloonAmountInConstruction) // O "Pulo do Gato": Abate balões que caem na obra
@@ -96,7 +99,7 @@ export class CaixaMCMV implements CalculationEngine {
     if (currentBankBalance.lessThanOrEqualTo(0) && builderDebtMensal.lessThanOrEqualTo(0)) return []
 
     const timeline: MonthlyResult[] = []
-    let accumulatedTotal = signal.plus(extraEntryFromBalloonAtZero)
+    let accumulatedTotal = signal.plus(extraEntryFromBalloonAtZero).plus(fgts)
     let bankBalloonsPaidCount = 0
 
     // === FASE 1: OBRA ===
@@ -210,7 +213,14 @@ export class CaixaMCMV implements CalculationEngine {
           }
         }
 
-        const totalMonth = monthlyBuilderPmt.plus(bankInterest).plus(totalBankFees)
+        // Se não houver cobrança de evolução (Juros de Obra), assumimos que também não há cobrança de taxas bancárias (MIP/DFI/Adm)
+        // Isso configura um cenário de "Financiamento na Chave" ou "Sem Repasse na Planta"
+        let currentMonthBankFees = totalBankFees
+        if (!shouldChargeEvolution) {
+          currentMonthBankFees = new Decimal(0)
+        }
+
+        const totalMonth = monthlyBuilderPmt.plus(bankInterest).plus(currentMonthBankFees)
         accumulatedTotal = accumulatedTotal.plus(totalMonth)
 
         timeline.push({
@@ -218,7 +228,7 @@ export class CaixaMCMV implements CalculationEngine {
           bankBalance: currentBankBalance.toNumber(),
           bankInterest: bankInterest.toNumber(),
           bankAmortization: 0,
-          bankFees: totalBankFees.toNumber(),
+          bankFees: currentMonthBankFees.toNumber(),
           builderInstallment: monthlyBuilderPmt.toNumber(),
           builderBalance: 0,
           totalInstallment: totalMonth.toNumber(),

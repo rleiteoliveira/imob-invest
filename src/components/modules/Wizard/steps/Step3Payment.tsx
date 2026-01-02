@@ -6,7 +6,7 @@ import SmartInput from '../../../ui/SmartInput'
 import TimeSliderInput from '../../../ui/TimeSliderInput'
 import PercentageInput from '../../../ui/PercentageInput'
 import ToggleSwitch from '../../../ui/ToggleSwitch'
-import { Settings, ChevronDown, ChevronUp, Construction, Banknote } from 'lucide-react'
+import { Settings, ChevronDown, ChevronUp, Construction, Banknote, TrendingUp } from 'lucide-react'
 
 interface StepProps {
   data: SimulationScenario
@@ -62,8 +62,9 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
 
   // Calculate monthly installment base
   const entrySignal = Number(data.entrySignal) || 0
+  const fgts = data.useFGTS ? (Number(data.fgtsValue) || 0) : 0
 
-  const entryBalance = Math.max(0, downPayment - entrySignal - monthlyBalloonsTotal - balloonsInConstructionValue)
+  const entryBalance = Math.max(0, downPayment - entrySignal - fgts - monthlyBalloonsTotal - balloonsInConstructionValue)
   const monthlyInstallment = entryBalance / (Number(data.entryInstallments) || 1)
 
   return (
@@ -90,14 +91,39 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SmartInput
-                label="Sinal (Ato)"
-                prefix="R$"
-                value={data.entrySignal ?? ''}
-                onChange={(v) => setData({ ...data, entrySignal: v })}
-                max={downPayment}
-                subtitle="Pago na assinatura"
-              />
+              <div className="space-y-4">
+                <SmartInput
+                  label="Sinal (Ato)"
+                  prefix="R$"
+                  value={data.entrySignal ?? ''}
+                  onChange={(v) => setData({ ...data, entrySignal: v })}
+                  max={downPayment}
+                  subtitle="Pago na assinatura"
+                />
+
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-gray-500 uppercase">Utilizar FGTS?</span>
+                    <ToggleSwitch
+                      checked={!!data.useFGTS}
+                      onChange={(v) => setData({ ...data, useFGTS: v })}
+                    />
+                  </div>
+                  {data.useFGTS && (
+                    <div className="animate-in fade-in slide-in-from-top-2">
+                      <SmartInput
+                        label="Valor do FGTS"
+                        prefix="R$"
+                        value={data.fgtsValue ?? ''}
+                        onChange={(v) => setData({ ...data, fgtsValue: v })}
+                        max={downPayment}
+                        subtitle="Entrada (Recurso Próprio)"
+                        disableSlider
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {/* Time Slider Input for Installments */}
               <div className="space-y-2">
@@ -256,38 +282,111 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
           </div>
         </div>
 
-        {/* ADVANCED SETTINGS ACCORDION */}
-        <div className="border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden">
+        {/* CONFIGURAÇÕES DE CÁLCULO / PROPOSTA */}
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden animate-in slide-in-from-bottom-4">
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-between p-4 bg-white border-b border-gray-100 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center justify-between p-6 bg-white hover:bg-gray-50 transition-colors"
           >
-            <div className="flex items-center gap-2 text-gray-700 font-bold text-sm">
-              <Settings size={18} className="text-gray-400" />
-              Configurações Avançadas (Taxas e Seguros)
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${showAdvanced ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-500'}`}>
+                <Settings size={20} />
+              </div>
+              <div className="text-left">
+                <p className="font-bold text-gray-800 text-sm">Personalização da Proposta</p>
+                <p className="text-xs text-gray-500">Ajustes finos de INCC, Evolução de Obra e Taxas</p>
+              </div>
             </div>
-            {showAdvanced ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+            {showAdvanced ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
           </button>
 
           {showAdvanced && (
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-4">
-              {!data.useExternalSimulation && (
-                <SmartInput label="Taxa de Juros (% a.a)" value={data.interestRate ?? ''} onChange={(v) => setData({ ...data, interestRate: v })} prefix="%" allowFloat subtitle="Nominal" disableSlider />
-              )}
+            <div className="p-6 pt-0 border-t border-gray-100 bg-gray-50/30">
+              <div className="grid grid-cols-1 gap-8 mt-6">
 
-              {isConstruction && (
-                <SmartInput label="INCC (% a.m)" value={data.inccRate ?? ''} onChange={(v) => setData({ ...data, inccRate: v })} prefix="%" allowFloat subtitle="Correção Obra" disableSlider />
-              )}
+                {/* 1. SEÇÃO OBRA (INCC e Evolução) */}
+                {isConstruction && (
+                  <div className="bg-white p-5 rounded-xl border border-gray-200 space-y-4">
+                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                      <TrendingUp size={14} /> Correção e Evolução (Obra)
+                    </h4>
 
-              {!data.useExternalSimulation && (
-                <>
-                  <SmartInput label="Taxa Adm. Mensal" value={data.monthlyAdminFee ?? ''} onChange={(v) => setData({ ...data, monthlyAdminFee: v })} prefix="R$" disableSlider />
-                  <SmartInput label="Seguro MIP" value={data.insuranceMIP ?? ''} onChange={(v) => setData({ ...data, insuranceMIP: v })} prefix="R$" disableSlider />
-                  <SmartInput label="Seguro DFI" value={data.insuranceDFI ?? ''} onChange={(v) => setData({ ...data, insuranceDFI: v })} prefix="R$" disableSlider />
-                </>
-              )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* INCC */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-bold text-gray-700">Correção INCC</label>
+                          <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full">
+                            Recais sobre Entrada
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 leading-tight">
+                          Define a taxa mensal de reajuste das parcelas pagas diretamente à construtora.
+                        </p>
+                        <SmartInput
+                          value={data.inccRate ?? ''}
+                          onChange={(v) => setData({ ...data, inccRate: v })}
+                          prefix="%"
+                          allowFloat
+                          disableSlider
+                          placeholder="0.00"
+                        />
+                      </div>
 
-              <SmartInput label="Taxa de Valorização (% a.a)" value={data.appreciationRate ?? ''} onChange={(v) => setData({ ...data, appreciationRate: v })} prefix="%" allowFloat disableSlider />
+                      {/* EVOLUÇÃO DE OBRA */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-bold text-gray-700">Juros de Obra</label>
+                          <ToggleSwitch
+                            checked={!!data.useWorkEvolution}
+                            onChange={(v) => setData({ ...data, useWorkEvolution: v })}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500 leading-tight">
+                          Simula a cobrança gradual de juros pelo banco conforme a evolução física da obra.
+                        </p>
+                        <div className={`transition-opacity ${!data.useWorkEvolution ? 'opacity-50 pointer-events-none' : ''}`}>
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-600 bg-gray-100 p-2 rounded-lg">
+                            <span>Status:</span>
+                            <span className="text-blue-600 font-bold">
+                              {data.useWorkEvolution ? 'Ativo (Cobrança Gradual)' : 'Inativo (Sem Juros Obra)'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. SEÇÃO BANCO (Taxas e Seguros) */}
+                {(!data.useExternalSimulation) && (
+                  <div className="bg-white p-5 rounded-xl border border-gray-200 space-y-4">
+                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                      <Banknote size={14} /> Taxas Bancárias (CET)
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <SmartInput label="Juros (% a.a)" value={data.interestRate ?? ''} onChange={(v) => setData({ ...data, interestRate: v })} prefix="%" allowFloat subtitle="Taxa Nominal" disableSlider />
+                      <SmartInput label="Taxa Adm. (R$)" value={data.monthlyAdminFee ?? ''} onChange={(v) => setData({ ...data, monthlyAdminFee: v })} prefix="R$" subtitle="Mensal" disableSlider />
+                      <div className="space-y-2">
+                        <SmartInput label="MIP (R$ est.)" value={data.insuranceMIP ?? ''} onChange={(v) => setData({ ...data, insuranceMIP: v })} prefix="R$" subtitle="Morte/Invalidez" disableSlider />
+                        <SmartInput label="DFI (R$ est.)" value={data.insuranceDFI ?? ''} onChange={(v) => setData({ ...data, insuranceDFI: v })} prefix="R$" subtitle="Danos Físicos" disableSlider />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. APPRAISAL */}
+                <div className="bg-white p-5 rounded-xl border border-gray-200 flex items-center justify-between gap-4">
+                  <div className="max-w-[60%]">
+                    <h4 className="text-sm font-bold text-gray-800 mb-1">Valorização do Imóvel</h4>
+                    <p className="text-xs text-gray-500">Projeção conservadora de valorização anual do ativo.</p>
+                  </div>
+                  <div className="w-[120px]">
+                    <SmartInput value={data.appreciationRate ?? ''} onChange={(v) => setData({ ...data, appreciationRate: v })} prefix="%" allowFloat disableSlider />
+                  </div>
+                </div>
+
+              </div>
             </div>
           )}
         </div>
