@@ -5,6 +5,7 @@ import Button from '../../ui/Button'
 import Step1Selection from './steps/Step1Selection'
 import Step2Values from './steps/Step2Values'
 import Step3Payment from './steps/Step3Payment'
+import Step4LeadCapture from './steps/Step4LeadCapture'
 
 const EditorWizard = ({
   step,
@@ -29,7 +30,8 @@ const EditorWizard = ({
   const steps = [
     { title: 'Seleção de Cenário', subtitle: 'Escolha o modelo de negócio' },
     { title: 'Valores e Simulação', subtitle: 'Defina o valor do imóvel e entrada' },
-    { title: 'Estruturação do Pagamento', subtitle: 'Ajuste parcelas e taxas' }
+    { title: 'Estruturação do Pagamento', subtitle: 'Ajuste parcelas e taxas' },
+    { title: 'Dados do Cliente', subtitle: 'Personalize a proposta final' }
   ]
 
   const currentStep = steps[step] || steps[0]
@@ -46,12 +48,12 @@ const EditorWizard = ({
                 {data.id ? 'Editando Cenário' : 'Novo Cenário'}
               </h1>
               <p className="text-xs md:text-sm text-gray-500 font-medium">
-                Passo {step + 1} de 3: {currentStep.title}
+                Passo {step + 1} de {steps.length}: {currentStep.title}
               </p>
             </div>
             {/* Progress Indicators */}
             <div className="flex items-center gap-2">
-              {[0, 1, 2].map((i) => (
+              {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
                   className={`h-2 rounded-full transition-all duration-500 ${step >= i ? 'bg-gray-900 w-10' : 'bg-gray-200 w-3'}`}
@@ -66,6 +68,7 @@ const EditorWizard = ({
           {step === 0 && <Step1Selection data={data} setData={setData} />}
           {step === 1 && <Step2Values data={data} setData={setData} />}
           {step === 2 && <Step3Payment data={data} setData={setData} />}
+          {step === 3 && <Step4LeadCapture data={data} setData={setData} />}
         </div>
 
         {/* FOOTER ACTIONS */}
@@ -84,7 +87,7 @@ const EditorWizard = ({
           </div>
 
           <div className="flex gap-3 items-center">
-            {step < 2 ? (
+            {step < 3 ? (
               <Button
                 onClick={() => setStep((s) => s + 1)}
                 size="lg"
@@ -105,23 +108,25 @@ const EditorWizard = ({
                   />
                 </div>
 
-                <Button
-                  onClick={() => onGenerateReport({ ...data, name: currentName || 'Sem Nome' })}
-                  variant="secondary"
-                  size="lg"
-                  className="gap-2 hidden md:inline-flex"
-                >
-                  <Printer size={18} />
-                  Relatório
-                </Button>
-
+                {/* Save (Secondary) */}
                 <Button
                   onClick={onSave}
                   disabled={!currentName}
+                  variant="secondary"
                   size="lg"
-                  className={`gap-2 px-6 shadow-lg ${!currentName ? 'opacity-50 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200 focus:ring-emerald-600'}`}
+                  className="gap-2 px-6 shadow-sm"
                 >
                   <Save size={18} /> {data.id ? 'Atualizar' : 'Salvar'}
+                </Button>
+
+                {/* Report (Primary) */}
+                <Button
+                  onClick={() => onGenerateReport({ ...data, name: currentName || 'Sem Nome' })}
+                  size="lg"
+                  className="gap-2 px-8 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 focus:ring-emerald-600"
+                >
+                  <Printer size={18} />
+                  Gerar Proposta PDF
                 </Button>
               </div>
             )}

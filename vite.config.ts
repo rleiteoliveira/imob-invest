@@ -4,9 +4,12 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Adicione esta linha com o nome do repositório entre barras:
+  base: "/imob-invest/",
+
   plugins: [
     react(),
-    tailwindcss(), // <--- A mágica acontece aqui
+    tailwindcss(),
   ],
   define: {
     global: 'window',

@@ -65,7 +65,11 @@ export default function SimulatorLayout(): ReactElement {
     useWorkEvolution: true,
     currentWorkPercent: 30,
     monthsToReady: 24,
-    appreciationRate: 10
+    appreciationRate: 10,
+    clientLead: {
+      name: '',
+      createdAt: new Date()
+    }
   }
 
   const [data, setData] = useState<SimulationScenario>(defaultData)

@@ -6,7 +6,9 @@ import type { SimulationScenario, MonthlyResult } from '../../../types/ScenarioT
 
 const styles = StyleSheet.create({
   page: {
-    padding: 30,
+    paddingTop: 30,
+    paddingHorizontal: 30,
+    paddingBottom: 60, // Margem de segurança para o rodapé
     fontFamily: 'Helvetica',
     fontSize: 10,
     color: '#1f2937', // gray-800
@@ -194,34 +196,43 @@ const styles = StyleSheet.create({
 
   textBold: { fontWeight: 'bold', color: '#111827' },
 
-  footer: {
+  // Rodapé Refatorado
+  footerContainer: {
     position: 'absolute',
-    bottom: 30,
-    left: 30,
-    right: 30,
-    paddingTop: 10,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 30,
+    paddingVertical: 8, // ~ py-2
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6'
+    borderTopColor: '#e5e7eb', // border-gray-200
+    backgroundColor: '#ffffff',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
-  disclaimerBox: {
-    backgroundColor: '#fefce8', // yellow-50
-    padding: 8,
-    borderRadius: 4,
-    marginBottom: 10
-  },
-  disclaimerText: {
-    fontSize: 8,
-    color: '#854d0e', // yellow-800
+  footerLegalText: {
+    fontSize: 8, // text-[8px]
+    color: '#9ca3af', // text-gray-400
     textAlign: 'justify',
-    lineHeight: 1.4
+    width: '65%',
+    lineHeight: 1.2
+  },
+  footerRightBlock: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    width: '30%'
   },
   footerBrand: {
     fontSize: 8,
-    color: '#d1d5db',
-    textAlign: 'center',
-    textTransform: 'uppercase',
     fontWeight: 'bold',
-    letterSpacing: 2
+    color: '#111827',
+    textTransform: 'uppercase',
+    marginBottom: 2
+  },
+  footerPageNumber: {
+    fontSize: 8,
+    color: '#9ca3af'
   }
 });
 
@@ -235,6 +246,23 @@ interface ReportPDFProps {
 
 export const ReportPDF = ({ scenario, timeline, summary, brandColor = '#2563eb', companyLogo }: ReportPDFProps) => {
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
+  const getOptimizedRows = (fullTimeline: MonthlyResult[]) => {
+    const constructionRows = fullTimeline.filter(r => r.phase === 'OBRA');
+    const financingRows = fullTimeline.filter(r => r.phase === 'AMORTIZACAO');
+
+    const financingSummary = financingRows.length > 0 ? {
+      first: financingRows[0],
+      last: financingRows[financingRows.length - 1],
+      count: financingRows.length,
+      years: Math.floor(financingRows.length / 12),
+      totalValue: financingRows.reduce((acc, curr) => acc + curr.totalInstallment, 0)
+    } : null;
+
+    return { constructionRows, financingSummary };
+  };
+
+  const { constructionRows, financingSummary } = getOptimizedRows(timeline);
 
   return (
     <Document>
@@ -258,15 +286,15 @@ export const ReportPDF = ({ scenario, timeline, summary, brandColor = '#2563eb',
           <View style={styles.clientGrid}>
             <View style={styles.clientItem}>
               <Text style={styles.label}>Cliente</Text>
-              <Text style={styles.value}>{scenario.clientName || '---'}</Text>
+              <Text style={styles.value}>{scenario.clientLead?.name || scenario.clientName || '---'}</Text>
             </View>
             <View style={styles.clientItem}>
               <Text style={styles.label}>Telefone</Text>
-              <Text style={styles.value}>{scenario.clientPhone || '---'}</Text>
+              <Text style={styles.value}>{scenario.clientLead?.phone || scenario.clientPhone || '---'}</Text>
             </View>
             <View style={styles.clientItem}>
               <Text style={styles.label}>Unidade</Text>
-              <Text style={styles.value}>{scenario.unitName || '---'}</Text>
+              <Text style={styles.value}>{scenario.clientLead?.unitOfInterest || scenario.unitName || '---'}</Text>
             </View>
             <View style={styles.clientItem}>
               <Text style={styles.label}>Valor Imóvel</Text>
@@ -278,39 +306,31 @@ export const ReportPDF = ({ scenario, timeline, summary, brandColor = '#2563eb',
         {/* Linha 1: Cards Mês */}
         <Text style={styles.sectionTitle}>Fluxo Mensal Inicial</Text>
         <View style={styles.cardsRow}>
-          {/* Azul */}
-          <View style={[styles.card, styles.cardBlueDark, { backgroundColor: brandColor, borderColor: brandColor }]}>
+          {/* Azul - Construtora */}
+          <View style={[styles.card, styles.cardBlueDark, { backgroundColor: brandColor || '#2563eb', borderColor: brandColor || '#1d4ed8' }]}>
             <Text style={styles.cardBlueLabelDark}>1ª Parc. Construtora</Text>
             <Text style={styles.cardBlueValueDark}>{fmt(summary.firstEntryInstallment)}</Text>
-            <Text style={styles.cardBlueSubDark}>Mensalidade Entrada</Text>
+            <Text style={styles.cardBlueSubDark}>Mensalidade da Entrada</Text>
           </View>
-          {/* Laranja */}
+          {/* Laranja - Obra */}
           <View style={[styles.card, styles.cardOrangeDark]}>
             <Text style={styles.cardOrangeLabelDark}>1ª Evolução Obra</Text>
             <Text style={styles.cardOrangeValueDark}>{fmt(summary.firstObraInstallment)}</Text>
-            <Text style={styles.cardOrangeSubDark}>Juros Banco (Estimado)</Text>
-          </View>
-          {/* Verde */}
-          <View style={[styles.card, styles.cardGreenDark]}>
-            <Text style={styles.cardGreenLabelDark}>1ª Financiamento</Text>
-            <Text style={styles.cardGreenValueDark}>{fmt(summary.firstFinancInstallment)}</Text>
-            <Text style={styles.cardGreenSubDark}>Pós-Chaves</Text>
+            <Text style={styles.cardOrangeSubDark}>Juros Bancários (Estimado)</Text>
           </View>
         </View>
 
-        {/* Linha 2: Totais */}
-        <Text style={styles.sectionTitle}>Resumo de Custos</Text>
-        <View style={styles.summaryRow}>
-          <View style={styles.cardGray}>
-            <Text style={styles.cardGrayLabel}>Total Juros de Obra</Text>
-            <Text style={styles.cardGrayValue}>{fmt(summary.totalObraInterest)}</Text>
-            <Text style={styles.cardGraySub}>Juros pagos durante a construção</Text>
+
+
+        {/* Total Cost Section (New) */}
+        <View style={{ marginTop: 8, padding: 10, backgroundColor: '#f3f4f6', borderRadius: 8, borderWidth: 1, borderColor: '#e5e7eb', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View>
+            <Text style={{ fontSize: 9, fontWeight: 'bold', textTransform: 'uppercase', color: '#111827' }}>Total Estimado no Período de Obra</Text>
+            <Text style={{ fontSize: 8, color: '#6b7280', marginTop: 2 }}>Entrada ({fmt(Number(scenario.downPayment) || 0)}) + Juros Obra ({fmt(summary.totalObraInterest)}) + INCC ({fmt(summary.totalINCC)})</Text>
           </View>
-          <View style={styles.cardGray}>
-            <Text style={styles.cardGrayLabel}>Variação INCC</Text>
-            <Text style={styles.cardGrayValue}>{fmt(summary.totalINCC)}</Text>
-            <Text style={styles.cardGraySub}>Correção monetária estimada</Text>
-          </View>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#111827', letterSpacing: -0.5 }}>
+            {fmt((Number(scenario.downPayment) || 0) + summary.totalObraInterest + summary.totalINCC)}
+          </Text>
         </View>
 
         {/* Tabela */}
@@ -323,7 +343,7 @@ export const ReportPDF = ({ scenario, timeline, summary, brandColor = '#2563eb',
             <Text style={[styles.colTotal, styles.tableHeaderLabel]}>Total Mensal</Text>
             <Text style={[styles.colBalance, styles.tableHeaderLabel]}>Saldo Dev.</Text>
           </View>
-          {timeline.map((row, i) => (
+          {constructionRows.map((row, i) => (
             <View key={row.month} style={[styles.tableRow, { backgroundColor: i % 2 === 0 ? '#ffffff' : '#f9fafb' }]}>
               <Text style={[styles.colMonth, { fontSize: 8, color: '#9ca3af' }]}>{row.month}</Text>
               <Text style={[styles.colBuilder, { fontSize: 9, color: row.builderInstallment > 0 ? brandColor : '#d1d5db', fontWeight: row.builderInstallment > 0 ? 'bold' : 'normal' }]}>
@@ -340,18 +360,69 @@ export const ReportPDF = ({ scenario, timeline, summary, brandColor = '#2563eb',
               </Text>
             </View>
           ))}
-        </View>
 
-        {/* Rodapé */}
-        <View style={styles.footer} fixed>
-          <View style={styles.disclaimerBox}>
-            <Text style={styles.disclaimerText}>
-              Atenção: Os valores de financiamento futuro são projeções baseadas na taxa de juros atual e na correção do INCC durante a obra. O valor total final pago depende de indexadores econômicos, amortizações extraordinárias e reajustes anuais de seguro. Esta simulação não possui valor contratual.
+          {/* Divisor Entrega das Chaves */}
+          <View style={{ paddingVertical: 8, backgroundColor: '#f0fdf4', borderTopWidth: 1, borderTopColor: '#bbf7d0', borderBottomWidth: 1, borderBottomColor: '#bbf7d0', marginTop: 5, marginBottom: 5 }}>
+            <Text style={{ textAlign: 'center', fontSize: 10, fontWeight: 'black', color: '#15803d', textTransform: 'uppercase', letterSpacing: 1 }}>
+              ★ Entrega das Chaves / Início do Financiamento ★
             </Text>
           </View>
-          <Text style={styles.footerBrand}>
-            Imob-Invest Simulator
+
+          {/* Resumo da Fase de Financiamento */}
+          {financingSummary && (
+            <View break style={{ marginTop: 20 }}>
+              <Text style={styles.sectionTitle}>Resumo do Financiamento</Text>
+              <View style={{ flexDirection: 'row', backgroundColor: '#f9fafb', padding: 10, borderRadius: 6, borderWidth: 1, borderColor: '#f3f4f6' }}>
+
+                {/* Saldo */}
+                <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#e5e7eb', paddingRight: 10 }}>
+                  <Text style={styles.label}>Saldo a Financiar</Text>
+                  <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#111827', marginTop: 2 }}>
+                    {fmt(financingSummary.first.bankBalance + financingSummary.first.bankAmortization)}
+                  </Text>
+                </View>
+
+                {/* Condições */}
+                <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#e5e7eb', paddingHorizontal: 10 }}>
+                  <Text style={styles.label}>Condições</Text>
+                  <Text style={{ fontSize: 10, color: '#111827', marginTop: 2 }}>
+                    {scenario.amortizationSystem} • {scenario.interestRate}% a.a.
+                  </Text>
+                  <Text style={{ fontSize: 9, color: '#6b7280' }}>
+                    {financingSummary.count} meses ({financingSummary.years} anos)
+                  </Text>
+                </View>
+
+                {/* Parcelas */}
+                <View style={{ flex: 1, paddingLeft: 10 }}>
+                  <Text style={styles.label}>Parcelas Estimadas</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
+                    <Text style={{ fontSize: 9, color: '#111827' }}>1ª {fmt(financingSummary.first.totalInstallment)}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ fontSize: 9, color: '#6b7280' }}>Últ. {fmt(financingSummary.last.totalInstallment)}</Text>
+                  </View>
+                </View>
+
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Rodapé Refatorado */}
+        <View style={styles.footerContainer} fixed>
+          <Text style={styles.footerLegalText}>
+            Atenção: Os valores podem sofrer alterações. Simulação sem valor contratual.
           </Text>
+
+          <View style={styles.footerRightBlock}>
+            <Text style={styles.footerBrand}>
+              Imob-Invest Simulator
+            </Text>
+            <Text style={styles.footerPageNumber} render={({ pageNumber, totalPages }) => (
+              `${pageNumber} / ${totalPages}`
+            )} />
+          </View>
         </View>
       </Page>
     </Document>

@@ -73,6 +73,17 @@ export interface SimulationScenario {
   clientPhone?: string
   unitName?: string
   brokerName?: string
+
+  clientLead: ClientLead
+}
+
+export interface ClientLead {
+  name: string      // Nome do Cliente (Obrigatório para o PDF ficar bonito)
+  phone?: string    // Telefone/WhatsApp (Opcional)
+  email?: string    // Email (Opcional)
+  unitOfInterest?: string // Unidade/Torre (ex: "Apt 402 - Torre A")
+  notes?: string    // Observações do Corretor
+  createdAt: Date
 }
 
 export interface MonthlyResult {
