@@ -317,7 +317,7 @@ const DetailedReportView = ({
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">
             Fluxo Mensal Inicial (Fase de Obras)
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 break-inside-avoid">
+          <div className={`grid grid-cols-1 ${scenario.useWorkEvolution ? 'md:grid-cols-2' : 'md:grid-cols-1 md:max-w-md'} gap-4 break-inside-avoid`}>
             {/* Card 1: Construtora */}
             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
@@ -339,26 +339,28 @@ const DetailedReportView = ({
               </div>
             </div>
 
-            {/* Card 2: Evolução de Obra */}
-            <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                <TrendingUp size={80} />
-              </div>
-              <div className="relative z-10">
-                <p className="text-[10px] font-bold text-amber-50 uppercase tracking-wider mb-2">
-                  1ª Evolução de Obra
-                </p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-lg opacity-80">R$</span>
-                  <span className="text-4xl font-black tracking-tighter">
-                    {new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(summary.firstObraInstallment)}
-                  </span>
+            {/* Card 2: Evolução de Obra (Condicional) */}
+            {scenario.useWorkEvolution && (
+              <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                  <TrendingUp size={80} />
                 </div>
-                <p className="text-[10px] text-amber-50 mt-2 opacity-80 font-medium">
-                  Juros Bancários (Estimativa Inicial)
-                </p>
+                <div className="relative z-10">
+                  <p className="text-[10px] font-bold text-amber-50 uppercase tracking-wider mb-2">
+                    1ª Evolução de Obra
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-lg opacity-80">R$</span>
+                    <span className="text-4xl font-black tracking-tighter">
+                      {new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(summary.firstObraInstallment)}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-amber-50 mt-2 opacity-80 font-medium">
+                    Juros Bancários (Estimativa Inicial)
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -386,7 +388,9 @@ const DetailedReportView = ({
                   </span>
                 </div>
                 <p className="text-[10px] md:text-xs text-gray-400 mt-2 print:text-gray-600">
-                  Soma de: Entrada Principal ({fmtMoney(Number(scenario.downPayment) || 0)}) + Juros de Obra ({fmtMoney(summary.totalObraInterest)}) + INCC ({fmtMoney(summary.totalINCC)})
+                  Soma de: Entrada Principal ({fmtMoney(Number(scenario.downPayment) || 0)})
+                  {scenario.useWorkEvolution && <> + Juros de Obra ({fmtMoney(summary.totalObraInterest)})</>}
+                  + INCC ({fmtMoney(summary.totalINCC)})
                 </p>
               </div>
 
@@ -419,9 +423,9 @@ const DetailedReportView = ({
                     data={[
                       { name: 'Entrada (Principal)', value: (Number(scenario.downPayment) || 0), color: '#2563eb' },
                       { name: 'Financiamento', value: reportData.financingSummary ? (reportData.financingSummary.first.bankBalance + reportData.financingSummary.first.bankAmortization) : 0, color: '#9333ea' },
-                      { name: 'Juros de Obra', value: summary.totalObraInterest, color: '#f97316' },
+                      { name: 'Juros de Obra', value: scenario.useWorkEvolution ? summary.totalObraInterest : 0, color: '#f97316' },
                       { name: 'Correção INCC', value: summary.totalINCC, color: '#10b981' }
-                    ]}
+                    ].filter(item => item.value > 0)}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -432,9 +436,9 @@ const DetailedReportView = ({
                     {[
                       { name: 'Entrada (Principal)', value: (Number(scenario.downPayment) || 0), color: '#2563eb' },
                       { name: 'Financiamento', value: reportData.financingSummary ? (reportData.financingSummary.first.bankBalance + reportData.financingSummary.first.bankAmortization) : 0, color: '#9333ea' },
-                      { name: 'Juros de Obra', value: summary.totalObraInterest, color: '#f97316' },
+                      { name: 'Juros de Obra', value: scenario.useWorkEvolution ? summary.totalObraInterest : 0, color: '#f97316' },
                       { name: 'Correção INCC', value: summary.totalINCC, color: '#10b981' }
-                    ].map((entry, index) => (
+                    ].filter(item => item.value > 0).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                     ))}
                   </Pie>
@@ -478,9 +482,9 @@ const DetailedReportView = ({
                 {[
                   { label: 'Principal (Entrada)', val: (Number(scenario.downPayment) || 0), color: 'bg-blue-600' },
                   { label: 'Financiamento', val: reportData.financingSummary ? (reportData.financingSummary.first.bankBalance + reportData.financingSummary.first.bankAmortization) : 0, color: 'bg-purple-600' },
-                  { label: 'Juros de Obra', val: summary.totalObraInterest, color: 'bg-orange-500' },
+                  { label: 'Juros de Obra', val: scenario.useWorkEvolution ? summary.totalObraInterest : 0, color: 'bg-orange-500' },
                   { label: 'INCC (Correção)', val: summary.totalINCC, color: 'bg-emerald-500' }
-                ].map((item) => {
+                ].filter(item => item.val > 0).map((item) => {
                   const financingVal = reportData.financingSummary ? (reportData.financingSummary.first.bankBalance + reportData.financingSummary.first.bankAmortization) : 0;
                   const totalWithFinancing = summary.totalConstructionCost + financingVal;
 
@@ -515,10 +519,10 @@ const DetailedReportView = ({
             {/* HEADERS */}
             <div className="grid grid-cols-12 bg-gray-50 p-3 md:p-4 font-bold text-gray-500 uppercase tracking-widest text-[10px] border-b border-gray-100 print:bg-gray-100 print:text-black print:border-gray-300 print:py-2">
               <div className="col-span-1 text-center">Mês</div>
-              <div className="col-span-2 text-right">Mensal</div>
+              <div className={`text-right ${scenario.useWorkEvolution ? 'col-span-2' : 'col-span-3'}`}>Mensal</div>
               <div className="col-span-2 text-right">Reforço</div>
-              <div className="col-span-2 text-right">Evolução</div>
-              <div className="col-span-3 text-right text-gray-900 border-l border-gray-100 ml-2 print:border-gray-300">
+              {scenario.useWorkEvolution && <div className="col-span-2 text-right">Evolução</div>}
+              <div className={`text-right text-gray-900 border-l border-gray-100 ml-2 print:border-gray-300 ${scenario.useWorkEvolution ? 'col-span-3' : 'col-span-4'}`}>
                 Total Mensal
               </div>
               <div className="col-span-2 text-right">Saldo Dev.</div>
@@ -552,7 +556,7 @@ const DetailedReportView = ({
                     </div>
 
                     {/* Mensal */}
-                    <div className="col-span-2 text-right font-medium text-gray-600 print:text-black">
+                    <div className={`text-right font-medium text-gray-600 print:text-black ${scenario.useWorkEvolution ? 'col-span-2' : 'col-span-3'}`}>
                       {monthlyPart > 0 ? fmtMoney(monthlyPart) : '-'}
                     </div>
 
@@ -564,11 +568,13 @@ const DetailedReportView = ({
                     </div>
 
                     {/* Evolução */}
-                    <div className="col-span-2 text-right font-medium text-gray-600 print:text-black">
-                      {fmtMoney(row.bankAmortization + row.bankInterest + row.bankFees)}
-                    </div>
+                    {scenario.useWorkEvolution && (
+                      <div className="col-span-2 text-right font-medium text-gray-600 print:text-black">
+                        {fmtMoney(row.bankAmortization + row.bankInterest + row.bankFees)}
+                      </div>
+                    )}
 
-                    <div className="col-span-3 text-right font-black text-gray-900 border-l border-gray-50 ml-2 print:border-gray-300 print:ml-0 print:pl-2">
+                    <div className={`text-right font-black text-gray-900 border-l border-gray-50 ml-2 print:border-gray-300 print:ml-0 print:pl-2 ${scenario.useWorkEvolution ? 'col-span-3' : 'col-span-4'}`}>
                       {fmtMoney(row.totalInstallment)}
                     </div>
                     <div className="col-span-2 text-right text-gray-400 tabular-nums print:text-gray-600">
