@@ -5,7 +5,8 @@ import Button from '../../ui/Button'
 import Step1Selection from './steps/Step1Selection'
 import Step2Values from './steps/Step2Values'
 import Step3Payment from './steps/Step3Payment'
-import Step4LeadCapture from './steps/Step4LeadCapture'
+import Step4Financing from './steps/Step4Financing'
+import Step5LeadCapture from './steps/Step5LeadCapture'
 
 const EditorWizard = ({
   step,
@@ -30,7 +31,8 @@ const EditorWizard = ({
   const steps = [
     { title: 'Seleção de Cenário', subtitle: 'Escolha o modelo de negócio' },
     { title: 'Valores e Simulação', subtitle: 'Defina o valor do imóvel e entrada' },
-    { title: 'Estruturação do Pagamento', subtitle: 'Ajuste parcelas e taxas' },
+    { title: 'Estruturação do Pagamento', subtitle: 'Configurar fluxo e FGTS' },
+    { title: 'Detalhamento Financeiro', subtitle: 'Ajuste parcelas e taxas' },
     { title: 'Dados do Cliente', subtitle: 'Personalize a proposta final' }
   ]
 
@@ -53,7 +55,7 @@ const EditorWizard = ({
             </div>
             {/* Progress Indicators */}
             <div className="flex items-center gap-2">
-              {[0, 1, 2, 3].map((i) => (
+              {[0, 1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
                   className={`h-2 rounded-full transition-all duration-500 ${step >= i ? 'bg-gray-900 w-10' : 'bg-gray-200 w-3'}`}
@@ -68,7 +70,8 @@ const EditorWizard = ({
           {step === 0 && <Step1Selection data={data} setData={setData} />}
           {step === 1 && <Step2Values data={data} setData={setData} />}
           {step === 2 && <Step3Payment data={data} setData={setData} />}
-          {step === 3 && <Step4LeadCapture data={data} setData={setData} />}
+          {step === 3 && <Step4Financing data={data} setData={setData} />}
+          {step === 4 && <Step5LeadCapture data={data} setData={setData} />}
         </div>
 
         {/* FOOTER ACTIONS */}
@@ -87,7 +90,7 @@ const EditorWizard = ({
           </div>
 
           <div className="flex gap-3 items-center">
-            {step < 3 ? (
+            {step < 4 ? (
               <Button
                 onClick={() => setStep((s) => s + 1)}
                 size="lg"
