@@ -38,7 +38,7 @@ export default function SimulatorLayout(): ReactElement {
 
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<'EDITOR' | 'COMPARE' | 'GLOBAL_SETTINGS'>('EDITOR')
-  const [editorTab, setEditorTab] = useState<'FINANCING' | 'AIRBNB'>('FINANCING')
+  const [editorTab, setEditorTab] = useState<'FINANCING' | 'RENTAL'>('FINANCING')
   const [showSuccess, setShowSuccess] = useState(false)
   const [step, setStep] = useState(0)
   const [currentName, setCurrentName] = useState('')
@@ -243,11 +243,11 @@ export default function SimulatorLayout(): ReactElement {
             <button
               onClick={() => {
                 setViewMode('EDITOR')
-                setEditorTab('AIRBNB')
+                setEditorTab('RENTAL')
               }}
-              className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${viewMode === 'EDITOR' && editorTab === 'AIRBNB' ? 'bg-rose-50 text-rose-700' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
+              className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${viewMode === 'EDITOR' && editorTab === 'RENTAL' ? 'bg-rose-50 text-rose-700' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
             >
-              <Hotel size={18} /> Análise Airbnb
+              <Hotel size={18} /> Análise Lucro
             </button>
           </div>
 
@@ -374,7 +374,7 @@ export default function SimulatorLayout(): ReactElement {
               variant="page"
             />
           </div>
-        ) : editorTab === 'AIRBNB' ? (
+        ) : editorTab === 'RENTAL' ? (
           <RentabilityView
             scenario={data}
             onChange={setData}

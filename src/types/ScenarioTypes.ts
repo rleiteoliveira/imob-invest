@@ -9,17 +9,17 @@ export interface BuilderBalloon {
 }
 
 export interface RentabilityConfig {
-  dailyRate: number | ''
+  projectedMonthlyIncome: number | '' // Previously dailyRate
   occupancyRate: number | '' // 0-100
-  platformFeePercent: number | ''
+  managementFeePercent: number | '' // Previously platformFeePercent
   cleaningFee: number | ''
   monthlyCondo: number | ''
   monthlyMaintenance: number | ''
-  averageStaysPerMonth: number | ''
+  monthlyTurnover: number | '' // Previously averageStaysPerMonth
   financingCostOverride?: number | ''
 }
 
-export interface AirbnbResult {
+export interface RentalResult {
   grossRevenue: number
   totalExpenses: number
   netOperatingIncome: number

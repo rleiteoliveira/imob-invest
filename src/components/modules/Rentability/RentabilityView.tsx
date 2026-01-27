@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import CurrencyInput from '../../ui/CurrencyInput'
 import NumberInput from '../../ui/NumberInput'
-import { calculateAirbnbReturn } from '../../../core/engines/AirbnbCalculator'
+import { calculateRentalReturn } from '../../../core/engines/RentalCalculator'
 import type { SimulationScenario, RentabilityConfig } from '../../../types/ScenarioTypes'
 
 interface RentabilityViewProps {
@@ -30,13 +30,13 @@ interface RentabilityViewProps {
 }
 
 const defaultConfig: RentabilityConfig = {
-  dailyRate: 350,
-  occupancyRate: 60,
-  platformFeePercent: 15,
-  cleaningFee: 150,
+  projectedMonthlyIncome: 3000,
+  occupancyRate: 80,
+  managementFeePercent: 10,
+  cleaningFee: 100,
   monthlyCondo: 400,
   monthlyMaintenance: 200,
-  averageStaysPerMonth: 4
+  monthlyTurnover: 2
 }
 
 const formatMoney = (val: number) => {
@@ -76,7 +76,7 @@ export default function RentabilityView({
   const effectiveFinancingCost = Number(config.financingCostOverride) || 0
 
   const metrics = useMemo(() => {
-    return calculateAirbnbReturn(config, effectiveFinancingCost)
+    return calculateRentalReturn(config, effectiveFinancingCost)
   }, [config, effectiveFinancingCost])
 
   const chartData = [
@@ -107,18 +107,18 @@ export default function RentabilityView({
               <Building2 size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-800">Parâmetros Airbnb</h2>
+              <h2 className="text-lg font-bold text-gray-800">Análise Lucro</h2>
               <p className="text-xs text-gray-400">Configure as premissas de aluguel</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <CurrencyInput
-              label="Diária Média"
-              value={config.dailyRate}
-              onChange={(v) => updateConfig('dailyRate', v)}
+              label="Receita Mensal Potencial"
+              value={config.projectedMonthlyIncome}
+              onChange={(v) => updateConfig('projectedMonthlyIncome', v)}
               prefix="R$"
-              highlight='Média'
+              highlight='Mensal'
             />
 
             <div className="w-full">
@@ -139,13 +139,13 @@ export default function RentabilityView({
 
             <div className="w-full">
               <label className="text-xs font-bold text-gray-500 uppercase mb-1">
-                Taxa da Plataforma (%)
+                Taxa de Gestão (%)
               </label>
               <div className="relative flex items-center border border-gray-300 rounded-xl bg-white focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-500 transition-all">
                 <Percent size={16} className="absolute left-3 text-gray-400" />
                 <NumberInput
-                  value={config.platformFeePercent}
-                  onChange={(v) => updateConfig('platformFeePercent', v)}
+                  value={config.managementFeePercent}
+                  onChange={(v) => updateConfig('managementFeePercent', v)}
                   className="w-full pl-9 pr-3 py-3 outline-none font-bold text-lg text-gray-800 bg-transparent rounded-xl"
                   min={0}
                   max={100}
@@ -155,19 +155,19 @@ export default function RentabilityView({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase mb-1">Check-ins/Mês</label>
+                <label className="text-xs font-bold text-gray-500 uppercase mb-1">Rotatividade/Mês</label>
                 <div className="relative flex items-center border border-gray-300 rounded-xl bg-white">
                   <Calendar size={16} className="absolute left-3 text-gray-400" />
                   <NumberInput
-                    value={config.averageStaysPerMonth}
-                    onChange={(v) => updateConfig('averageStaysPerMonth', v)}
+                    value={config.monthlyTurnover}
+                    onChange={(v) => updateConfig('monthlyTurnover', v)}
                     className="w-full pl-9 pr-3 py-3 outline-none font-bold text-lg text-gray-800 bg-transparent rounded-xl"
                   />
                 </div>
               </div>
               <div>
                 <CurrencyInput
-                  label="Taxa Limpeza"
+                  label="Custo Variável (Un)"
                   value={config.cleaningFee}
                   onChange={(v) => updateConfig('cleaningFee', v)}
                   prefix="R$"
