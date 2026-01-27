@@ -27,6 +27,7 @@ export interface AirbnbResult {
 
 export interface SimulationScenario {
   id?: string
+  developmentId?: string
   name?: string
   propertyValue: number | ''
   downPayment: number | ''
@@ -99,4 +100,17 @@ export interface MonthlyResult {
   totalInstallment: number
   accumulatedPaid: number
   phase: 'OBRA' | 'AMORTIZACAO'
+}
+
+export interface DevelopmentConfig {
+  id: string
+  name: string
+  constructionStatus: 'PRE_OBRA' | 'EM_ANDAMENTO'
+  monthsUntilConstructionStart: number | ''
+  constructionDuration: number | ''
+  constructionTime: number | '' // Time Remaining
+  currentWorkPercent: number | ''
+  inccRate: number | ''
+  useWorkEvolution: boolean
+  appreciationRate: number | ''
 }

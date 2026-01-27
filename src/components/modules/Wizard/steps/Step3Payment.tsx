@@ -1,12 +1,15 @@
 import type { ReactElement } from 'react'
 import { useState, useEffect } from 'react'
-import type { SimulationScenario, BuilderBalloon } from '../../../../types/ScenarioTypes'
+import type { SimulationScenario, BuilderBalloon, DevelopmentConfig } from '../../../../types/ScenarioTypes'
 import BuilderBalloonModal from '../../UnifiedEditor/BuilderBalloonModal'
+import DevelopmentEditorModal from '../../UnifiedEditor/DevelopmentEditorModal'
+import ProposalConfigModal from '../../UnifiedEditor/ProposalConfigModal'
+import { useDevelopments } from '../../../../hooks/useDevelopments'
 import SmartInput from '../../../ui/SmartInput'
 import TimeSliderInput from '../../../ui/TimeSliderInput'
 import PercentageInput from '../../../ui/PercentageInput'
 import ToggleSwitch from '../../../ui/ToggleSwitch'
-import { Settings, ChevronDown, ChevronUp, Construction, Banknote, TrendingUp } from 'lucide-react'
+import { ChevronDown, Construction, Building2, Edit2, Plus, Settings2, Banknote } from 'lucide-react'
 
 interface StepProps {
   data: SimulationScenario
@@ -15,7 +18,49 @@ interface StepProps {
 
 export default function Step3Payment({ data, setData }: StepProps): ReactElement {
   const [showBalloonModal, setShowBalloonModal] = useState(false)
-  const [showAdvanced, setShowAdvanced] = useState(false)
+
+  // Proposal Config Modal
+  const [showProposalModal, setShowProposalModal] = useState(false)
+
+  // Development Mode State
+  const { developments, saveDevelopment } = useDevelopments()
+  const [showDevModal, setShowDevModal] = useState(false)
+  const [editingDev, setEditingDev] = useState<DevelopmentConfig | null>(null)
+
+  const selectedDev = data.developmentId ? developments.find(d => d.id === data.developmentId) : null
+
+  const handleSelectDevelopment = (devId: string) => {
+    if (!devId) {
+      setData({ ...data, developmentId: undefined, name: undefined }) // Reset to custom
+      return
+    }
+    const dev = developments.find(d => d.id === devId)
+    if (dev) {
+      applyDevelopmentToData(dev)
+    }
+  }
+
+  const applyDevelopmentToData = (dev: DevelopmentConfig) => {
+    setData({
+      ...data,
+      developmentId: dev.id,
+      // name: dev.name, // Keeping scenario name independent? Or sync? Let's NOT sync scenario name to keep it flexible
+      constructionStatus: dev.constructionStatus,
+      monthsUntilConstructionStart: dev.monthsUntilConstructionStart,
+      constructionDuration: dev.constructionDuration,
+      constructionTime: dev.constructionTime,
+      currentWorkPercent: dev.currentWorkPercent,
+      inccRate: dev.inccRate,
+      useWorkEvolution: dev.useWorkEvolution,
+      appreciationRate: dev.appreciationRate
+    })
+  }
+
+  const handleSaveDev = (dev: DevelopmentConfig) => {
+    saveDevelopment(dev)
+    applyDevelopmentToData(dev)
+    setShowDevModal(false)
+  }
 
   const isConstruction = data.type === 'MCMV' || data.type === 'DIRETO'
 
@@ -75,6 +120,20 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
 
   return (
     <div className="h-full animate-in fade-in slide-in-from-right-4 duration-300 pb-20">
+      <DevelopmentEditorModal
+        isOpen={showDevModal}
+        onClose={() => setShowDevModal(false)}
+        initialData={editingDev}
+        onSave={handleSaveDev}
+      />
+
+      <ProposalConfigModal
+        isOpen={showProposalModal}
+        onClose={() => setShowProposalModal(false)}
+        data={data}
+        setData={setData}
+      />
+
       <BuilderBalloonModal
         isOpen={showBalloonModal}
         onClose={() => setShowBalloonModal(false)}
@@ -91,9 +150,46 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
         {/* CONSTRUCTION PHASE INPUTS */}
         {isConstruction && (
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
-              <Construction className="text-orange-500" size={20} />
-              <h3 className="font-bold text-gray-800">Fluxo de Pagamento na Obra</h3>
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+              <div className="flex items-center gap-2">
+                <Construction className="text-orange-500" size={20} />
+                <h3 className="font-bold text-gray-800">Fluxo de Pagamento na Obra</h3>
+              </div>
+
+              {/* Development Selector */}
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <select
+                    value={data.developmentId || ''}
+                    onChange={(e) => handleSelectDevelopment(e.target.value)}
+                    className="appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-xs font-bold py-2 pl-3 pr-8 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+                  >
+                    <option value="">Personalizado</option>
+                    {developments.map(dev => (
+                      <option key={dev.id} value={dev.id}>{dev.name}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
+
+                {selectedDev ? (
+                  <button
+                    onClick={() => { setEditingDev(selectedDev); setShowDevModal(true); }}
+                    className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                    title="Editar Empreendimento"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { setEditingDev(null); setShowDevModal(true); }}
+                    className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+                    title="Novo Empreendimento"
+                  >
+                    <Plus size={16} />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -170,77 +266,103 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
               </div>
             </div>
 
-            {/* Status da Obra Selection */}
-            <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Status da Obra</label>
-              <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
-                <button
-                  className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${(!data.constructionStatus || data.constructionStatus === 'EM_ANDAMENTO') ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                  onClick={() => setData({ ...data, constructionStatus: 'EM_ANDAMENTO' })}
-                >
-                  Em Andamento / Iniciada
-                </button>
-                <button
-                  className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${data.constructionStatus === 'PRE_OBRA' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                  onClick={() => setData({ ...data, constructionStatus: 'PRE_OBRA' })}
-                >
-                  Lançamento (Pré-Obra)
-                </button>
-              </div>
-              {/* Construction Duration Inputs */}
-              {data.constructionStatus === 'PRE_OBRA' ? (
-                <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+            {/* Status da Obra Selection - Shown only if NO development selected OR readonly summary */}
+            {selectedDev ? (
+              <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white p-2 rounded-lg shadow-sm text-orange-500">
+                    <Building2 size={24} />
+                  </div>
                   <div>
+                    <p className="text-xs font-bold text-orange-800 uppercase tracking-wide">Empreendimento Definido</p>
+                    <p className="font-bold text-gray-800">{selectedDev.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {selectedDev.constructionStatus === 'PRE_OBRA' ? 'Lançamento/Pré-Obra' : 'Em Andamento'} • {selectedDev.constructionDuration} meses totais
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-bold bg-white px-2 py-1 rounded border border-orange-100 text-orange-600">
+                    {selectedDev.constructionStatus === 'PRE_OBRA'
+                      ? `Início em ${selectedDev.monthsUntilConstructionStart} m`
+                      : `${selectedDev.constructionTime} m restantes`
+                    }
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Status da Obra</label>
+                <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
+                  <button
+                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${(!data.constructionStatus || data.constructionStatus === 'EM_ANDAMENTO') ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                    onClick={() => setData({ ...data, constructionStatus: 'EM_ANDAMENTO' })}
+                  >
+                    Em Andamento / Iniciada
+                  </button>
+                  <button
+                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${data.constructionStatus === 'PRE_OBRA' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                    onClick={() => setData({ ...data, constructionStatus: 'PRE_OBRA' })}
+                  >
+                    Lançamento (Pré-Obra)
+                  </button>
+                </div>
+                {/* Construction Duration Inputs */}
+                {data.constructionStatus === 'PRE_OBRA' ? (
+                  <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                    <div>
+                      <TimeSliderInput
+                        label="Espera (Pré-Obra)"
+                        value={Number(data.monthsUntilConstructionStart ?? 0)}
+                        onChange={(v) => {
+                          const duration = Number(data.constructionDuration) || 0
+                          setData({
+                            ...data,
+                            monthsUntilConstructionStart: v,
+                            constructionTime: v + duration
+                          })
+                        }}
+                        max={100}
+                      />
+                    </div>
                     <TimeSliderInput
-                      label="Espera (Pré-Obra)"
-                      value={Number(data.monthsUntilConstructionStart ?? 0)}
+                      label="Duração da Obra"
+                      value={Number(data.constructionDuration ?? 36)}
                       onChange={(v) => {
-                        const duration = Number(data.constructionDuration) || 0
+                        const start = Number(data.monthsUntilConstructionStart) || 0
                         setData({
                           ...data,
-                          monthsUntilConstructionStart: v,
-                          constructionTime: v + duration
+                          constructionDuration: v,
+                          constructionTime: start + v
                         })
                       }}
                       max={100}
+                      min={outstandingEntryBalance > 100 ? 1 : 0}
                     />
                   </div>
-                  <TimeSliderInput
-                    label="Duração da Obra"
-                    value={Number(data.constructionDuration ?? 36)}
-                    onChange={(v) => {
-                      const start = Number(data.monthsUntilConstructionStart) || 0
-                      setData({
-                        ...data,
-                        constructionDuration: v,
-                        constructionTime: start + v
-                      })
-                    }}
-                    max={100}
-                    min={outstandingEntryBalance > 100 ? 1 : 0}
-                  />
-                </div>
-              ) : (
-                /* If construction is ongoing, we set Remaining Time AND Current Progress */
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                  <TimeSliderInput
-                    label="Tempo Restante de Obra"
-                    value={Number(data.constructionTime ?? 24)}
-                    onChange={(v) => {
-                      setData({ ...data, constructionTime: v })
-                    }}
-                    max={100}
-                    min={outstandingEntryBalance > 100 ? 1 : 0}
-                    subLabel="meses"
-                  />
-                  <PercentageInput
-                    label="Obra Concluída"
-                    value={data.currentWorkPercent || 0}
-                    onChange={(v) => setData({ ...data, currentWorkPercent: v })}
-                  />
-                </div>
-              )}
-            </div>
+                ) : (
+                  /* If construction is ongoing, we set Remaining Time AND Current Progress */
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                    <TimeSliderInput
+                      label="Tempo Restante de Obra"
+                      value={Number(data.constructionTime ?? 24)}
+                      onChange={(v) => {
+                        setData({ ...data, constructionTime: v })
+                      }}
+                      max={100}
+                      min={outstandingEntryBalance > 100 ? 1 : 0}
+                      subLabel="meses"
+                    />
+                    <PercentageInput
+                      label="Obra Concluída"
+                      value={data.currentWorkPercent || 0}
+                      onChange={(v) => setData({ ...data, currentWorkPercent: v })}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+            {/* End Status da Obra / Summary */}
           </div>
         )}
 
@@ -295,114 +417,28 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
           </div>
         </div>
 
-        {/* CONFIGURAÇÕES DE CÁLCULO / PROPOSTA */}
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden animate-in slide-in-from-bottom-4">
-          <button
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-between p-6 bg-white hover:bg-gray-50 transition-colors"
-          >
+        {/* CONFIGURAÇÕES DE CÁLCULO / PROPOSTA (Simplified Button) */}
+        {!data.useExternalSimulation && (
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${showAdvanced ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-500'}`}>
-                <Settings size={20} />
+              <div className="bg-purple-50 text-purple-600 p-2 rounded-lg">
+                <Settings2 size={20} />
               </div>
-              <div className="text-left">
-                <p className="font-bold text-gray-800 text-sm">Personalização da Proposta</p>
-                <p className="text-xs text-gray-500">Ajustes finos de INCC, Evolução de Obra e Taxas</p>
-              </div>
-            </div>
-            {showAdvanced ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
-          </button>
-
-          {showAdvanced && (
-            <div className="p-6 pt-0 border-t border-gray-100 bg-gray-50/30">
-              <div className="grid grid-cols-1 gap-8 mt-6">
-
-                {/* 1. SEÇÃO OBRA (INCC e Evolução) */}
-                {isConstruction && (
-                  <div className="bg-white p-5 rounded-xl border border-gray-200 space-y-4">
-                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                      <TrendingUp size={14} /> Correção e Evolução (Obra)
-                    </h4>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* INCC */}
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-bold text-gray-700">Correção INCC</label>
-                          <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full">
-                            Recais sobre Entrada
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 leading-tight">
-                          Define a taxa mensal de reajuste das parcelas pagas diretamente à construtora.
-                        </p>
-                        <SmartInput
-                          value={data.inccRate ?? ''}
-                          onChange={(v) => setData({ ...data, inccRate: v })}
-                          prefix="%"
-                          allowFloat
-                          disableSlider
-                          placeholder="0.00"
-                        />
-                      </div>
-
-                      {/* EVOLUÇÃO DE OBRA */}
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-bold text-gray-700">Juros de Obra</label>
-                          <ToggleSwitch
-                            checked={!!data.useWorkEvolution}
-                            onChange={(v) => setData({ ...data, useWorkEvolution: v })}
-                          />
-                        </div>
-                        <p className="text-xs text-gray-500 leading-tight">
-                          Simula a cobrança gradual de juros pelo banco conforme a evolução física da obra.
-                        </p>
-                        <div className={`transition-opacity ${!data.useWorkEvolution ? 'opacity-50 pointer-events-none' : ''}`}>
-                          <div className="flex items-center gap-2 text-xs font-medium text-gray-600 bg-gray-100 p-2 rounded-lg">
-                            <span>Status:</span>
-                            <span className="text-blue-600 font-bold">
-                              {data.useWorkEvolution ? 'Ativo (Cobrança Gradual)' : 'Inativo (Sem Juros Obra)'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. SEÇÃO BANCO (Taxas e Seguros) */}
-                {(!data.useExternalSimulation) && (
-                  <div className="bg-white p-5 rounded-xl border border-gray-200 space-y-4">
-                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                      <Banknote size={14} /> Taxas Bancárias (CET)
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <SmartInput label="Juros (% a.a)" value={data.interestRate ?? ''} onChange={(v) => setData({ ...data, interestRate: v })} prefix="%" allowFloat subtitle="Taxa Nominal" disableSlider />
-                      <SmartInput label="Taxa Adm. (R$)" value={data.monthlyAdminFee ?? ''} onChange={(v) => setData({ ...data, monthlyAdminFee: v })} prefix="R$" subtitle="Mensal" disableSlider />
-                      <div className="space-y-2">
-                        <SmartInput label="MIP (R$ est.)" value={data.insuranceMIP ?? ''} onChange={(v) => setData({ ...data, insuranceMIP: v })} prefix="R$" subtitle="Morte/Invalidez" disableSlider />
-                        <SmartInput label="DFI (R$ est.)" value={data.insuranceDFI ?? ''} onChange={(v) => setData({ ...data, insuranceDFI: v })} prefix="R$" subtitle="Danos Físicos" disableSlider />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. APPRAISAL */}
-                <div className="bg-white p-5 rounded-xl border border-gray-200 flex items-center justify-between gap-4">
-                  <div className="max-w-[60%]">
-                    <h4 className="text-sm font-bold text-gray-800 mb-1">Valorização do Imóvel</h4>
-                    <p className="text-xs text-gray-500">Projeção conservadora de valorização anual do ativo.</p>
-                  </div>
-                  <div className="w-[120px]">
-                    <SmartInput value={data.appreciationRate ?? ''} onChange={(v) => setData({ ...data, appreciationRate: v })} prefix="%" allowFloat disableSlider />
-                  </div>
-                </div>
-
+              <div>
+                <h3 className="text-sm font-bold text-gray-800">Personalização da Proposta</h3>
+                <p className="text-xs text-gray-500">
+                  {isConstruction ? 'INCC, Evolução de Obra, Taxas e Seguros' : 'Taxas Bancárias e Valorização'}
+                </p>
               </div>
             </div>
-          )}
-        </div>
+            <button
+              onClick={() => setShowProposalModal(true)}
+              className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg text-xs transition-colors"
+            >
+              Configurar
+            </button>
+          </div>
+        )}
       </div>
     </div >
   )

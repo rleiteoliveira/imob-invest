@@ -9,16 +9,19 @@ import {
   BarChart3,
   Check,
   Hotel,
-  Settings
+  Settings,
+  Settings2
 } from 'lucide-react'
 import DetailedReportView from '../Reports/DetailedReportView'
 import ComparisonView from '../Comparison/ComparisonView'
 import EditorWizard from '../Wizard/EditorWizard'
 import RentabilityView from '../Rentability/RentabilityView'
 import BrandSettingsModal from '../Brand/BrandSettingsModal'
+import GlobalSettingsModal from '../Settings/GlobalSettingsModal'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import { CaixaMCMV } from '../../../core/engines/CaixaMCMV'
 import { useSimulationHistory } from '../../../hooks/useSimulationHistory'
+import { useGlobalSettings } from '../../../hooks/useGlobalSettings'
 import Button from '../../ui/Button'
 
 interface CardMetrics {
@@ -31,6 +34,8 @@ interface CardMetrics {
 
 export default function SimulatorLayout(): ReactElement {
   const { recentSimulations, saveSimulation, deleteSimulation } = useSimulationHistory()
+  const { settings: globalSettings } = useGlobalSettings()
+
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<'EDITOR' | 'COMPARE'>('EDITOR')
   const [editorTab, setEditorTab] = useState<'FINANCING' | 'AIRBNB'>('FINANCING')
@@ -39,6 +44,7 @@ export default function SimulatorLayout(): ReactElement {
   const [currentName, setCurrentName] = useState('')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showBrandSettings, setShowBrandSettings] = useState(false)
+  const [showGlobalSettings, setShowGlobalSettings] = useState(false)
 
   const [reportScenario, setReportScenario] = useState<SimulationScenario | null>(null)
 
@@ -50,22 +56,23 @@ export default function SimulatorLayout(): ReactElement {
     builderBalloons: [],
     type: 'MCMV',
     amortizationSystem: 'PRICE',
-    interestRate: 8.66,
-    termMonths: 420,
-    monthlyAdminFee: 25.0,
-    insuranceMIP: 30.24,
-    insuranceDFI: 24.85,
+    // Use Global Settings
+    interestRate: globalSettings.interestRate,
+    termMonths: globalSettings.termMonths,
+    monthlyAdminFee: globalSettings.monthlyAdminFee,
+    insuranceMIP: globalSettings.insuranceMIP,
+    insuranceDFI: globalSettings.insuranceDFI,
     hasBalloonPayments: false,
     balloonFrequency: 'UNICA',
     balloonCount: 1,
     balloonValue: 10000,
     balloonStartMonth: 0,
     constructionTime: 36,
-    inccRate: 0.45,
-    useWorkEvolution: true,
+    inccRate: globalSettings.inccRate,
+    useWorkEvolution: globalSettings.useWorkEvolution,
     currentWorkPercent: 30,
     monthsToReady: 24,
-    appreciationRate: 10,
+    appreciationRate: globalSettings.appreciationRate,
     clientLead: {
       name: '',
       createdAt: new Date()
@@ -160,6 +167,7 @@ export default function SimulatorLayout(): ReactElement {
       )}
 
       <BrandSettingsModal isOpen={showBrandSettings} onClose={() => setShowBrandSettings(false)} />
+      <GlobalSettingsModal isOpen={showGlobalSettings} onClose={() => setShowGlobalSettings(false)} />
 
       <header className="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center z-40 shrink-0 shadow-sm">
         <div className="flex items-center gap-2.5">
@@ -302,14 +310,22 @@ export default function SimulatorLayout(): ReactElement {
             )}
           </div>
 
-          <div className="mt-2">
+          <div className="mt-2 space-y-1">
+            <Button
+              onClick={() => setShowGlobalSettings(true)}
+              variant="ghost"
+              fullWidth
+              className="justify-start gap-3 text-gray-600"
+            >
+              <Settings2 size={18} /> Parâmetros Globais
+            </Button>
             <Button
               onClick={() => setShowBrandSettings(true)}
               variant="ghost"
               fullWidth
-              className="justify-start gap-3"
+              className="justify-start gap-3 text-gray-600"
             >
-              <Settings size={18} /> Configurações
+              <Settings size={18} /> Config. Marca
             </Button>
           </div>
         </div>
