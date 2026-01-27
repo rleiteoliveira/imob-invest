@@ -26,7 +26,7 @@ import type { SimulationScenario, RentabilityConfig } from '../../../types/Scena
 interface RentabilityViewProps {
   scenario: SimulationScenario
   onChange: (scenario: SimulationScenario) => void
-  financingMonthlyCost: number
+  financingMonthlyCost?: number // Keeping optional for backwards compat or hint if needed, but primary is internal config
 }
 
 const defaultConfig: RentabilityConfig = {
@@ -63,8 +63,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function RentabilityView({
   scenario,
-  onChange,
-  financingMonthlyCost
+  onChange
 }: RentabilityViewProps): ReactElement {
   const config = scenario.rentability || defaultConfig
 
@@ -73,9 +72,12 @@ export default function RentabilityView({
     onChange({ ...scenario, rentability: newConfig })
   }
 
+
+  const effectiveFinancingCost = Number(config.financingCostOverride) || 0
+
   const metrics = useMemo(() => {
-    return calculateAirbnbReturn(config, financingMonthlyCost)
-  }, [config, financingMonthlyCost])
+    return calculateAirbnbReturn(config, effectiveFinancingCost)
+  }, [config, effectiveFinancingCost])
 
   const chartData = [
     {
@@ -85,7 +87,7 @@ export default function RentabilityView({
     },
     {
       name: 'Custos',
-      Valor: metrics.totalExpenses + financingMonthlyCost,
+      Valor: metrics.totalExpenses + effectiveFinancingCost,
       color: '#ef4444'
     },
     {
@@ -186,6 +188,20 @@ export default function RentabilityView({
               prefix="R$"
             />
           </div>
+
+          {/* Financing Override Section */}
+          <div className="border-t border-gray-100 pt-4">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+              Custo de Financiamento
+            </h3>
+            <CurrencyInput
+              label="Parcela Mensal (Opcional)"
+              value={config.financingCostOverride ?? ''}
+              onChange={(v) => updateConfig('financingCostOverride', v)}
+              prefix="R$"
+              subtitle="Se vazio, será desconsiderado"
+            />
+          </div>
         </div>
       </div>
 
@@ -218,17 +234,19 @@ export default function RentabilityView({
             <p className="text-xs text-orange-600 mt-1 font-medium">Taxas + Limpeza + Cond.</p>
           </div>
 
-          {/* Financiamento */}
-          <div className="bg-blue-50 border border-blue-100 p-5 rounded-2xl flex flex-col justify-between">
-            <div className="flex items-start justify-between mb-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-                <DollarSign size={18} />
+          {/* Financiamento - Only show if > 0 */}
+          {effectiveFinancingCost > 0 && (
+            <div className="bg-blue-50 border border-blue-100 p-5 rounded-2xl flex flex-col justify-between">
+              <div className="flex items-start justify-between mb-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                  <DollarSign size={18} />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Parcela</span>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Parcela</span>
+              <p className="text-2xl font-bold text-gray-800">{formatMoney(effectiveFinancingCost)}</p>
+              <p className="text-xs text-blue-600 mt-1 font-medium">Financiamento</p>
             </div>
-            <p className="text-2xl font-bold text-gray-800">{formatMoney(financingMonthlyCost)}</p>
-            <p className="text-xs text-blue-600 mt-1 font-medium">Financiamento</p>
-          </div>
+          )}
 
 
           {/* Lucro Líquido */}

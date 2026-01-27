@@ -16,6 +16,7 @@ export interface RentabilityConfig {
   monthlyCondo: number | ''
   monthlyMaintenance: number | ''
   averageStaysPerMonth: number | ''
+  financingCostOverride?: number | ''
 }
 
 export interface AirbnbResult {
