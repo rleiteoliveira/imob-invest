@@ -1,12 +1,15 @@
 import type { ReactElement } from 'react'
 import { useState, useEffect } from 'react'
-import type { SimulationScenario, BuilderBalloon } from '../../../../types/ScenarioTypes'
+import type { SimulationScenario, BuilderBalloon, DevelopmentConfig } from '../../../../types/ScenarioTypes'
 import BuilderBalloonModal from '../../UnifiedEditor/BuilderBalloonModal'
+import DevelopmentEditorModal from '../../UnifiedEditor/DevelopmentEditorModal'
+import ConstructionConfigModal from '../../UnifiedEditor/ConstructionConfigModal'
+import { useDevelopments } from '../../../../hooks/useDevelopments'
 import SmartInput from '../../../ui/SmartInput'
 import TimeSliderInput from '../../../ui/TimeSliderInput'
-import PercentageInput from '../../../ui/PercentageInput'
 import ToggleSwitch from '../../../ui/ToggleSwitch'
-import { Settings, ChevronDown, ChevronUp, Construction, Banknote, TrendingUp } from 'lucide-react'
+import { ChevronDown, Construction, Building2, Edit2 } from 'lucide-react'
+
 
 interface StepProps {
   data: SimulationScenario
@@ -15,7 +18,47 @@ interface StepProps {
 
 export default function Step3Payment({ data, setData }: StepProps): ReactElement {
   const [showBalloonModal, setShowBalloonModal] = useState(false)
-  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [showConstructionModal, setShowConstructionModal] = useState(false)
+
+  // Development Mode State
+  const { developments, saveDevelopment } = useDevelopments()
+  const [showDevModal, setShowDevModal] = useState(false)
+  const [editingDev, setEditingDev] = useState<DevelopmentConfig | null>(null)
+
+  const selectedDev = data.developmentId ? developments.find(d => d.id === data.developmentId) : null
+
+  const handleSelectDevelopment = (devId: string) => {
+    if (!devId) {
+      setData({ ...data, developmentId: undefined, name: undefined }) // Reset to custom
+      return
+    }
+    const dev = developments.find(d => d.id === devId)
+    if (dev) {
+      applyDevelopmentToData(dev)
+    }
+  }
+
+  const applyDevelopmentToData = (dev: DevelopmentConfig) => {
+    setData({
+      ...data,
+      developmentId: dev.id,
+      // name: dev.name, // Keeping scenario name independent? Or sync? Let's NOT sync scenario name to keep it flexible
+      constructionStatus: dev.constructionStatus,
+      monthsUntilConstructionStart: dev.monthsUntilConstructionStart,
+      constructionDuration: dev.constructionDuration,
+      constructionTime: dev.constructionTime,
+      currentWorkPercent: dev.currentWorkPercent,
+      inccRate: dev.inccRate,
+      useWorkEvolution: dev.useWorkEvolution,
+      appreciationRate: dev.appreciationRate
+    })
+  }
+
+  const handleSaveDev = (dev: DevelopmentConfig) => {
+    saveDevelopment(dev)
+    applyDevelopmentToData(dev)
+    setShowDevModal(false)
+  }
 
   const isConstruction = data.type === 'MCMV' || data.type === 'DIRETO'
 
@@ -75,6 +118,20 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
 
   return (
     <div className="h-full animate-in fade-in slide-in-from-right-4 duration-300 pb-20">
+      <DevelopmentEditorModal
+        isOpen={showDevModal}
+        onClose={() => setShowDevModal(false)}
+        initialData={editingDev}
+        onSave={handleSaveDev}
+      />
+
+      <ConstructionConfigModal
+        isOpen={showConstructionModal}
+        onClose={() => setShowConstructionModal(false)}
+        data={data}
+        setData={setData}
+      />
+
       <BuilderBalloonModal
         isOpen={showBalloonModal}
         onClose={() => setShowBalloonModal(false)}
@@ -91,10 +148,92 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
         {/* CONSTRUCTION PHASE INPUTS */}
         {isConstruction && (
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
+            <div className="flex items-center gap-2 mb-4">
               <Construction className="text-orange-500" size={20} />
               <h3 className="font-bold text-gray-800">Fluxo de Pagamento na Obra</h3>
             </div>
+
+            {/* Unified Construction Summary Card */}
+            <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="bg-white p-2 rounded-lg shadow-sm text-orange-500 shrink-0">
+                  <Building2 size={24} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-orange-800 uppercase tracking-wide mb-1">
+                    Empreendimento / Obra
+                  </p>
+
+                  {/* Integrated Combobox */}
+                  <div className="relative inline-block w-full md:w-64">
+                    <select
+                      value={data.developmentId || ''}
+                      onChange={(e) => handleSelectDevelopment(e.target.value)}
+                      className="w-full appearance-none bg-white border border-orange-200 text-gray-800 font-bold py-1.5 pl-3 pr-8 rounded-lg outline-none focus:ring-2 focus:ring-orange-200 cursor-pointer shadow-sm text-sm"
+                    >
+                      <option value="">Personalizado</option>
+                      {developments.map(dev => (
+                        <option key={dev.id} value={dev.id}>{dev.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  </div>
+
+                  <p className="text-xs text-gray-500 mt-1">
+                    {data.constructionStatus === 'PRE_OBRA' ? 'Lançamento/Pré-Obra' : 'Em Andamento'} • {data.constructionDuration || 36} meses totais
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-end md:self-center">
+                <div className="text-right hidden md:block mr-2">
+                  <span className="text-xs font-bold bg-white px-2 py-1 rounded border border-orange-100 text-orange-600 block mb-1">
+                    {data.constructionStatus === 'PRE_OBRA'
+                      ? `Início em ${data.monthsUntilConstructionStart || 0} m`
+                      : `${data.constructionTime} m restantes`
+                    }
+                  </span>
+                </div>
+
+                {/* Actions Area */}
+                <div className="flex gap-1">
+                  {selectedDev ? (
+                    <button
+                      onClick={() => { setEditingDev(selectedDev); setShowDevModal(true); }}
+                      className="p-2 bg-white border border-blue-100 text-blue-500 hover:bg-blue-50 hover:border-blue-200 rounded-lg transition-all shadow-sm"
+                      title="Editar Empreendimento"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        // Open modal to CREATE NEW, pre-filling with current construction data
+                        setEditingDev({
+                          id: '',
+                          name: '',
+                          constructionStatus: data.constructionStatus || 'EM_ANDAMENTO',
+                          constructionDuration: Number(data.constructionDuration) || 36,
+                          monthsUntilConstructionStart: Number(data.monthsUntilConstructionStart) || 0,
+                          constructionTime: Number(data.constructionTime) || 24,
+                          currentWorkPercent: Number(data.currentWorkPercent) || 0,
+                          inccRate: Number(data.inccRate) || 0.2,
+                          useWorkEvolution: !!data.useWorkEvolution,
+                          appreciationRate: Number(data.appreciationRate) || 10
+                        });
+                        setShowDevModal(true);
+                      }}
+                      className="p-2 bg-white border border-green-100 text-green-500 hover:bg-green-50 hover:border-green-200 rounded-lg transition-all shadow-sm"
+                      title="Salvar como Novo Empreendimento"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                  )}
+
+                </div>
+              </div>
+            </div>
+            {/* End Status da Obra / Summary */}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -170,239 +309,8 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
               </div>
             </div>
 
-            {/* Status da Obra Selection */}
-            <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Status da Obra</label>
-              <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
-                <button
-                  className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${(!data.constructionStatus || data.constructionStatus === 'EM_ANDAMENTO') ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                  onClick={() => setData({ ...data, constructionStatus: 'EM_ANDAMENTO' })}
-                >
-                  Em Andamento / Iniciada
-                </button>
-                <button
-                  className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${data.constructionStatus === 'PRE_OBRA' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                  onClick={() => setData({ ...data, constructionStatus: 'PRE_OBRA' })}
-                >
-                  Lançamento (Pré-Obra)
-                </button>
-              </div>
-              {/* Construction Duration Inputs */}
-              {data.constructionStatus === 'PRE_OBRA' ? (
-                <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                  <div>
-                    <TimeSliderInput
-                      label="Espera (Pré-Obra)"
-                      value={Number(data.monthsUntilConstructionStart ?? 0)}
-                      onChange={(v) => {
-                        const duration = Number(data.constructionDuration) || 0
-                        setData({
-                          ...data,
-                          monthsUntilConstructionStart: v,
-                          constructionTime: v + duration
-                        })
-                      }}
-                      max={100}
-                    />
-                  </div>
-                  <TimeSliderInput
-                    label="Duração da Obra"
-                    value={Number(data.constructionDuration ?? 36)}
-                    onChange={(v) => {
-                      const start = Number(data.monthsUntilConstructionStart) || 0
-                      setData({
-                        ...data,
-                        constructionDuration: v,
-                        constructionTime: start + v
-                      })
-                    }}
-                    max={100}
-                    min={outstandingEntryBalance > 100 ? 1 : 0}
-                  />
-                </div>
-              ) : (
-                /* If construction is ongoing, we set Remaining Time AND Current Progress */
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                  <TimeSliderInput
-                    label="Tempo Restante de Obra"
-                    value={Number(data.constructionTime ?? 24)}
-                    onChange={(v) => {
-                      setData({ ...data, constructionTime: v })
-                    }}
-                    max={100}
-                    min={outstandingEntryBalance > 100 ? 1 : 0}
-                    subLabel="meses"
-                  />
-                  <PercentageInput
-                    label="Obra Concluída"
-                    value={data.currentWorkPercent || 0}
-                    onChange={(v) => setData({ ...data, currentWorkPercent: v })}
-                  />
-                </div>
-              )}
-            </div>
           </div>
         )}
-
-        {/* READY / BANK MAIN SETTINGS */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-            <div className="flex items-center gap-2">
-              <Banknote className="text-blue-500" size={20} />
-              <h3 className="font-bold text-gray-800">Financiamento Bancário</h3>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] md:text-xs text-gray-500 font-medium text-right leading-tight">
-                Simulação Aprovada<br />(Inserir parcela fixa)
-              </span>
-              <ToggleSwitch
-                checked={!!data.useExternalSimulation}
-                onChange={(v) => setData({ ...data, useExternalSimulation: v })}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {data.useExternalSimulation ? (
-              <div className="animate-in fade-in slide-in-from-left-2">
-                <SmartInput
-                  label="Valor da 1ª Parcela"
-                  prefix="R$"
-                  value={data.externalInstallmentValue ?? ''}
-                  onChange={(v) => setData({ ...data, externalInstallmentValue: v })}
-                  subtitle="Valor fixo inicial"
-                />
-              </div>
-            ) : (
-              <div className="space-y-2 animate-in fade-in slide-in-from-left-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Sistema de Amortização</label>
-                <div className="flex bg-gray-100 p-1 rounded-lg">
-                  <button className={`flex-1 py-2.5 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'PRICE' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'PRICE' })}>PRICE</button>
-                  <button className={`flex-1 py-2.5 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'SAC' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'SAC' })}>SAC</button>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <TimeSliderInput
-                label="Prazo do Financiamento"
-                value={data.termMonths || 360}
-                onChange={(v) => setData({ ...data, termMonths: v })}
-                max={420}
-                subLabel={`${((data.termMonths || 360) / 12).toFixed(1)} Anos`}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* CONFIGURAÇÕES DE CÁLCULO / PROPOSTA */}
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden animate-in slide-in-from-bottom-4">
-          <button
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full flex items-center justify-between p-6 bg-white hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${showAdvanced ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-500'}`}>
-                <Settings size={20} />
-              </div>
-              <div className="text-left">
-                <p className="font-bold text-gray-800 text-sm">Personalização da Proposta</p>
-                <p className="text-xs text-gray-500">Ajustes finos de INCC, Evolução de Obra e Taxas</p>
-              </div>
-            </div>
-            {showAdvanced ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
-          </button>
-
-          {showAdvanced && (
-            <div className="p-6 pt-0 border-t border-gray-100 bg-gray-50/30">
-              <div className="grid grid-cols-1 gap-8 mt-6">
-
-                {/* 1. SEÇÃO OBRA (INCC e Evolução) */}
-                {isConstruction && (
-                  <div className="bg-white p-5 rounded-xl border border-gray-200 space-y-4">
-                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                      <TrendingUp size={14} /> Correção e Evolução (Obra)
-                    </h4>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* INCC */}
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-bold text-gray-700">Correção INCC</label>
-                          <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full">
-                            Recais sobre Entrada
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 leading-tight">
-                          Define a taxa mensal de reajuste das parcelas pagas diretamente à construtora.
-                        </p>
-                        <SmartInput
-                          value={data.inccRate ?? ''}
-                          onChange={(v) => setData({ ...data, inccRate: v })}
-                          prefix="%"
-                          allowFloat
-                          disableSlider
-                          placeholder="0.00"
-                        />
-                      </div>
-
-                      {/* EVOLUÇÃO DE OBRA */}
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-bold text-gray-700">Juros de Obra</label>
-                          <ToggleSwitch
-                            checked={!!data.useWorkEvolution}
-                            onChange={(v) => setData({ ...data, useWorkEvolution: v })}
-                          />
-                        </div>
-                        <p className="text-xs text-gray-500 leading-tight">
-                          Simula a cobrança gradual de juros pelo banco conforme a evolução física da obra.
-                        </p>
-                        <div className={`transition-opacity ${!data.useWorkEvolution ? 'opacity-50 pointer-events-none' : ''}`}>
-                          <div className="flex items-center gap-2 text-xs font-medium text-gray-600 bg-gray-100 p-2 rounded-lg">
-                            <span>Status:</span>
-                            <span className="text-blue-600 font-bold">
-                              {data.useWorkEvolution ? 'Ativo (Cobrança Gradual)' : 'Inativo (Sem Juros Obra)'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. SEÇÃO BANCO (Taxas e Seguros) */}
-                {(!data.useExternalSimulation) && (
-                  <div className="bg-white p-5 rounded-xl border border-gray-200 space-y-4">
-                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                      <Banknote size={14} /> Taxas Bancárias (CET)
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <SmartInput label="Juros (% a.a)" value={data.interestRate ?? ''} onChange={(v) => setData({ ...data, interestRate: v })} prefix="%" allowFloat subtitle="Taxa Nominal" disableSlider />
-                      <SmartInput label="Taxa Adm. (R$)" value={data.monthlyAdminFee ?? ''} onChange={(v) => setData({ ...data, monthlyAdminFee: v })} prefix="R$" subtitle="Mensal" disableSlider />
-                      <div className="space-y-2">
-                        <SmartInput label="MIP (R$ est.)" value={data.insuranceMIP ?? ''} onChange={(v) => setData({ ...data, insuranceMIP: v })} prefix="R$" subtitle="Morte/Invalidez" disableSlider />
-                        <SmartInput label="DFI (R$ est.)" value={data.insuranceDFI ?? ''} onChange={(v) => setData({ ...data, insuranceDFI: v })} prefix="R$" subtitle="Danos Físicos" disableSlider />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. APPRAISAL */}
-                <div className="bg-white p-5 rounded-xl border border-gray-200 flex items-center justify-between gap-4">
-                  <div className="max-w-[60%]">
-                    <h4 className="text-sm font-bold text-gray-800 mb-1">Valorização do Imóvel</h4>
-                    <p className="text-xs text-gray-500">Projeção conservadora de valorização anual do ativo.</p>
-                  </div>
-                  <div className="w-[120px]">
-                    <SmartInput value={data.appreciationRate ?? ''} onChange={(v) => setData({ ...data, appreciationRate: v })} prefix="%" allowFloat disableSlider />
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </div >
   )

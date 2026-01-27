@@ -9,16 +9,19 @@ import {
   BarChart3,
   Check,
   Hotel,
-  Settings
+  Settings,
+  Settings2
 } from 'lucide-react'
 import DetailedReportView from '../Reports/DetailedReportView'
 import ComparisonView from '../Comparison/ComparisonView'
 import EditorWizard from '../Wizard/EditorWizard'
 import RentabilityView from '../Rentability/RentabilityView'
 import BrandSettingsModal from '../Brand/BrandSettingsModal'
+import GlobalSettingsModal from '../Settings/GlobalSettingsModal'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import { CaixaMCMV } from '../../../core/engines/CaixaMCMV'
 import { useSimulationHistory } from '../../../hooks/useSimulationHistory'
+import { useGlobalSettings } from '../../../hooks/useGlobalSettings'
 import Button from '../../ui/Button'
 
 interface CardMetrics {
@@ -31,9 +34,11 @@ interface CardMetrics {
 
 export default function SimulatorLayout(): ReactElement {
   const { recentSimulations, saveSimulation, deleteSimulation } = useSimulationHistory()
+  const { settings: globalSettings } = useGlobalSettings()
+
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [viewMode, setViewMode] = useState<'EDITOR' | 'COMPARE'>('EDITOR')
-  const [editorTab, setEditorTab] = useState<'FINANCING' | 'AIRBNB'>('FINANCING')
+  const [viewMode, setViewMode] = useState<'EDITOR' | 'COMPARE' | 'GLOBAL_SETTINGS'>('EDITOR')
+  const [editorTab, setEditorTab] = useState<'FINANCING' | 'RENTAL'>('FINANCING')
   const [showSuccess, setShowSuccess] = useState(false)
   const [step, setStep] = useState(0)
   const [currentName, setCurrentName] = useState('')
@@ -50,22 +55,23 @@ export default function SimulatorLayout(): ReactElement {
     builderBalloons: [],
     type: 'MCMV',
     amortizationSystem: 'PRICE',
-    interestRate: 8.66,
-    termMonths: 420,
-    monthlyAdminFee: 25.0,
-    insuranceMIP: 30.24,
-    insuranceDFI: 24.85,
+    // Use Global Settings
+    interestRate: globalSettings.interestRate,
+    termMonths: globalSettings.termMonths,
+    monthlyAdminFee: globalSettings.monthlyAdminFee,
+    insuranceMIP: globalSettings.insuranceMIP,
+    insuranceDFI: globalSettings.insuranceDFI,
     hasBalloonPayments: false,
     balloonFrequency: 'UNICA',
     balloonCount: 1,
     balloonValue: 10000,
     balloonStartMonth: 0,
     constructionTime: 36,
-    inccRate: 0.45,
-    useWorkEvolution: true,
+    inccRate: globalSettings.inccRate,
+    useWorkEvolution: globalSettings.useWorkEvolution,
     currentWorkPercent: 30,
     monthsToReady: 24,
-    appreciationRate: 10,
+    appreciationRate: globalSettings.appreciationRate,
     clientLead: {
       name: '',
       createdAt: new Date()
@@ -160,6 +166,7 @@ export default function SimulatorLayout(): ReactElement {
       )}
 
       <BrandSettingsModal isOpen={showBrandSettings} onClose={() => setShowBrandSettings(false)} />
+      <BrandSettingsModal isOpen={showBrandSettings} onClose={() => setShowBrandSettings(false)} />
 
       <header className="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center z-40 shrink-0 shadow-sm">
         <div className="flex items-center gap-2.5">
@@ -205,34 +212,44 @@ export default function SimulatorLayout(): ReactElement {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar bg-white">
-          <Button
-            onClick={createNew}
-            variant="secondary"
-            fullWidth
-            className="border-dashed h-12 text-gray-500 hover:text-gray-900 hover:border-gray-400"
-          >
-            <Plus size={16} className="mr-2" /> Nova Simulação
-          </Button>
 
-          {viewMode === 'EDITOR' && (
-            <div className="flex flex-col gap-1">
-              <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-2 mb-2">
-                Modo de Edição
-              </h3>
+          <div className="flex flex-col gap-1">
+            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-2 mb-2">
+              Modo de Edição
+            </h3>
+            <div
+              className={`w-full flex items-center justify-between p-2.5 rounded-lg transition-all font-medium text-sm group ${viewMode === 'EDITOR' && editorTab === 'FINANCING' ? 'bg-gray-100 text-gray-900' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
+            >
               <button
-                onClick={() => setEditorTab('FINANCING')}
-                className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${editorTab === 'FINANCING' ? 'bg-gray-100 text-gray-900' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
+                onClick={() => {
+                  setViewMode('EDITOR')
+                  setEditorTab('FINANCING')
+                }}
+                className="flex items-center gap-3 flex-1 text-left"
               >
                 <LayoutDashboard size={18} /> Editor Financeiro
               </button>
               <button
-                onClick={() => setEditorTab('AIRBNB')}
-                className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${editorTab === 'AIRBNB' ? 'bg-rose-50 text-rose-700' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  createNew()
+                }}
+                className="p-1 rounded-md text-gray-400 hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all opacity-0 group-hover:opacity-100"
+                title="Nova Simulação (Limpar Editor)"
               >
-                <Hotel size={18} /> Análise Airbnb
+                <Plus size={16} />
               </button>
             </div>
-          )}
+            <button
+              onClick={() => {
+                setViewMode('EDITOR')
+                setEditorTab('RENTAL')
+              }}
+              className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${viewMode === 'EDITOR' && editorTab === 'RENTAL' ? 'bg-rose-50 text-rose-700' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
+            >
+              <Hotel size={18} /> Análise Lucro
+            </button>
+          </div>
 
           <div className="space-y-3">
             <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-2 mb-2">
@@ -302,14 +319,25 @@ export default function SimulatorLayout(): ReactElement {
             )}
           </div>
 
-          <div className="mt-2">
+          <div className="mt-2 space-y-1">
+            <Button
+              onClick={() => {
+                setViewMode('GLOBAL_SETTINGS')
+                setIsMobileMenuOpen(false)
+              }}
+              variant="ghost"
+              fullWidth
+              className={`justify-start gap-3 text-gray-600 ${viewMode === 'GLOBAL_SETTINGS' ? 'bg-gray-100 text-gray-900 font-bold' : ''}`}
+            >
+              <Settings2 size={18} /> Parâmetros Globais
+            </Button>
             <Button
               onClick={() => setShowBrandSettings(true)}
               variant="ghost"
               fullWidth
-              className="justify-start gap-3"
+              className="justify-start gap-3 text-gray-600"
             >
-              <Settings size={18} /> Configurações
+              <Settings size={18} /> Config. Marca
             </Button>
           </div>
         </div>
@@ -338,7 +366,15 @@ export default function SimulatorLayout(): ReactElement {
             getCardMetrics={getCardMetrics}
             onGenerateReport={(s: SimulationScenario) => setReportScenario(s)}
           />
-        ) : editorTab === 'AIRBNB' ? (
+        ) : viewMode === 'GLOBAL_SETTINGS' ? (
+          <div className="h-full overflow-hidden p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <GlobalSettingsModal
+              isOpen={true}
+              onClose={() => setViewMode('EDITOR')}
+              variant="page"
+            />
+          </div>
+        ) : editorTab === 'RENTAL' ? (
           <RentabilityView
             scenario={data}
             onChange={setData}
