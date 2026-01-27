@@ -15,7 +15,7 @@ interface StepProps {
 export default function Step4Financing({ data, setData }: StepProps): ReactElement {
   const [showProposalModal, setShowProposalModal] = useState(false)
 
-  const isConstruction = data.type === 'MCMV' || data.type === 'DIRETO'
+
 
   return (
     <div className="h-full animate-in fade-in slide-in-from-right-4 duration-300 pb-20">
@@ -87,9 +87,9 @@ export default function Step4Financing({ data, setData }: StepProps): ReactEleme
                 <Settings2 size={20} />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-gray-800">Personalização da Proposta</h3>
+                <h3 className="text-sm font-bold text-gray-800">Taxas e Seguros Bancários</h3>
                 <p className="text-xs text-gray-500">
-                  {isConstruction ? 'INCC, Evolução de Obra, Taxas e Seguros' : 'Taxas Bancárias e Valorização'}
+                  Juros, Taxas Administrativas e Seguros (MIP/DFI)
                 </p>
               </div>
             </div>

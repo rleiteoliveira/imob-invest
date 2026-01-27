@@ -37,14 +37,13 @@ export default function SimulatorLayout(): ReactElement {
   const { settings: globalSettings } = useGlobalSettings()
 
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [viewMode, setViewMode] = useState<'EDITOR' | 'COMPARE'>('EDITOR')
+  const [viewMode, setViewMode] = useState<'EDITOR' | 'COMPARE' | 'GLOBAL_SETTINGS'>('EDITOR')
   const [editorTab, setEditorTab] = useState<'FINANCING' | 'AIRBNB'>('FINANCING')
   const [showSuccess, setShowSuccess] = useState(false)
   const [step, setStep] = useState(0)
   const [currentName, setCurrentName] = useState('')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showBrandSettings, setShowBrandSettings] = useState(false)
-  const [showGlobalSettings, setShowGlobalSettings] = useState(false)
 
   const [reportScenario, setReportScenario] = useState<SimulationScenario | null>(null)
 
@@ -167,7 +166,7 @@ export default function SimulatorLayout(): ReactElement {
       )}
 
       <BrandSettingsModal isOpen={showBrandSettings} onClose={() => setShowBrandSettings(false)} />
-      <GlobalSettingsModal isOpen={showGlobalSettings} onClose={() => setShowGlobalSettings(false)} />
+      <BrandSettingsModal isOpen={showBrandSettings} onClose={() => setShowBrandSettings(false)} />
 
       <header className="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center z-40 shrink-0 shadow-sm">
         <div className="flex items-center gap-2.5">
@@ -312,10 +311,13 @@ export default function SimulatorLayout(): ReactElement {
 
           <div className="mt-2 space-y-1">
             <Button
-              onClick={() => setShowGlobalSettings(true)}
+              onClick={() => {
+                setViewMode('GLOBAL_SETTINGS')
+                setIsMobileMenuOpen(false)
+              }}
               variant="ghost"
               fullWidth
-              className="justify-start gap-3 text-gray-600"
+              className={`justify-start gap-3 text-gray-600 ${viewMode === 'GLOBAL_SETTINGS' ? 'bg-gray-100 text-gray-900 font-bold' : ''}`}
             >
               <Settings2 size={18} /> Parâmetros Globais
             </Button>
@@ -360,6 +362,14 @@ export default function SimulatorLayout(): ReactElement {
             onChange={setData}
             financingMonthlyCost={getCardMetrics(data).parcelaFinanciamento}
           />
+        ) : viewMode === 'GLOBAL_SETTINGS' ? (
+          <div className="h-full overflow-hidden p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <GlobalSettingsModal
+              isOpen={true}
+              onClose={() => setViewMode('EDITOR')}
+              variant="page"
+            />
+          </div>
         ) : (
           <EditorWizard
             step={step}

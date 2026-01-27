@@ -7,9 +7,10 @@ import ToggleSwitch from '../../ui/ToggleSwitch'
 interface GlobalSettingsModalProps {
   isOpen: boolean
   onClose: () => void
+  variant?: 'modal' | 'page'
 }
 
-export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsModalProps) {
+export default function GlobalSettingsModal({ isOpen, onClose, variant = 'modal' }: GlobalSettingsModalProps) {
   const { settings, updateSettings, resetSettings } = useGlobalSettings()
   // Local state for editing before saving? No, can edit directly or local state then save. 
   // Let's use local state to allow "Cancel".
@@ -17,6 +18,7 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
 
   useEffect(() => {
     if (isOpen) {
+
 
       setLocalSettings(settings)
     }
@@ -36,9 +38,19 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
     }
   }
 
+  const isPage = variant === 'page'
+
+  const containerClass = isPage
+    ? "bg-white w-full h-full rounded-2xl shadow-sm flex flex-col border border-gray-100 animate-in fade-in duration-300"
+    : "bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
+
+  const wrapperClass = isPage
+    ? "w-full h-full"
+    : "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+    <div className={wrapperClass}>
+      <div className={containerClass}>
 
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">

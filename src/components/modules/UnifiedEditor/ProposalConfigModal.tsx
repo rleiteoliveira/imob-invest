@@ -39,8 +39,8 @@ export default function ProposalConfigModal({ isOpen, onClose, data, setData }: 
               <Settings2 size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-800">Personalização da Proposta</h2>
-              <p className="text-sm text-gray-500">Ajustes finos para este cenário</p>
+              <h2 className="text-xl font-bold text-gray-800">Configuração de Taxas e Seguros</h2>
+              <p className="text-sm text-gray-500">Defina os encargos bancários do financiamento</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
