@@ -213,39 +213,43 @@ export default function SimulatorLayout(): ReactElement {
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar bg-white">
 
-          {viewMode === 'EDITOR' && (
-            <div className="flex flex-col gap-1">
-              <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-2 mb-2">
-                Modo de Edição
-              </h3>
-              <div
-                className={`w-full flex items-center justify-between p-2.5 rounded-lg transition-all font-medium text-sm group ${editorTab === 'FINANCING' ? 'bg-gray-100 text-gray-900' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
-              >
-                <button
-                  onClick={() => setEditorTab('FINANCING')}
-                  className="flex items-center gap-3 flex-1 text-left"
-                >
-                  <LayoutDashboard size={18} /> Editor Financeiro
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    createNew()
-                  }}
-                  className="p-1 rounded-md text-gray-400 hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all opacity-0 group-hover:opacity-100"
-                  title="Nova Simulação (Limpar Editor)"
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
+          <div className="flex flex-col gap-1">
+            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-2 mb-2">
+              Modo de Edição
+            </h3>
+            <div
+              className={`w-full flex items-center justify-between p-2.5 rounded-lg transition-all font-medium text-sm group ${viewMode === 'EDITOR' && editorTab === 'FINANCING' ? 'bg-gray-100 text-gray-900' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
+            >
               <button
-                onClick={() => setEditorTab('AIRBNB')}
-                className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${editorTab === 'AIRBNB' ? 'bg-rose-50 text-rose-700' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
+                onClick={() => {
+                  setViewMode('EDITOR')
+                  setEditorTab('FINANCING')
+                }}
+                className="flex items-center gap-3 flex-1 text-left"
               >
-                <Hotel size={18} /> Análise Airbnb
+                <LayoutDashboard size={18} /> Editor Financeiro
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  createNew()
+                }}
+                className="p-1 rounded-md text-gray-400 hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all opacity-0 group-hover:opacity-100"
+                title="Nova Simulação (Limpar Editor)"
+              >
+                <Plus size={16} />
               </button>
             </div>
-          )}
+            <button
+              onClick={() => {
+                setViewMode('EDITOR')
+                setEditorTab('AIRBNB')
+              }}
+              className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${viewMode === 'EDITOR' && editorTab === 'AIRBNB' ? 'bg-rose-50 text-rose-700' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
+            >
+              <Hotel size={18} /> Análise Airbnb
+            </button>
+          </div>
 
           <div className="space-y-3">
             <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-2 mb-2">
@@ -362,12 +366,6 @@ export default function SimulatorLayout(): ReactElement {
             getCardMetrics={getCardMetrics}
             onGenerateReport={(s: SimulationScenario) => setReportScenario(s)}
           />
-        ) : editorTab === 'AIRBNB' ? (
-          <RentabilityView
-            scenario={data}
-            onChange={setData}
-            financingMonthlyCost={getCardMetrics(data).parcelaFinanciamento}
-          />
         ) : viewMode === 'GLOBAL_SETTINGS' ? (
           <div className="h-full overflow-hidden p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <GlobalSettingsModal
@@ -376,6 +374,12 @@ export default function SimulatorLayout(): ReactElement {
               variant="page"
             />
           </div>
+        ) : editorTab === 'AIRBNB' ? (
+          <RentabilityView
+            scenario={data}
+            onChange={setData}
+            financingMonthlyCost={getCardMetrics(data).parcelaFinanciamento}
+          />
         ) : (
           <EditorWizard
             step={step}
