@@ -31,9 +31,20 @@ export default function Step4Financing({ data, setData }: StepProps): ReactEleme
         {/* READY / BANK MAIN SETTINGS */}
         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-            <div className="flex items-center gap-2">
-              <Banknote className="text-blue-500" size={20} />
-              <h3 className="font-bold text-gray-800">Financiamento Bancário</h3>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Banknote className="text-blue-500" size={20} />
+                <h3 className="font-bold text-gray-800">Financiamento Bancário</h3>
+              </div>
+              {!data.useExternalSimulation && (
+                <button
+                  onClick={() => setShowProposalModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg transition-colors text-xs font-bold"
+                >
+                  <Settings2 size={14} />
+                  Configurar Taxas
+                </button>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <span className="text-[10px] md:text-xs text-gray-500 font-medium text-right leading-tight">
@@ -79,28 +90,7 @@ export default function Step4Financing({ data, setData }: StepProps): ReactEleme
           </div>
         </div>
 
-        {/* CONFIGURAÇÕES DE CÁLCULO / PROPOSTA (Simplified Button) */}
-        {!data.useExternalSimulation && (
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-purple-50 text-purple-600 p-2 rounded-lg">
-                <Settings2 size={20} />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-gray-800">Taxas e Seguros Bancários</h3>
-                <p className="text-xs text-gray-500">
-                  Juros, Taxas Administrativas e Seguros (MIP/DFI)
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowProposalModal(true)}
-              className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg text-xs transition-colors"
-            >
-              Configurar
-            </button>
-          </div>
-        )}
+
       </div>
     </div>
   )
