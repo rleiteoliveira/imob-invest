@@ -17,6 +17,7 @@ export interface RentabilityConfig {
   monthlyMaintenance: number | ''
   monthlyTurnover: number | '' // Previously averageStaysPerMonth
   financingCostOverride?: number | ''
+  rentalPeriod?: 'monthly' | 'daily'
 }
 
 export interface RentalResult {
