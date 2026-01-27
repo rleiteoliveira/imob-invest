@@ -9,16 +9,18 @@ export interface BuilderBalloon {
 }
 
 export interface RentabilityConfig {
-  dailyRate: number | ''
+  projectedMonthlyIncome: number | '' // Previously dailyRate
   occupancyRate: number | '' // 0-100
-  platformFeePercent: number | ''
+  managementFeePercent: number | '' // Previously platformFeePercent
   cleaningFee: number | ''
   monthlyCondo: number | ''
   monthlyMaintenance: number | ''
-  averageStaysPerMonth: number | ''
+  monthlyTurnover: number | '' // Previously averageStaysPerMonth
+  financingCostOverride?: number | ''
+  rentalPeriod?: 'monthly' | 'daily'
 }
 
-export interface AirbnbResult {
+export interface RentalResult {
   grossRevenue: number
   totalExpenses: number
   netOperatingIncome: number
@@ -27,6 +29,7 @@ export interface AirbnbResult {
 
 export interface SimulationScenario {
   id?: string
+  developmentId?: string
   name?: string
   propertyValue: number | ''
   downPayment: number | ''
@@ -99,4 +102,17 @@ export interface MonthlyResult {
   totalInstallment: number
   accumulatedPaid: number
   phase: 'OBRA' | 'AMORTIZACAO'
+}
+
+export interface DevelopmentConfig {
+  id: string
+  name: string
+  constructionStatus: 'PRE_OBRA' | 'EM_ANDAMENTO'
+  monthsUntilConstructionStart: number | ''
+  constructionDuration: number | ''
+  constructionTime: number | '' // Time Remaining
+  currentWorkPercent: number | ''
+  inccRate: number | ''
+  useWorkEvolution: boolean
+  appreciationRate: number | ''
 }
