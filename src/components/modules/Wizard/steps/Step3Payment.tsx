@@ -3,12 +3,13 @@ import { useState, useEffect } from 'react'
 import type { SimulationScenario, BuilderBalloon, DevelopmentConfig } from '../../../../types/ScenarioTypes'
 import BuilderBalloonModal from '../../UnifiedEditor/BuilderBalloonModal'
 import DevelopmentEditorModal from '../../UnifiedEditor/DevelopmentEditorModal'
+import ConstructionConfigModal from '../../UnifiedEditor/ConstructionConfigModal'
 import { useDevelopments } from '../../../../hooks/useDevelopments'
 import SmartInput from '../../../ui/SmartInput'
 import TimeSliderInput from '../../../ui/TimeSliderInput'
-import PercentageInput from '../../../ui/PercentageInput'
 import ToggleSwitch from '../../../ui/ToggleSwitch'
 import { ChevronDown, Construction, Building2, Edit2, Plus } from 'lucide-react'
+
 
 interface StepProps {
   data: SimulationScenario
@@ -17,6 +18,7 @@ interface StepProps {
 
 export default function Step3Payment({ data, setData }: StepProps): ReactElement {
   const [showBalloonModal, setShowBalloonModal] = useState(false)
+  const [showConstructionModal, setShowConstructionModal] = useState(false)
 
   // Development Mode State
   const { developments, saveDevelopment } = useDevelopments()
@@ -121,6 +123,13 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
         onClose={() => setShowDevModal(false)}
         initialData={editingDev}
         onSave={handleSaveDev}
+      />
+
+      <ConstructionConfigModal
+        isOpen={showConstructionModal}
+        onClose={() => setShowConstructionModal(false)}
+        data={data}
+        setData={setData}
       />
 
       <BuilderBalloonModal
@@ -255,107 +264,49 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
               </div>
             </div>
 
-            {/* Status da Obra Selection - Shown only if NO development selected OR readonly summary */}
-            {selectedDev ? (
-              <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-white p-2 rounded-lg shadow-sm text-orange-500">
-                    <Building2 size={24} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-orange-800 uppercase tracking-wide">Empreendimento Definido</p>
-                    <p className="font-bold text-gray-800">{selectedDev.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {selectedDev.constructionStatus === 'PRE_OBRA' ? 'Lançamento/Pré-Obra' : 'Em Andamento'} • {selectedDev.constructionDuration} meses totais
-                    </p>
-                  </div>
+            {/* Unified Construction Summary Card */}
+            <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-white p-2 rounded-lg shadow-sm text-orange-500">
+                  <Building2 size={24} />
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-bold bg-white px-2 py-1 rounded border border-orange-100 text-orange-600">
-                    {selectedDev.constructionStatus === 'PRE_OBRA'
-                      ? `Início em ${selectedDev.monthsUntilConstructionStart} m`
-                      : `${selectedDev.constructionTime} m restantes`
+                <div>
+                  <p className="text-xs font-bold text-orange-800 uppercase tracking-wide">
+                    {data.developmentId ? 'Empreendimento Definido' : 'Configuração da Obra'}
+                  </p>
+                  <p className="font-bold text-gray-800">
+                    {data.developmentId
+                      ? developments.find(d => d.id === data.developmentId)?.name
+                      : 'Personalizado'
+                    }
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {data.constructionStatus === 'PRE_OBRA' ? 'Lançamento/Pré-Obra' : 'Em Andamento'} • {data.constructionDuration || 36} meses totais
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <div className="text-right hidden md:block mr-2">
+                  <span className="text-xs font-bold bg-white px-2 py-1 rounded border border-orange-100 text-orange-600 block mb-1">
+                    {data.constructionStatus === 'PRE_OBRA'
+                      ? `Início em ${data.monthsUntilConstructionStart || 0} m`
+                      : `${data.constructionTime} m restantes`
                     }
                   </span>
                 </div>
+                <button
+                  onClick={() => setShowConstructionModal(true)}
+                  className="p-2 bg-white border border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-200 rounded-lg transition-all shadow-sm"
+                  title="Configurar Obra"
+                >
+                  <Edit2 size={16} />
+                </button>
               </div>
-            ) : (
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 block">Status da Obra</label>
-                <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
-                  <button
-                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${(!data.constructionStatus || data.constructionStatus === 'EM_ANDAMENTO') ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                    onClick={() => setData({ ...data, constructionStatus: 'EM_ANDAMENTO' })}
-                  >
-                    Em Andamento / Iniciada
-                  </button>
-                  <button
-                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${data.constructionStatus === 'PRE_OBRA' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                    onClick={() => setData({ ...data, constructionStatus: 'PRE_OBRA' })}
-                  >
-                    Lançamento (Pré-Obra)
-                  </button>
-                </div>
-                {/* Construction Duration Inputs */}
-                {data.constructionStatus === 'PRE_OBRA' ? (
-                  <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                    <div>
-                      <TimeSliderInput
-                        label="Espera (Pré-Obra)"
-                        value={Number(data.monthsUntilConstructionStart ?? 0)}
-                        onChange={(v) => {
-                          const duration = Number(data.constructionDuration) || 0
-                          setData({
-                            ...data,
-                            monthsUntilConstructionStart: v,
-                            constructionTime: v + duration
-                          })
-                        }}
-                        max={100}
-                      />
-                    </div>
-                    <TimeSliderInput
-                      label="Duração da Obra"
-                      value={Number(data.constructionDuration ?? 36)}
-                      onChange={(v) => {
-                        const start = Number(data.monthsUntilConstructionStart) || 0
-                        setData({
-                          ...data,
-                          constructionDuration: v,
-                          constructionTime: start + v
-                        })
-                      }}
-                      max={100}
-                      min={outstandingEntryBalance > 100 ? 1 : 0}
-                    />
-                  </div>
-                ) : (
-                  /* If construction is ongoing, we set Remaining Time AND Current Progress */
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                    <TimeSliderInput
-                      label="Tempo Restante de Obra"
-                      value={Number(data.constructionTime ?? 24)}
-                      onChange={(v) => {
-                        setData({ ...data, constructionTime: v })
-                      }}
-                      max={100}
-                      min={outstandingEntryBalance > 100 ? 1 : 0}
-                      subLabel="meses"
-                    />
-                    <PercentageInput
-                      label="Obra Concluída"
-                      value={data.currentWorkPercent || 0}
-                      onChange={(v) => setData({ ...data, currentWorkPercent: v })}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+            </div>
             {/* End Status da Obra / Summary */}
           </div>
         )}
-
-        {/* End Status da Obra / Summary */}
       </div>
     </div >
   )

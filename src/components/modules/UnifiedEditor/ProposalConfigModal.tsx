@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { X, Save, Settings2, Banknote, TrendingUp } from 'lucide-react'
+import { X, Save, Settings2, Banknote } from 'lucide-react'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import SmartInput from '../../ui/SmartInput'
-import ToggleSwitch from '../../ui/ToggleSwitch'
+
 
 interface ProposalConfigModalProps {
   isOpen: boolean
@@ -52,55 +52,6 @@ export default function ProposalConfigModal({ isOpen, onClose, data, setData }: 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
 
           {/* 1. SEÇÃO OBRA (INCC e Evolução) - Only if construction */}
-          {(localData.type === 'MCMV' || localData.type === 'DIRETO' || localData.type === 'PLANTA') && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 border-b border-gray-100 pb-2 mb-4">
-                <TrendingUp className="text-purple-500" size={18} />
-                <h3 className="font-bold text-gray-700 text-sm uppercase tracking-wide">Correção e Evolução (Obra/Valorização)</h3>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* INCC */}
-                <div className="space-y-3">
-                  <label className="text-sm font-bold text-gray-700">Correção INCC (% a.m.)</label>
-                  <SmartInput
-                    value={localData.inccRate ?? ''}
-                    onChange={(v) => setLocalData({ ...localData, inccRate: v })}
-                    prefix="%"
-                    allowFloat
-                    disableSlider
-                    placeholder="0.00"
-                  />
-                  <p className="text-xs text-gray-500">Reajuste mensal sobre saldo de obra.</p>
-                </div>
-
-                {/* EVOLUÇÃO DE OBRA */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-bold text-gray-700">Juros de Obra</label>
-                    <ToggleSwitch
-                      checked={!!localData.useWorkEvolution}
-                      onChange={(v) => setLocalData({ ...localData, useWorkEvolution: v })}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500">Cobrança gradual de juros pelo banco.</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 2. APPRAISAL */}
-          <div className="space-y-4">
-            <SmartInput
-              label="Valorização do Imóvel (% a.a.)"
-              value={localData.appreciationRate ?? ''}
-              onChange={(v) => setLocalData({ ...localData, appreciationRate: v })}
-              prefix="%"
-              allowFloat
-              disableSlider
-              subtitle="Projeção para cálculo de retorno"
-            />
-          </div>
 
           {/* 3. SEÇÃO BANCO (Taxas e Seguros) */}
           {!localData.useExternalSimulation && (
