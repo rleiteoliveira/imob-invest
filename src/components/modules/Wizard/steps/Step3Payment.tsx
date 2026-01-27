@@ -8,7 +8,7 @@ import { useDevelopments } from '../../../../hooks/useDevelopments'
 import SmartInput from '../../../ui/SmartInput'
 import TimeSliderInput from '../../../ui/TimeSliderInput'
 import ToggleSwitch from '../../../ui/ToggleSwitch'
-import { ChevronDown, Construction, Building2, Edit2, Plus } from 'lucide-react'
+import { ChevronDown, Construction, Building2, Edit2 } from 'lucide-react'
 
 
 interface StepProps {
@@ -148,47 +148,92 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
         {/* CONSTRUCTION PHASE INPUTS */}
         {isConstruction && (
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-              <div className="flex items-center gap-2">
-                <Construction className="text-orange-500" size={20} />
-                <h3 className="font-bold text-gray-800">Fluxo de Pagamento na Obra</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <Construction className="text-orange-500" size={20} />
+              <h3 className="font-bold text-gray-800">Fluxo de Pagamento na Obra</h3>
+            </div>
+
+            {/* Unified Construction Summary Card */}
+            <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="bg-white p-2 rounded-lg shadow-sm text-orange-500 shrink-0">
+                  <Building2 size={24} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-orange-800 uppercase tracking-wide mb-1">
+                    Empreendimento / Obra
+                  </p>
+
+                  {/* Integrated Combobox */}
+                  <div className="relative inline-block w-full md:w-64">
+                    <select
+                      value={data.developmentId || ''}
+                      onChange={(e) => handleSelectDevelopment(e.target.value)}
+                      className="w-full appearance-none bg-white border border-orange-200 text-gray-800 font-bold py-1.5 pl-3 pr-8 rounded-lg outline-none focus:ring-2 focus:ring-orange-200 cursor-pointer shadow-sm text-sm"
+                    >
+                      <option value="">Personalizado</option>
+                      {developments.map(dev => (
+                        <option key={dev.id} value={dev.id}>{dev.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  </div>
+
+                  <p className="text-xs text-gray-500 mt-1">
+                    {data.constructionStatus === 'PRE_OBRA' ? 'Lançamento/Pré-Obra' : 'Em Andamento'} • {data.constructionDuration || 36} meses totais
+                  </p>
+                </div>
               </div>
 
-              {/* Development Selector */}
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <select
-                    value={data.developmentId || ''}
-                    onChange={(e) => handleSelectDevelopment(e.target.value)}
-                    className="appearance-none bg-gray-50 border border-gray-200 text-gray-700 text-xs font-bold py-2 pl-3 pr-8 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
-                  >
-                    <option value="">Personalizado</option>
-                    {developments.map(dev => (
-                      <option key={dev.id} value={dev.id}>{dev.name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <div className="flex items-center gap-2 self-end md:self-center">
+                <div className="text-right hidden md:block mr-2">
+                  <span className="text-xs font-bold bg-white px-2 py-1 rounded border border-orange-100 text-orange-600 block mb-1">
+                    {data.constructionStatus === 'PRE_OBRA'
+                      ? `Início em ${data.monthsUntilConstructionStart || 0} m`
+                      : `${data.constructionTime} m restantes`
+                    }
+                  </span>
                 </div>
 
-                {selectedDev ? (
-                  <button
-                    onClick={() => { setEditingDev(selectedDev); setShowDevModal(true); }}
-                    className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                    title="Editar Empreendimento"
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => { setEditingDev(null); setShowDevModal(true); }}
-                    className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
-                    title="Novo Empreendimento"
-                  >
-                    <Plus size={16} />
-                  </button>
-                )}
+                {/* Actions Area */}
+                <div className="flex gap-1">
+                  {selectedDev ? (
+                    <button
+                      onClick={() => { setEditingDev(selectedDev); setShowDevModal(true); }}
+                      className="p-2 bg-white border border-blue-100 text-blue-500 hover:bg-blue-50 hover:border-blue-200 rounded-lg transition-all shadow-sm"
+                      title="Editar Empreendimento"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        // Open modal to CREATE NEW, pre-filling with current construction data
+                        setEditingDev({
+                          id: '',
+                          name: '',
+                          constructionStatus: data.constructionStatus || 'EM_ANDAMENTO',
+                          constructionDuration: Number(data.constructionDuration) || 36,
+                          monthsUntilConstructionStart: Number(data.monthsUntilConstructionStart) || 0,
+                          constructionTime: Number(data.constructionTime) || 24,
+                          currentWorkPercent: Number(data.currentWorkPercent) || 0,
+                          inccRate: Number(data.inccRate) || 0.2,
+                          useWorkEvolution: !!data.useWorkEvolution,
+                          appreciationRate: Number(data.appreciationRate) || 10
+                        });
+                        setShowDevModal(true);
+                      }}
+                      className="p-2 bg-white border border-green-100 text-green-500 hover:bg-green-50 hover:border-green-200 rounded-lg transition-all shadow-sm"
+                      title="Salvar como Novo Empreendimento"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                  )}
+
+                </div>
               </div>
             </div>
+            {/* End Status da Obra / Summary */}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -264,47 +309,6 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
               </div>
             </div>
 
-            {/* Unified Construction Summary Card */}
-            <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-white p-2 rounded-lg shadow-sm text-orange-500">
-                  <Building2 size={24} />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-orange-800 uppercase tracking-wide">
-                    {data.developmentId ? 'Empreendimento Definido' : 'Configuração da Obra'}
-                  </p>
-                  <p className="font-bold text-gray-800">
-                    {data.developmentId
-                      ? developments.find(d => d.id === data.developmentId)?.name
-                      : 'Personalizado'
-                    }
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {data.constructionStatus === 'PRE_OBRA' ? 'Lançamento/Pré-Obra' : 'Em Andamento'} • {data.constructionDuration || 36} meses totais
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <div className="text-right hidden md:block mr-2">
-                  <span className="text-xs font-bold bg-white px-2 py-1 rounded border border-orange-100 text-orange-600 block mb-1">
-                    {data.constructionStatus === 'PRE_OBRA'
-                      ? `Início em ${data.monthsUntilConstructionStart || 0} m`
-                      : `${data.constructionTime} m restantes`
-                    }
-                  </span>
-                </div>
-                <button
-                  onClick={() => setShowConstructionModal(true)}
-                  className="p-2 bg-white border border-gray-200 text-gray-400 hover:text-orange-600 hover:border-orange-200 rounded-lg transition-all shadow-sm"
-                  title="Configurar Obra"
-                >
-                  <Edit2 size={16} />
-                </button>
-              </div>
-            </div>
-            {/* End Status da Obra / Summary */}
           </div>
         )}
       </div>
