@@ -5,15 +5,12 @@ import {
   Menu,
   X,
   Plus,
-  Trash2,
-  BarChart3,
   Check,
   Hotel,
   Settings,
   Settings2
 } from 'lucide-react'
 import DetailedReportView from '../Reports/DetailedReportView'
-import ComparisonView from '../Comparison/ComparisonView'
 import EditorWizard from '../Wizard/EditorWizard'
 import RentabilityView from '../Rentability/RentabilityView'
 import BrandSettingsModal from '../Brand/BrandSettingsModal'
@@ -33,11 +30,10 @@ interface CardMetrics {
 }
 
 export default function SimulatorLayout(): ReactElement {
-  const { recentSimulations, saveSimulation, deleteSimulation } = useSimulationHistory()
+  const { saveSimulation } = useSimulationHistory()
   const { settings: globalSettings } = useGlobalSettings()
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [viewMode, setViewMode] = useState<'EDITOR' | 'COMPARE' | 'GLOBAL_SETTINGS'>('EDITOR')
+  const [viewMode, setViewMode] = useState<'EDITOR' | 'GLOBAL_SETTINGS'>('EDITOR')
   const [editorTab, setEditorTab] = useState<'FINANCING' | 'RENTAL'>('FINANCING')
   const [showSuccess, setShowSuccess] = useState(false)
   const [step, setStep] = useState(0)
@@ -95,25 +91,13 @@ export default function SimulatorLayout(): ReactElement {
 
     saveSimulation(newScenario)
 
-    if (!selectedIds.includes(newId)) setSelectedIds((prev) => [...prev, newId])
     setShowSuccess(true)
     setTimeout(() => {
       setShowSuccess(false)
       createNew()
     }, 1500)
   }
-  const loadScenario = (cenario: SimulationScenario): void => {
-    setData(cenario)
-    setCurrentName(cenario.name || '')
-    setStep(0)
-    setViewMode('EDITOR')
-    setEditorTab('FINANCING')
-    setIsMobileMenuOpen(false)
-  }
-  const formatMoney = (val: number | ''): string => {
-    if (val === '') return 'R$ 0,00'
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
-  }
+
 
   const getCardMetrics = (cenario: SimulationScenario): CardMetrics => {
     const timeline = new CaixaMCMV().calculate(cenario)
@@ -165,7 +149,6 @@ export default function SimulatorLayout(): ReactElement {
         <DetailedReportView scenario={reportScenario} onClose={() => setReportScenario(null)} />
       )}
 
-      <BrandSettingsModal isOpen={showBrandSettings} onClose={() => setShowBrandSettings(false)} />
       <BrandSettingsModal isOpen={showBrandSettings} onClose={() => setShowBrandSettings(false)} />
 
       <header className="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center z-40 shrink-0 shadow-sm">
@@ -251,74 +234,6 @@ export default function SimulatorLayout(): ReactElement {
             </button>
           </div>
 
-          <div className="space-y-3">
-            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-2 mb-2">
-              Histórico
-            </h3>
-            {recentSimulations.length === 0 ? (
-              <div className="text-center py-8 px-4 border border-dashed border-gray-100 rounded-lg">
-                <p className="text-xs text-gray-400">Nenhum cenário salvo.</p>
-              </div>
-            ) : (
-              recentSimulations.map((item) => (
-                <div
-                  key={item.id}
-                  className={`group relative border rounded-lg p-3 transition-all cursor-pointer ${data.id === item.scenario.id ? 'bg-gray-50 border-gray-300 shadow-sm' : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-200'}`}
-                  onClick={() => loadScenario(item.scenario)}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(item.scenario.id!)}
-                        onChange={() =>
-                          setSelectedIds((prev) =>
-                            prev.includes(item.scenario.id!)
-                              ? prev.filter((x) => x !== item.scenario.id!)
-                              : [...prev, item.scenario.id!]
-                          )
-                        }
-                        className="w-4 h-4 rounded text-gray-900 focus:ring-gray-900 border-gray-300"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <span className="font-medium text-sm text-gray-900 truncate leading-tight">
-                          {item.scenario.name}
-                        </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            deleteSimulation(item.id)
-                          }}
-                          className="text-gray-300 hover:text-red-500 p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Excluir"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                      <div className="mt-1 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${['MCMV', 'DIRETO'].includes(item.scenario.type) ? 'bg-orange-500' : 'bg-blue-500'}`}
-                          ></span>
-                          <span className="uppercase font-bold text-[9px] text-gray-500 tracking-wide">
-                            {item.scenario.type}
-                          </span>
-                        </div>
-                        <div className="flex flex-col items-end">
-                          <span className="font-semibold text-xs text-gray-700">
-                            {formatMoney(item.scenario.propertyValue)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
           <div className="mt-2 space-y-1">
             <Button
               onClick={() => {
@@ -341,32 +256,10 @@ export default function SimulatorLayout(): ReactElement {
             </Button>
           </div>
         </div>
-
-        <div className="p-4 border-t border-gray-100 bg-white">
-          <Button
-            onClick={() => {
-              setViewMode('COMPARE')
-              setIsMobileMenuOpen(false)
-            }}
-            disabled={selectedIds.length < 1}
-            fullWidth
-            className="h-12 shadow-md gap-2"
-          >
-            <BarChart3 size={18} /> Comparar ({selectedIds.length})
-          </Button>
-        </div>
       </aside>
 
       <main className="flex-1 overflow-hidden relative w-full bg-gray-50/50">
-        {viewMode === 'COMPARE' ? (
-          <ComparisonView
-            scenarios={recentSimulations.map(item => item.scenario)}
-            selectedIds={selectedIds}
-            onBack={() => setViewMode('EDITOR')}
-            getCardMetrics={getCardMetrics}
-            onGenerateReport={(s: SimulationScenario) => setReportScenario(s)}
-          />
-        ) : viewMode === 'GLOBAL_SETTINGS' ? (
+        {viewMode === 'GLOBAL_SETTINGS' ? (
           <div className="h-full overflow-hidden p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <GlobalSettingsModal
               isOpen={true}
