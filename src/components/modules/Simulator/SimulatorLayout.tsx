@@ -212,26 +212,32 @@ export default function SimulatorLayout(): ReactElement {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar bg-white">
-          <Button
-            onClick={createNew}
-            variant="secondary"
-            fullWidth
-            className="border-dashed h-12 text-gray-500 hover:text-gray-900 hover:border-gray-400"
-          >
-            <Plus size={16} className="mr-2" /> Nova Simulação
-          </Button>
 
           {viewMode === 'EDITOR' && (
             <div className="flex flex-col gap-1">
               <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-2 mb-2">
                 Modo de Edição
               </h3>
-              <button
-                onClick={() => setEditorTab('FINANCING')}
-                className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${editorTab === 'FINANCING' ? 'bg-gray-100 text-gray-900' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
+              <div
+                className={`w-full flex items-center justify-between p-2.5 rounded-lg transition-all font-medium text-sm group ${editorTab === 'FINANCING' ? 'bg-gray-100 text-gray-900' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
               >
-                <LayoutDashboard size={18} /> Editor Financeiro
-              </button>
+                <button
+                  onClick={() => setEditorTab('FINANCING')}
+                  className="flex items-center gap-3 flex-1 text-left"
+                >
+                  <LayoutDashboard size={18} /> Editor Financeiro
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    createNew()
+                  }}
+                  className="p-1 rounded-md text-gray-400 hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all opacity-0 group-hover:opacity-100"
+                  title="Nova Simulação (Limpar Editor)"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
               <button
                 onClick={() => setEditorTab('AIRBNB')}
                 className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${editorTab === 'AIRBNB' ? 'bg-rose-50 text-rose-700' : 'bg-transparent text-gray-600 hover:bg-gray-50'}`}
