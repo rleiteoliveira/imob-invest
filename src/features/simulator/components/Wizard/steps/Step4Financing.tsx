@@ -15,7 +15,7 @@ interface StepProps {
 
 export default function Step4Financing({ data, setData }: StepProps): ReactElement {
   const { colors, components } = useThemeStyles()
-  // Remove isRetro
+
 
 
   const [showProposalModal, setShowProposalModal] = useState(false)

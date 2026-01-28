@@ -107,8 +107,8 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
       {/* Left: Inputs */}
       <div className="flex-1 space-y-8">
         <div>
-          <h2 className="text-xl font-bold theme-text-main mb-1" style={{ color: colors.text }}>Definição de Valores</h2>
-          <p className="theme-text-muted text-sm" style={{ color: colors.textMuted }}>Ajuste o valor do imóvel e quanto deseja dar de entrada.</p>
+          <h2 className="text-xl font-bold mb-1" style={{ color: colors.text }}>Definição de Valores</h2>
+          <p className="text-sm" style={{ color: colors.textMuted }}>Ajuste o valor do imóvel e quanto deseja dar de entrada.</p>
         </div>
 
         <SmartInput

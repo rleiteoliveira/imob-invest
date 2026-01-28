@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, Save, Building2, TrendingUp, Construction } from 'lucide-react'
-import { useTheme } from '../../../../context/ThemeContext'
+import { useThemeStyles } from '../../../../hooks/useThemeStyles'
 import type { DevelopmentConfig } from '../../../../types/ScenarioTypes'
 import SmartInput from '../../../../components/ui/SmartInput'
 import TimeSliderInput from '../../../../components/ui/TimeSliderInput'
@@ -28,8 +28,7 @@ const DEFAULT_DEV: DevelopmentConfig = {
 }
 
 export default function DevelopmentEditorModal({ isOpen, onClose, onSave, initialData }: DevelopmentEditorModalProps) {
-  const { theme } = useTheme()
-  const isRetro = theme === 'premium'
+  const { colors, components } = useThemeStyles()
 
   const [data, setData] = useState<DevelopmentConfig>(DEFAULT_DEV)
 
@@ -62,20 +61,20 @@ export default function DevelopmentEditorModal({ isOpen, onClose, onSave, initia
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className={`w-full max-w-2xl rounded-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200 ${isRetro ? 'bg-white border-4 border-black shadow-[8px_8px_0px_0px_#000]' : 'bg-white shadow-2xl'}`}>
+      <div className={`w-full max-w-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200 ${components.card.wrapper}`}>
 
         {/* Header */}
-        <div className={`flex items-center justify-between p-6 ${isRetro ? 'bg-[#18181b] text-white border-b-4 border-black' : 'border-b border-gray-100'}`}>
+        <div className={`flex items-center justify-between ${components.card.header}`}>
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${isRetro ? 'bg-yellow-400 text-black border-2 border-white' : 'bg-blue-100 text-blue-600'}`}>
+            <div className={`p-2 rounded-lg`} style={{ backgroundColor: `${colors.primary}20`, color: colors.primary }}>
               <Building2 size={24} />
             </div>
             <div>
-              <h2 className={`text-xl font-bold ${isRetro ? 'text-white' : 'text-gray-800'}`}>Editor de Empreendimento</h2>
-              <p className={`text-sm ${isRetro ? 'text-gray-400' : 'text-gray-500'}`}>Configure os padrões da obra</p>
+              <h2 className="text-xl font-bold" style={{ color: colors.text }}>Editor de Empreendimento</h2>
+              <p className="text-sm" style={{ color: colors.textMuted }}>Configure os padrões da obra</p>
             </div>
           </div>
-          <button onClick={onClose} className={`p-2 rounded-full transition-colors ${isRetro ? 'text-gray-400 hover:text-white hover:bg-white/10' : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'}`}>
+          <button onClick={onClose} className={`p-2 rounded-full transition-colors ${components.button.ghost}`}>
             <X size={20} />
           </button>
         </div>
@@ -85,10 +84,10 @@ export default function DevelopmentEditorModal({ isOpen, onClose, onSave, initia
 
           {/* Name Input */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Nome do Empreendimento</label>
+            <label className="block text-sm font-bold mb-2" style={{ color: colors.text }}>Nome do Empreendimento</label>
             <input
               type="text"
-              className={`w-full p-3 rounded-xl outline-none transition-all font-medium placeholder:text-gray-400 ${isRetro ? 'bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] focus:translate-y-[-2px] focus:shadow-[6px_6px_0px_0px_#000]' : 'bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800'}`}
+              className={components.input.field}
               placeholder="Ex: Reserva das Flores"
               value={data.name}
               onChange={(e) => setData({ ...data, name: e.target.value })}
@@ -98,20 +97,22 @@ export default function DevelopmentEditorModal({ isOpen, onClose, onSave, initia
 
           {/* Construction Status Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-2 mb-4">
-              <Construction className={isRetro ? 'text-yellow-600' : 'text-orange-500'} size={18} />
-              <h3 className="font-bold text-gray-700 text-sm uppercase tracking-wide">Status da Obra</h3>
+            <div className="flex items-center gap-2 border-b pb-2 mb-4" style={{ borderColor: colors.border }}>
+              <Construction size={18} style={{ color: '#f97316' }} />
+              <h3 className="font-bold text-sm uppercase tracking-wide" style={{ color: colors.textMuted }}>Status da Obra</h3>
             </div>
 
-            <div className={`flex p-1 rounded-lg mb-4 ${isRetro ? 'bg-white border-2 border-black gap-2 p-2' : 'bg-gray-100'}`}>
+            <div className="flex p-1 rounded-lg mb-4 gap-2" style={{ backgroundColor: colors.surface }}>
               <button
-                className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${(!data.constructionStatus || data.constructionStatus === 'EM_ANDAMENTO') ? (isRetro ? 'bg-yellow-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-gray-900 shadow-sm') : 'text-gray-400 hover:text-gray-600'}`}
+                className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${(!data.constructionStatus || data.constructionStatus === 'EM_ANDAMENTO') ? components.button.primary : 'text-gray-400 hover:text-gray-500'}`}
+                style={(!data.constructionStatus || data.constructionStatus === 'EM_ANDAMENTO') ? {} : { color: colors.textMuted }}
                 onClick={() => setData({ ...data, constructionStatus: 'EM_ANDAMENTO' })}
               >
                 Em Andamento / Iniciada
               </button>
               <button
-                className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${data.constructionStatus === 'PRE_OBRA' ? (isRetro ? 'bg-yellow-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-gray-900 shadow-sm') : 'text-gray-400 hover:text-gray-600'}`}
+                className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${data.constructionStatus === 'PRE_OBRA' ? components.button.primary : 'text-gray-400 hover:text-gray-500'}`}
+                style={data.constructionStatus === 'PRE_OBRA' ? {} : { color: colors.textMuted }}
                 onClick={() => setData({ ...data, constructionStatus: 'PRE_OBRA' })}
               >
                 Lançamento (Pré-Obra)
@@ -170,15 +171,15 @@ export default function DevelopmentEditorModal({ isOpen, onClose, onSave, initia
 
           {/* Advanced Settings Section (INCC, Appreciation, etc) */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-2 mb-4">
-              <TrendingUp className={isRetro ? 'text-purple-600' : 'text-purple-500'} size={18} />
-              <h3 className="font-bold text-gray-700 text-sm uppercase tracking-wide">Configurações Financeiras da Obra</h3>
+            <div className="flex items-center gap-2 border-b pb-2 mb-4" style={{ borderColor: colors.border }}>
+              <TrendingUp size={18} style={{ color: colors.accent || '#8b5cf6' }} />
+              <h3 className="font-bold text-sm uppercase tracking-wide" style={{ color: colors.textMuted }}>Configurações Financeiras da Obra</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* INCC */}
               <div className="space-y-3">
-                <label className="text-sm font-bold text-gray-700">Correção INCC (% a.m.)</label>
+                <label className="text-sm font-bold" style={{ color: colors.text }}>Correção INCC (% a.m.)</label>
                 <SmartInput
                   value={data.inccRate ?? ''}
                   onChange={(v) => setData({ ...data, inccRate: v })}
@@ -192,7 +193,7 @@ export default function DevelopmentEditorModal({ isOpen, onClose, onSave, initia
               {/* Evolution */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-bold text-gray-700">Juros de Obra</label>
+                  <label className="text-sm font-bold" style={{ color: colors.text }}>Juros de Obra</label>
                   <ToggleSwitch
                     checked={!!data.useWorkEvolution}
                     onChange={(v) => setData({ ...data, useWorkEvolution: v })}
@@ -203,7 +204,7 @@ export default function DevelopmentEditorModal({ isOpen, onClose, onSave, initia
 
               {/* Appreciation */}
               <div className="space-y-3">
-                <label className="text-sm font-bold text-gray-700">Valorização (% a.a.)</label>
+                <label className="text-sm font-bold" style={{ color: colors.text }}>Valorização (% a.a.)</label>
                 <SmartInput
                   value={data.appreciationRate ?? ''}
                   onChange={(v) => setData({ ...data, appreciationRate: v })}
@@ -218,16 +219,16 @@ export default function DevelopmentEditorModal({ isOpen, onClose, onSave, initia
         </div>
 
         {/* Footer */}
-        <div className={`p-6 bg-gray-50 flex justify-end gap-3 rounded-b-2xl ${isRetro ? 'border-t-2 border-black' : 'border-t border-gray-100'}`}>
+        <div className={`p-6 flex justify-end gap-3 rounded-b-2xl border-t`} style={{ borderColor: colors.border, backgroundColor: `${colors.surface}` }}>
           <button
             onClick={onClose}
-            className={`px-6 py-3 font-bold transition-colors ${isRetro ? 'text-black hover:text-red-600 uppercase tracking-widest' : 'text-gray-500 hover:text-gray-800'}`}
+            className={`px-6 py-3 font-bold transition-colors ${components.button.ghost}`}
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
-            className={`px-6 py-3 font-bold rounded-xl transition-all flex items-center gap-2 ${isRetro ? 'bg-green-500 hover:bg-green-400 text-black border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000]' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200'}`}
+            className={`px-6 py-3 flex items-center gap-2 ${components.button.primary}`}
           >
             <Save size={18} />
             Salvar Empreendimento

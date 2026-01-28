@@ -34,7 +34,7 @@ interface Step4Props {
 
 export default function Step4LeadCapture({ data, setData }: Step4Props): ReactElement {
   const { colors, components } = useThemeStyles()
-  // Remove isRetro
+
 
   const updateLead = (field: keyof ClientLead, value: string) => {
     // Ensure clientLead exists in case of legacy data
