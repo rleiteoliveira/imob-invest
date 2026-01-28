@@ -59,9 +59,11 @@ export default function ThemeSwitcher({ className }: { className?: string }) {
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`p-3 rounded-full shadow-xl transition-all hover:scale-105 active:scale-95 ${theme === 'premium'
+        className={`p-3 rounded-full shadow-sm transition-all hover:scale-105 active:scale-95 ${theme === 'premium'
           ? 'bg-yellow-400 text-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
-          : 'bg-white text-gray-700 shadow-gray-200'
+          : theme === 'dark'
+            ? 'bg-zinc-800 text-white border border-white/10 shadow-black/50'
+            : 'bg-white text-gray-700 shadow-gray-200'
           }`}
       >
         <Palette size={20} />
