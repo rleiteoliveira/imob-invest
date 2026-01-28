@@ -1,19 +1,116 @@
 @import "tailwindcss";
 
-/* Opcional: Se quiser garantir a fonte Inter igual ao antigo, adicione isso.
-   Caso contrário, ele usará a fonte padrão do sistema que fica ótima em mobile */
 :root {
+  /* FONT */
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+
+  /* THEME 1: DEFAULT (Professional/Technical) */
+  --brand-primary: #2563eb;
+  /* blue-600 */
+  --brand-secondary: #059669;
+  /* emerald-600 */
+  --bg-main: #f9fafb;
+  /* gray-50 */
+  --bg-card: #ffffff;
+  --text-main: #1f2937;
+  /* gray-800 */
+  --text-muted: #6b7280;
+  /* gray-500 */
+
+  /* SHAPES */
+  --radius-card: 0.75rem;
+  /* rounded-xl */
+  --radius-btn: 0.5rem;
+  /* rounded-lg */
+
+  /* EFFECTS */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --backdrop-blur: 0px;
+  --card-border: 1px solid #e5e7eb;
+  /* gray-200 */
+}
+
+/* THEME 2: PREMIUM (Modern/Fluid) - Activated via data-theme="premium" */
+[data-theme="premium"] {
+  /* Zinc/Indigo/Violet vibe */
+  --brand-primary: #6366f1;
+  /* indigo-500 */
+  --brand-secondary: #8b5cf6;
+  /* violet-500 */
+
+  /* Darker/Glassyer/Richer backgrounds or just cleaner white with blur */
+  --bg-main: #f8fafc;
+  /* slate-50 */
+  --bg-card: rgba(255, 255, 255, 0.85);
+  /* Glassy */
+
+  --text-main: #18181b;
+  /* zinc-900 */
+  --text-muted: #71717a;
+  /* zinc-500 */
+
+  /* SHAPES */
+  --radius-card: 1.5rem;
+  /* rounded-3xl */
+  --radius-btn: 9999px;
+  /* rounded-full */
+
+  /* EFFECTS */
+  --shadow-card: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --backdrop-blur: 12px;
+  --card-border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Utility Classes mapping to Variables for easier usage */
+.theme-bg-main {
+  background-color: var(--bg-main);
+  transition: background-color 0.5s ease;
+}
+
+.theme-bg-card {
+  background-color: var(--bg-card);
+  backdrop-filter: blur(var(--backdrop-blur));
+  transition: all 0.5s ease;
+}
+
+.theme-text-main {
+  color: var(--text-main);
+}
+
+.theme-text-muted {
+  color: var(--text-muted);
+}
+
+.theme-border {
+  border: var(--card-border);
+}
+
+.theme-shadow {
+  box-shadow: var(--shadow-card);
+}
+
+.theme-rounded-card {
+  border-radius: var(--radius-card);
+}
+
+.theme-rounded-btn {
+  border-radius: var(--radius-btn);
+}
+
+.theme-btn-primary {
+  background-color: var(--brand-primary);
+  color: white;
+  border-radius: var(--radius-btn);
+  transition: all 0.3s ease;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f9fafb;
-  /* bg-gray-50 para combinar com seu app */
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.5s ease;
 }
 
 @media print {
