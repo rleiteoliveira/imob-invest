@@ -1,19 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap');
 @import "tailwindcss";
 
-/* Opcional: Se quiser garantir a fonte Inter igual ao antigo, adicione isso.
-   Caso contrário, ele usará a fonte padrão do sistema que fica ótima em mobile */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* FONT */
+  --font-main: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  /* THEME 1: DEFAULT (Professional/Technical) */
+  --brand-primary: #2563eb;
+  --brand-secondary: #059669;
+  --btn-bg: #2563eb;
+  --bg-main: #f9fafb;
+  --bg-card: #ffffff;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+
+  /* SHAPES */
+  --radius-card: 0.75rem;
+  --radius-btn: 0.5rem;
+
+  /* EFFECTS */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --backdrop-blur: 0px;
+  --card-border: 1px solid #e5e7eb;
+}
+
+/* THEME 2: PREMIUM (Clean & Utilitarian / High-Performance) */
+/* THEME 2: NEO-RETRO / POP (Radically Unique) */
+[data-theme="premium"] {
+  /* Typography - Playful but legible */
+  --font-main: 'Outfit', sans-serif;
+
+  /* Vibrant, Neo-Brutalist Palette */
+  --brand-primary: #8b5cf6;
+  /* violet-500 */
+  --brand-secondary: #f472b6;
+  /* pink-400 */
+
+  /* Warm "Paper" Background */
+  --bg-main: #fffdf5;
+  /* amber-50/cream */
+  --bg-card: #ffffff;
+
+  --text-main: #18181b;
+  /* zinc-900 */
+  --text-muted: #52525b;
+  /* zinc-600 */
+
+  /* Bold Black Buttons */
+  --btn-bg: #18181b;
+
+  /* Chunky Shapes */
+  --radius-card: 0.75rem;
+  /* 12px */
+  --radius-btn: 0.5rem;
+  /* 8px */
+
+  /* HARD SHADOWS (The "Pop" Signature) */
+  --shadow-card: 4px 4px 0px 0px #18181b;
+
+  /* No Blur, Hard Lines */
+  --backdrop-blur: 0px;
+  --card-border: 2px solid #18181b;
+  /* Thick retro borders */
+
+  /* No mesh, just pure style */
+  --bg-mesh: none;
+}
+
+/* NEO-RETRO: Deep Component Customization */
+
+/* 1. WRAPPER OVERRIDES (Smart Inputs) */
+[data-theme="premium"] .input-wrapper {
+  border: 2px solid #18181b !important;
+  box-shadow: 2px 2px 0px 0px #18181b !important;
+  border-radius: 0.5rem !important;
+  background-color: #ffffff !important;
+  transition: all 0.1s ease !important;
+}
+
+[data-theme="premium"] .input-wrapper:focus-within {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 4px 4px 0px 0px #18181b !important;
+  border-color: #8b5cf6 !important;
+}
+
+/* 2. INNER INPUT RESET (Prevent double borders) */
+[data-theme="premium"] .input-wrapper input {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  color: #18181b !important;
+  font-weight: 700 !important;
+}
+
+/* 3. STANDALONE INPUTS (Fallback) */
+[data-theme="premium"] input:not(.input-wrapper input),
+[data-theme="premium"] select,
+[data-theme="premium"] textarea {
+  border: 2px solid #18181b !important;
+  box-shadow: 2px 2px 0px 0px #18181b !important;
+  border-radius: 0.5rem !important;
+  background-color: #ffffff !important;
+  font-weight: 600 !important;
+  color: #18181b !important;
+}
+
+[data-theme="premium"] input:not(.input-wrapper input):focus,
+[data-theme="premium"] select:focus,
+[data-theme="premium"] textarea:focus {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 4px 4px 0px 0px #18181b !important;
+  outline: none !important;
+  border-color: #8b5cf6 !important;
+}
+
+/* Typography Overrides */
+[data-theme="premium"] h1,
+[data-theme="premium"] h2,
+[data-theme="premium"] h3,
+[data-theme="premium"] h4 {
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  font-weight: 800 !important;
+}
+
+/* Chart Tooltips - Neo Style */
+[data-theme="premium"] .recharts-tooltip-cursor {
+  stroke: #18181b !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 4 4 !important;
+}
+
+[data-theme="premium"] .recharts-default-tooltip {
+  border: 2px solid #18181b !important;
+  box-shadow: 4px 4px 0px 0px #18181b !important;
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+}
+
+/* Card Hover Effects deepening */
+[data-theme="premium"] .theme-bg-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px #18181b;
+}
+
+/* Custom Highlight Regions */
+[data-theme="premium"] ::selection {
+  background-color: #f472b6;
+  /* pink-400 */
+  color: #000;
+}
+
+/* Utility Classes mapping to Variables for easier usage */
+.theme-bg-main {
+  background-color: var(--bg-main);
+  transition: background-color 0.3s ease;
+  /* Faster transition */
+}
+
+.theme-bg-card {
+  background-color: var(--bg-card);
+  backdrop-filter: blur(var(--backdrop-blur));
+  transition: all 0.3s ease;
+}
+
+.theme-text-main {
+  color: var(--text-main);
+  font-family: var(--font-main);
+}
+
+.theme-text-muted {
+  color: var(--text-muted);
+  font-family: var(--font-main);
+}
+
+.theme-border {
+  border: var(--card-border);
+}
+
+.theme-shadow {
+  box-shadow: var(--shadow-card);
+}
+
+.theme-rounded-card {
+  border-radius: var(--radius-card);
+}
+
+.theme-rounded-btn {
+  border-radius: var(--radius-btn);
+}
+
+.theme-btn-primary {
+  background: var(--btn-bg);
+  color: white;
+  border-radius: var(--radius-btn);
+  transition: all 0.2s ease;
+  /* Snappier */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.theme-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(0);
+  /* Remove movement for utilitarian feel */
+  box-shadow: none;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f9fafb;
-  /* bg-gray-50 para combinar com seu app */
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  transition: background-color 0.3s ease;
+}
+
+/* Ensure mesh is hidden */
+.premium-background-mesh {
+  display: none !important;
 }
 
 @media print {

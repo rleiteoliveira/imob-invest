@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { ReactElement, ChangeEvent, FocusEvent } from 'react'
+import { useThemeStyles } from '../../hooks/useThemeStyles'
 
 const formatFinal = (val: number) => {
   if (val === undefined || val === null) return ''
@@ -32,6 +33,9 @@ const CurrencyInput = ({
   inputClassName?: string
   placeholder?: string
 }): ReactElement => {
+  const { components, colors } = useThemeStyles()
+  const themeInput = components.input
+
   const [displayValue, setDisplayValue] = useState(() => (value === 0 || value === '') ? '0,00' : formatFinal(value as number))
   const [active, setActive] = useState(false)
   const [prevValue, setPrevValue] = useState(value)
@@ -93,23 +97,31 @@ const CurrencyInput = ({
   return (
     <div className="flex-1 w-full">
       {label && (
-        <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 flex justify-between">
+        <label className={themeInput.label + " flex justify-between items-center"}>
           {label}{' '}
           {highlight && (
-            <span className="text-blue-600 bg-blue-50 px-1.5 rounded text-[10px]">{highlight}</span>
+            <span className="text-[10px] px-1.5 rounded font-bold" style={{ backgroundColor: colors.accent + '20', color: colors.accent }}>{highlight}</span>
           )}
         </label>
       )}
       <div
-        className={`relative flex items-center border rounded-xl transition-all ${readOnly ? 'bg-gray-100 border-gray-200' : active ? 'bg-white border-blue-500 ring-2 ring-blue-100' : 'bg-white border-gray-300 hover:border-gray-400'} ${className}`}
+        className={`relative flex items-center transition-all input-wrapper ${themeInput.field} ${readOnly ? 'opacity-70 cursor-not-allowed' : ''} ${active ? 'ring-2' : ''} ${className}`}
+        style={{
+          borderColor: active ? colors.primary : undefined, // Use Primary for active border
+          // If themeInput.field has a border color, this overrides it only when active. 
+          // Actually themeInput.field usually has border-gray-something. 
+          // We can rely on inline style for active state.
+          boxShadow: active ? `0 0 0 2px ${colors.primary}30` : undefined // Simulate ring with shadow or just use ring-color style
+        }}
       >
         {prefix && (
-          <span className="pl-3 text-gray-400 font-bold text-sm select-none">{prefix}</span>
+          <span className="pl-3 font-bold text-sm select-none" style={{ color: colors.textMuted }}>{prefix}</span>
         )}
         <input
           type="text"
           disabled={readOnly}
-          className={`w-full pl-2 pr-3 outline-none font-bold bg-transparent ${readOnly ? 'text-gray-500 cursor-not-allowed' : 'text-gray-900'} ${inputClassName || 'py-3 text-xl'}`}
+          className={`w-full pl-2 pr-3 outline-none font-bold bg-transparent ${readOnly ? 'cursor-not-allowed' : ''} ${inputClassName || 'py-3 text-xl'}`}
+          style={{ color: readOnly ? colors.textMuted : colors.text }}
           value={displayValue}
           onFocus={handleFocus}
           onChange={handleChange}
@@ -118,7 +130,7 @@ const CurrencyInput = ({
           inputMode="numeric"
         />
       </div>
-      {subtitle && <p className="text-[10px] text-gray-400 mt-1 ml-1">{subtitle}</p>}
+      {subtitle && <p className="text-[10px] mt-1 ml-1" style={{ color: colors.textMuted }}>{subtitle}</p>}
     </div>
   )
 }

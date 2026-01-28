@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react'
 import { useState, useEffect } from 'react'
 import * as Slider from '@radix-ui/react-slider'
+import { useThemeStyles } from '../../hooks/useThemeStyles'
 
 interface PercentageInputProps {
   value: number
@@ -13,6 +14,7 @@ const PercentageInput = ({
   onChange,
   label = 'Percentual',
 }: PercentageInputProps): ReactElement => {
+  const { colors, components } = useThemeStyles()
   // Ensure value is within [0, 100]
   const [inputValue, setInputValue] = useState<string>(value.toString())
 
@@ -53,20 +55,21 @@ const PercentageInput = ({
   const presets = [0, 25, 50, 75, 90]
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-4 shadow-sm group hover:border-blue-300 transition-colors">
+    <div className={`flex flex-col gap-4 shadow-sm p-4 group transition-colors ${components.card.wrapper}`}>
       {/* Header */}
       <div className="flex justify-between items-start">
-        <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+        <label className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.textMuted }}>
           {label}
         </label>
-        <div className="flex items-baseline text-blue-600">
+        <div className="flex items-baseline" style={{ color: colors.accent }}>
           <input
             type="text"
             inputMode="numeric"
             value={inputValue}
             onChange={handleInputChange}
             onBlur={handleBlur}
-            className="text-3xl font-black bg-transparent outline-none w-[60px] text-right placeholder-gray-300"
+            className="text-3xl font-black bg-transparent outline-none w-[60px] text-right placeholder-gray-500"
+            style={{ color: colors.accent }}
             placeholder="0"
           />
           <span className="text-lg font-bold ml-0.5">%</span>
@@ -85,11 +88,16 @@ const PercentageInput = ({
             setInputValue(val[0].toString())
           }}
         >
-          <Slider.Track className="bg-gray-100 relative grow rounded-full h-3 overflow-hidden">
-            <Slider.Range className="absolute bg-gradient-to-r from-blue-400 to-blue-600 rounded-full h-full" />
+          <Slider.Track className="relative grow rounded-full h-3 overflow-hidden" style={{ backgroundColor: colors.border }}>
+            <Slider.Range className="absolute rounded-full h-full" style={{ backgroundColor: colors.accent }} />
           </Slider.Track>
           <Slider.Thumb
-            className="block w-6 h-6 bg-white border-2 border-blue-600 shadow-md rounded-full hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-transform"
+            className="block w-6 h-6 border-2 shadow-md rounded-full hover:scale-110 focus:outline-none focus:ring-4 transition-transform"
+            style={{
+              backgroundColor: colors.surface,
+              borderColor: colors.accent,
+              boxShadow: `0 0 0 2px ${colors.surface}`
+            }}
             aria-label={label}
           />
         </Slider.Root>
@@ -107,9 +115,10 @@ const PercentageInput = ({
             className={`
               flex-1 py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all border
               ${value === preset
-                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                : 'bg-gray-50 text-gray-500 border-gray-100 hover:bg-gray-100 hover:border-gray-300'}
+                ? components.button.primary
+                : components.button.secondary}
             `}
+            style={value !== preset ? { color: colors.textMuted, borderColor: colors.border, backgroundColor: 'transparent' } : {}}
           >
             {preset}%
           </button>

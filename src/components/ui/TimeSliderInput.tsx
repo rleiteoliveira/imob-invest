@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react'
 import { useState, useEffect } from 'react'
 import * as Slider from '@radix-ui/react-slider'
+import { useThemeStyles } from '../../hooks/useThemeStyles'
 
 interface TimeSliderInputProps {
   value: number
@@ -21,6 +22,7 @@ const TimeSliderInput = ({
   min = 0,
   disabled = false,
 }: TimeSliderInputProps): ReactElement => {
+  const { colors, components } = useThemeStyles()
   // Safety checks
   const safeMax = Math.max(max || 100, 1) // Ensure max is never < 1
 
@@ -51,7 +53,6 @@ const TimeSliderInput = ({
       // The user requested: "Input numérico grande ... permitindo edição livre via teclado."
       // So we should trigger onChange, but maybe clamp logic is needed in parent or here?
       // Let's trigger onChange with the raw number, but component should probably respect limits?
-      // Usually it's better to clamp on blur. But let's follow the simple "free edit" request.
       // We'll update the parent, but validation might be on them or we clamp silently?
       // The slider MUST receive clamped values.
       onChange(num)
@@ -72,11 +73,11 @@ const TimeSliderInput = ({
   const sliderValue = [Math.min(Math.max(value || 0, min), safeMax)]
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col gap-4 shadow-sm">
+    <div className={`flex flex-col gap-4 shadow-sm p-4 ${components.card.wrapper}`}>
       {/* Header / Input Area */}
       <div className="flex flex-col gap-1 relative z-0">
         {label && (
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+          <span className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.textMuted }}>
             {label}
           </span>
         )}
@@ -88,11 +89,12 @@ const TimeSliderInput = ({
             value={inputValue}
             onChange={handleInputChange}
             onBlur={handleBlur}
-            className="text-2xl font-bold text-gray-900 bg-transparent outline-none w-full placeholder-gray-300"
+            className="text-2xl font-bold bg-transparent outline-none w-full placeholder-gray-500"
+            style={{ color: colors.text }}
             placeholder="0"
           />
           {subLabel && (
-            <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
+            <span className="text-xs font-medium whitespace-nowrap" style={{ color: colors.textMuted }}>
               {subLabel}
             </span>
           )}
@@ -114,18 +116,19 @@ const TimeSliderInput = ({
             setInputValue(val[0].toString())
           }}
         >
-          <Slider.Track className="bg-gray-100 relative grow rounded-full h-2 overflow-hidden">
-            <Slider.Range className="absolute bg-blue-600 rounded-full h-full" />
+          <Slider.Track className="relative grow rounded-full h-2 overflow-hidden" style={{ backgroundColor: colors.border }}>
+            <Slider.Range className="absolute rounded-full h-full" style={{ backgroundColor: colors.primary }} />
           </Slider.Track>
           <Slider.Thumb
-            className="block w-5 h-5 bg-white border-2 border-blue-600 shadow-md rounded-full hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-transform"
+            className="block w-5 h-5 border-2 shadow-md rounded-full hover:scale-110 focus:outline-none focus:ring-2 transition-transform"
+            style={{ backgroundColor: colors.surface, borderColor: colors.primary, boxShadow: `0 0 10px ${colors.primary}40` }}
             aria-label={label}
           />
         </Slider.Root>
       </div>
 
       {/* Footer Labels */}
-      <div className="flex justify-between text-[10px] font-bold text-gray-400 px-1 mt-[-8px]">
+      <div className="flex justify-between text-[10px] font-bold px-1 mt-[-8px]" style={{ color: colors.textMuted }}>
         <span>{min}</span>
         <span>{safeMax}</span>
       </div>
