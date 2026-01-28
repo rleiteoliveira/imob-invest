@@ -40,7 +40,7 @@ const EditorWizard = ({
 
   return (
     <div className="h-full flex items-center justify-center p-0 md:p-4 bg-gray-50/50">
-      <div className="w-full max-w-5xl bg-white md:rounded-3xl shadow-none md:shadow-xl border-x-0 md:border border-gray-200 overflow-hidden flex flex-col h-full md:h-[90vh] md:max-h-[850px] md:min-h-[600px]">
+      <div className="w-full max-w-5xl bg-white/90 backdrop-blur-xl md:rounded-3xl shadow-none md:shadow-2xl border-x-0 md:border border-white/50 overflow-hidden flex flex-col h-full md:h-[90vh] md:max-h-[850px] md:min-h-[600px]">
 
         {/* HEADER */}
         <div className="bg-white px-6 md:px-8 py-6 border-b border-gray-100 relative shrink-0">
@@ -129,7 +129,7 @@ const EditorWizard = ({
                   className="gap-2 px-8 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 focus:ring-emerald-600"
                 >
                   <Printer size={18} />
-                  Gerar Proposta PDF
+                  Gerar Proposta Personalizada
                 </Button>
               </div>
             )}

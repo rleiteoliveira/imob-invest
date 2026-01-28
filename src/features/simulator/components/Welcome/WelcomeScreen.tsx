@@ -13,9 +13,7 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps): ReactEle
           <Building2 size={40} />
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
-          Financiamento Pro
-        </h1>
+        Imob-Invest
 
         <p className="text-gray-500 mb-8 leading-relaxed">
           Simule, compare e planeje seu financiamento imobiliário com precisão e facilidade.

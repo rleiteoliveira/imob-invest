@@ -63,7 +63,7 @@ export default function SimulatorLayout(): ReactElement {
           <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center text-white shadow-sm">
             <LayoutDashboard size={18} />
           </div>
-          <span className="font-bold text-gray-900 tracking-tight">Simulador Pro</span>
+          <span className="font-bold text-gray-900 tracking-tight">Imob-Invest</span>
         </div>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -93,9 +93,9 @@ export default function SimulatorLayout(): ReactElement {
               <LayoutDashboard size={18} />
             </div>
             <div>
-              <h1 className="text-base font-bold text-gray-900 leading-tight">Financiamento Pro</h1>
+              <h1 className="text-base font-bold text-gray-900 leading-tight">Imob-Invest</h1>
               <p className="text-[10px] font-medium text-gray-500 uppercase tracking-widest">
-                Simulador 2.0
+                Planejamento Financeiro
               </p>
             </div>
           </div>
@@ -181,16 +181,65 @@ export default function SimulatorLayout(): ReactElement {
             financingMonthlyCost={getCardMetrics(data).parcelaFinanciamento}
           />
         ) : (
-          <EditorWizard
-            step={step}
-            setStep={setStep}
-            data={data}
-            setData={setData}
-            currentName={currentName}
-            setCurrentName={setCurrentName}
-            onSave={handleSave}
-            onGenerateReport={(scenarioData: SimulationScenario) => setReportScenario(scenarioData)}
-          />
+          <div className="flex h-full gap-6 p-4 md:p-6 max-w-[1600px] mx-auto">
+            {/* Main Wizard Area */}
+            <div className={`flex-1 flex flex-col h-full transition-all duration-500 ${viewMode === 'EDITOR' && editorTab === 'FINANCING' ? 'w-full lg:w-3/4' : 'w-full'}`}>
+              <EditorWizard
+                step={step}
+                setStep={setStep}
+                data={data}
+                setData={setData}
+                currentName={currentName}
+                setCurrentName={setCurrentName}
+                onSave={handleSave}
+                onGenerateReport={(scenarioData: SimulationScenario) => setReportScenario(scenarioData)}
+              />
+            </div>
+
+            {/* Quick Summary Sidebar (Desktop Only) */}
+            {viewMode === 'EDITOR' && editorTab === 'FINANCING' && (
+              <div className="hidden lg:flex w-80 shrink-0 flex-col gap-4 animate-in fade-in slide-in-from-right-8 duration-700 delay-100">
+                <div className="bg-white/80 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-xl flex flex-col gap-6 sticky top-6">
+                  <div className="flex items-center gap-2 border-b border-gray-100/50 pb-4">
+                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg shadow-sm">
+                      <LayoutDashboard size={18} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-800 text-sm">Resumo Rápido</h3>
+                      <p className="text-[10px] text-gray-500 uppercase tracking-wider">Tempo Real</p>
+                    </div>
+                  </div>
+
+                  {/* Metrics */}
+                  <div className="space-y-5">
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium mb-1">Valor do Imóvel</p>
+                      <p className="text-xl font-bold text-gray-900">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(data.propertyValue) || 0)}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50">
+                      <p className="text-[10px] text-emerald-600 font-bold uppercase mb-1">Entrada Total</p>
+                      <p className="text-lg font-bold text-emerald-700">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(data.downPayment) || 0)}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100/50">
+                      <p className="text-[10px] text-blue-600 font-bold uppercase mb-1">Parcela Inicial (Est.)</p>
+                      <p className="text-lg font-bold text-blue-700">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(getCardMetrics(data).parcelaFinanciamento)}
+                      </p>
+                      <p className="text-[10px] text-blue-400 mt-1">
+                        {data.amortizationSystem} - {data.termMonths}x
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </main>
     </div>

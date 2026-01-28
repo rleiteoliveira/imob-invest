@@ -154,7 +154,7 @@ export default function Step4LeadCapture({ data, setData }: Step4Props): ReactEl
         <div>
           <h4 className="text-sm font-bold text-emerald-900">Pronto para gerar!</h4>
           <p className="text-xs text-emerald-700 mt-0.5">
-            Ao clicar em "Gerar Relatório", criaremos um documento PDF completo com todas as projeções e os dados acima.
+            Ao clicar em "Gerar Proposta Personalizada", criaremos um documento PDF completo com todas as projeções e os dados acima.
           </p>
         </div>
       </div>
