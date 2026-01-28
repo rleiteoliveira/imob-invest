@@ -1,84 +1,94 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap');
 
 :root {
   /* FONT */
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-main: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 
   /* THEME 1: DEFAULT (Professional/Technical) */
   --brand-primary: #2563eb;
-  /* blue-600 */
   --brand-secondary: #059669;
-  /* emerald-600 */
+  --btn-bg: #2563eb;
   --bg-main: #f9fafb;
-  /* gray-50 */
   --bg-card: #ffffff;
   --text-main: #1f2937;
-  /* gray-800 */
   --text-muted: #6b7280;
-  /* gray-500 */
 
   /* SHAPES */
   --radius-card: 0.75rem;
-  /* rounded-xl */
   --radius-btn: 0.5rem;
-  /* rounded-lg */
 
   /* EFFECTS */
   --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --backdrop-blur: 0px;
   --card-border: 1px solid #e5e7eb;
-  /* gray-200 */
 }
 
-/* THEME 2: PREMIUM (Modern/Fluid) - Activated via data-theme="premium" */
+/* THEME 2: PREMIUM (Clean & Utilitarian / High-Performance) */
 [data-theme="premium"] {
-  /* Zinc/Indigo/Violet vibe */
-  --brand-primary: #6366f1;
-  /* indigo-500 */
-  --brand-secondary: #8b5cf6;
-  /* violet-500 */
+  /* Typography - System/Inter for max legibility */
+  --font-main: Inter, system-ui, -apple-system, sans-serif;
 
-  /* Darker/Glassyer/Richer backgrounds or just cleaner white with blur */
+  /* Professional/Tool Aesthetic */
+  --brand-primary: #0f172a;
+  /* slate-900 */
+  --brand-secondary: #334155;
+  /* slate-700 */
+
+  /* Solid, opaque surfaces for 0 overhead */
   --bg-main: #f8fafc;
   /* slate-50 */
-  --bg-card: rgba(255, 255, 255, 0.85);
-  /* Glassy */
+  --bg-card: #ffffff;
+  /* pure white */
 
-  --text-main: #18181b;
-  /* zinc-900 */
-  --text-muted: #71717a;
-  /* zinc-500 */
+  --text-main: #0f172a;
+  /* slate-900 (High Contrast) */
+  --text-muted: #64748b;
+  /* slate-500 */
 
-  /* SHAPES */
-  --radius-card: 1.5rem;
-  /* rounded-3xl */
-  --radius-btn: 9999px;
-  /* rounded-full */
+  /* Functional Buttons */
+  --btn-bg: #0f172a;
+  /* Solid Slate 900 */
 
-  /* EFFECTS */
-  --shadow-card: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --backdrop-blur: 12px;
-  --card-border: 1px solid rgba(255, 255, 255, 0.6);
+  /* SHAPES - Standardized */
+  --radius-card: 0.5rem;
+  /* rounded-lg (8px) */
+  --radius-btn: 0.375rem;
+  /* rounded-md (6px) */
+
+  /* EFFECTS - Minimalist/Flat */
+  --shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  --backdrop-blur: 0px;
+  /* Disabled for performance */
+  --card-border: 1px solid #e2e8f0;
+  /* slate-200 */
+
+  /* No mesh */
+  --bg-mesh: none;
 }
 
 /* Utility Classes mapping to Variables for easier usage */
 .theme-bg-main {
   background-color: var(--bg-main);
-  transition: background-color 0.5s ease;
+  transition: background-color 0.3s ease;
+  /* Faster transition */
 }
 
 .theme-bg-card {
   background-color: var(--bg-card);
   backdrop-filter: blur(var(--backdrop-blur));
-  transition: all 0.5s ease;
+  transition: all 0.3s ease;
 }
 
 .theme-text-main {
   color: var(--text-main);
+  font-family: var(--font-main);
 }
 
 .theme-text-muted {
   color: var(--text-muted);
+  font-family: var(--font-main);
 }
 
 .theme-border {
@@ -98,10 +108,19 @@
 }
 
 .theme-btn-primary {
-  background-color: var(--brand-primary);
+  background: var(--btn-bg);
   color: white;
   border-radius: var(--radius-btn);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  /* Snappier */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.theme-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(0);
+  /* Remove movement for utilitarian feel */
+  box-shadow: none;
 }
 
 body {
@@ -110,7 +129,13 @@ body {
   min-height: 100vh;
   background-color: var(--bg-main);
   color: var(--text-main);
-  transition: background-color 0.5s ease;
+  font-family: var(--font-main);
+  transition: background-color 0.3s ease;
+}
+
+/* Ensure mesh is hidden */
+.premium-background-mesh {
+  display: none !important;
 }
 
 @media print {

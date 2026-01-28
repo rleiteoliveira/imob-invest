@@ -19,13 +19,14 @@ import {
 } from 'lucide-react'
 import CurrencyInput from '../../../components/ui/CurrencyInput'
 import NumberInput from '../../../components/ui/NumberInput'
+import AnimatedNumber from '../../../components/ui/AnimatedNumber'
 import { calculateRentalReturn } from '../../simulator/services/engines/RentalCalculator'
 import type { SimulationScenario, RentabilityConfig } from '../../../types/ScenarioTypes'
 
 interface RentabilityViewProps {
   scenario: SimulationScenario
   onChange: (scenario: SimulationScenario) => void
-  financingMonthlyCost?: number // Keeping optional for backwards compat or hint if needed, but primary is internal config
+  financingMonthlyCost?: number
 }
 
 const defaultConfig: RentabilityConfig = {
@@ -50,7 +51,7 @@ const formatMoney = (val: number) => {
 // Internal Components
 interface KPICardProps {
   label: string
-  value: string
+  value: number
   subtitle?: string
   color: 'teal' | 'red' | 'green'
   size?: 'md' | 'lg'
@@ -60,28 +61,28 @@ interface KPICardProps {
 const KPICard = ({ label, value, subtitle, color, highlight = false }: KPICardProps) => {
   const colorStyles = {
     teal: {
-      bg: 'bg-gradient-to-br from-teal-50 to-teal-100/50',
-      border: 'border-teal-200/60',
+      bg: 'theme-bg-card',
+      border: 'theme-border',
       text: 'text-teal-700',
       iconBg: 'bg-teal-100',
       icon: 'text-teal-600',
-      value: 'text-gray-900'
+      value: 'theme-text-main'
     },
     red: {
-      bg: 'bg-gradient-to-br from-red-50 to-red-100/50',
-      border: 'border-red-200/60',
+      bg: 'theme-bg-card',
+      border: 'theme-border',
       text: 'text-red-700',
       iconBg: 'bg-red-100',
       icon: 'text-red-600',
-      value: 'text-gray-900'
+      value: 'theme-text-main'
     },
     green: {
-      bg: 'bg-gradient-to-br from-emerald-50 to-emerald-100/50',
-      border: 'border-emerald-200/60 ring-1 ring-emerald-100',
+      bg: 'theme-bg-card',
+      border: 'theme-border ring-1 ring-emerald-100',
       text: 'text-emerald-700',
       iconBg: 'bg-emerald-100',
       icon: 'text-emerald-600',
-      value: 'text-emerald-900'
+      value: 'text-emerald-600'
     }
   }
 
@@ -89,9 +90,9 @@ const KPICard = ({ label, value, subtitle, color, highlight = false }: KPICardPr
 
   return (
     <div className={`
-      relative overflow-hidden rounded-xl flex flex-col justify-between transition-all duration-300 cursor-default
-      ${currentStyle.bg} ${currentStyle.border}
-      ${highlight ? 'shadow-md hover:shadow-lg hover:scale-[1.02]' : 'shadow-sm hover:shadow-md hover:scale-[1.01]'}
+      relative overflow-hidden theme-rounded-card flex flex-col justify-between transition-all duration-300 cursor-default
+      ${currentStyle.bg} ${currentStyle.border} theme-shadow border
+      ${highlight ? 'hover:shadow-lg hover:scale-[1.02]' : 'hover:shadow-md hover:scale-[1.01]'}
       p-4
     `}>
       <div className="flex items-start justify-between mb-2">
@@ -106,9 +107,9 @@ const KPICard = ({ label, value, subtitle, color, highlight = false }: KPICardPr
       </div>
 
       <div>
-        <p className={`font-bold tracking-tight ${currentStyle.value} text-2xl`}>
-          {value}
-        </p>
+        <div className={`font-bold tracking-tight ${currentStyle.value} text-2xl`}>
+          <AnimatedNumber value={value} />
+        </div>
         {subtitle && (
           <p className={`font-medium mt-0.5 ${currentStyle.text} text-[10px] flex items-center gap-1`}>
             {highlight && <Sparkles size={10} className="text-emerald-500" />}
@@ -125,10 +126,10 @@ const AnnualProjectionCard = ({ monthlyProfit, occupancyRate, propertyValue }: {
   const yieldAnnual = propertyValue > 0 ? (annualProfit / propertyValue) * 100 : 0
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-1 border border-teal-500/20 shadow-lg relative overflow-hidden group">
+    <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-1 border border-teal-500/20 shadow-lg relative overflow-hidden group">
       <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
-      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-900/40 p-4 rounded-lg backdrop-blur-sm">
+      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-900/40 p-4 rounded-2xl backdrop-blur-md">
         {/* Left Section */}
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1 text-teal-400">
@@ -138,9 +139,9 @@ const AnnualProjectionCard = ({ monthlyProfit, occupancyRate, propertyValue }: {
             <span className="text-[10px] font-bold uppercase tracking-widest">Projeção Anual</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-2xl font-bold text-white tracking-tight">
-              {formatMoney(annualProfit)}
-            </p>
+            <div className="text-2xl font-bold text-white tracking-tight">
+              <AnimatedNumber value={annualProfit} />
+            </div>
             <span className="text-xs text-gray-400 font-medium">/ ano</span>
           </div>
 
@@ -185,7 +186,6 @@ const formatPercent = (val: number) => {
 }
 
 const InvestmentHighlights = ({ metrics, propertyValue }: { metrics: { cashFlow: number, grossRevenue: number }, propertyValue: number }) => {
-  // const margin = metrics.grossRevenue > 0 ? (metrics.cashFlow / metrics.grossRevenue) * 100 : 0
   const annualProfit = metrics.cashFlow * 12
   const annualYield = propertyValue > 0 ? (annualProfit / propertyValue) * 100 : 0
 
@@ -194,7 +194,7 @@ const InvestmentHighlights = ({ metrics, propertyValue }: { metrics: { cashFlow:
       icon: '💰',
       title: 'Geração Imediata de Renda',
       subtitle: 'Lucro mensal garantido',
-      value: `${formatMoney(metrics.cashFlow)}/mês`,
+      value: <><AnimatedNumber value={metrics.cashFlow} />/mês</>,
       color: 'emerald',
       bgColor: 'bg-emerald-50',
       borderColor: 'border-emerald-200',
@@ -230,7 +230,7 @@ const InvestmentHighlights = ({ metrics, propertyValue }: { metrics: { cashFlow:
       icon: '🔒',
       title: 'Segurança: Ativo Tangível',
       subtitle: 'Você possui um imóvel real',
-      value: `Valor: ${formatMoney(propertyValue)}`,
+      value: <>Valor: <AnimatedNumber value={propertyValue} /></>,
       color: 'amber',
       bgColor: 'bg-amber-50',
       borderColor: 'border-amber-200',
@@ -242,7 +242,7 @@ const InvestmentHighlights = ({ metrics, propertyValue }: { metrics: { cashFlow:
 
   return (
     <div className="mt-6">
-      <h3 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2 uppercase tracking-wide">
+      <h3 className="text-sm font-semibold theme-text-main mb-4 flex items-center gap-2 uppercase tracking-wide">
         <Sparkles className="w-4 h-4 text-teal-600" />
         Destaques
       </h3>
@@ -261,9 +261,9 @@ const InvestmentHighlights = ({ metrics, propertyValue }: { metrics: { cashFlow:
                 </span>
               </div>
               <div>
-                <p className={`font-bold ${highlight.valueColor} text-sm mb-0.5`}>
+                <div className={`font-bold ${highlight.valueColor} text-sm mb-0.5`}>
                   {highlight.value}
-                </p>
+                </div>
                 <p className={`text-[10px] ${highlight.subTextColor} font-medium leading-tight`}>
                   {highlight.subtitle}
                 </p>
@@ -275,9 +275,6 @@ const InvestmentHighlights = ({ metrics, propertyValue }: { metrics: { cashFlow:
     </div>
   )
 }
-
-
-
 
 export default function RentabilityView({
   scenario,
@@ -298,12 +295,6 @@ export default function RentabilityView({
     return calculateRentalReturn(config, effectiveFinancingCost)
   }, [config, effectiveFinancingCost])
 
-  // Calculate expenses including financing for display logic in "Custos" card
-  // If we want "Custos" to be (Taxas + Cond) as per prompt, we use totalExpenses.
-  // But if we want the math to work (Rev - Custos = Lucro), we must include financing if present.
-  // The prompt says "Custos R$ 1040 (Taxas + Cond)" and "Lucro R$ 1360 (Líquido)" from 2400.
-  // This implies 2400 - 1040 = 1360. So Financing is either 0 or included in that 1040.
-  // We'll assume "Custos" = All Outflows (Expenses + Financing).
   const totalOutflows = metrics.totalExpenses + effectiveFinancingCost
 
   const chartData = [
@@ -328,14 +319,14 @@ export default function RentabilityView({
     <div className="h-full flex flex-col lg:flex-row gap-6 p-4 overflow-y-auto w-full max-w-screen-2xl mx-auto">
       {/* Esquerda: Inputs - Fixed width on Desktop */}
       <div className="w-full lg:w-80 flex-shrink-0 flex flex-col gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-          <div className="flex items-center gap-2.5 mb-5">
-            <div className="w-8 h-8 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center">
+        <div className="theme-bg-card p-6 theme-rounded-card theme-border border-0 shadow-none ring-1 ring-white/20">
+          <div className="flex items-center gap-2.5 mb-6">
+            <div className="w-8 h-8 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center">
               <Building2 size={16} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-gray-800">Análise Lucro</h2>
-              <p className="text-[11px] text-gray-400">Configure as premissas</p>
+              <h2 className="text-base font-bold theme-text-main">Análise Lucro</h2>
+              <p className="text-[11px] theme-text-muted">Configure as premissas</p>
             </div>
           </div>
 
@@ -350,13 +341,13 @@ export default function RentabilityView({
 
             <div>
               <div className="flex items-end justify-between mb-1.5 min-h-[20px]">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                <label className="text-[10px] font-bold theme-text-muted uppercase tracking-wider">
                   {isDaily ? 'Valor da Diária' : 'Receita Mensal Potencial'}
                 </label>
 
                 {/* Modern Segmented Segment Control */}
                 <div
-                  className="flex items-center bg-gray-100 rounded-md p-0.5 cursor-pointer relative select-none"
+                  className="flex items-center bg-gray-100/50 rounded-md p-0.5 cursor-pointer relative select-none border border-gray-200"
                   onClick={() => updateConfig('rentalPeriod', isDaily ? 'monthly' : 'daily')}
                 >
                   {/* Active Indicator */}
@@ -387,15 +378,15 @@ export default function RentabilityView({
             </div>
 
             <div className="w-full">
-              <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex justify-between">
+              <label className="text-[10px] font-bold theme-text-muted uppercase mb-1 flex justify-between">
                 Ocupação (%)
               </label>
-              <div className="relative flex items-center border border-gray-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-500 transition-all h-10">
+              <div className="relative flex items-center border theme-border rounded-lg bg-white/50 focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-500 transition-all h-10">
                 <Percent size={14} className="absolute left-3 text-gray-400" />
                 <NumberInput
                   value={config.occupancyRate}
                   onChange={(v) => updateConfig('occupancyRate', v)}
-                  className="w-full pl-8 pr-3 py-2 outline-none font-bold text-sm text-gray-800 bg-transparent rounded-lg"
+                  className="w-full pl-8 pr-3 py-2 outline-none font-bold text-sm theme-text-main bg-transparent rounded-lg"
                   min={0}
                   max={100}
                 />
@@ -404,28 +395,28 @@ export default function RentabilityView({
 
             <div className="grid grid-cols-2 gap-2">
               <div className="w-full">
-                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1">
+                <label className="text-[10px] font-bold theme-text-muted uppercase mb-1">
                   Taxa Gestão
                 </label>
-                <div className="relative flex items-center border border-gray-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-500 transition-all h-10">
+                <div className="relative flex items-center border theme-border rounded-lg bg-white/50 focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-500 transition-all h-10">
                   <Percent size={14} className="absolute left-3 text-gray-400" />
                   <NumberInput
                     value={config.managementFeePercent}
                     onChange={(v) => updateConfig('managementFeePercent', v)}
-                    className="w-full pl-8 pr-3 py-2 outline-none font-bold text-sm text-gray-800 bg-transparent rounded-lg"
+                    className="w-full pl-8 pr-3 py-2 outline-none font-bold text-sm theme-text-main bg-transparent rounded-lg"
                     min={0}
                     max={100}
                   />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-gray-500 uppercase mb-1">Giro/Mês</label>
-                <div className="relative flex items-center border border-gray-300 rounded-lg bg-white h-10">
+                <label className="text-[10px] font-bold theme-text-muted uppercase mb-1">Giro/Mês</label>
+                <div className="relative flex items-center border theme-border rounded-lg bg-white/50 h-10">
                   <Calendar size={14} className="absolute left-3 text-gray-400" />
                   <NumberInput
                     value={config.monthlyTurnover}
                     onChange={(v) => updateConfig('monthlyTurnover', v)}
-                    className="w-full pl-8 pr-3 py-2 outline-none font-bold text-sm text-gray-800 bg-transparent rounded-lg"
+                    className="w-full pl-8 pr-3 py-2 outline-none font-bold text-sm theme-text-main bg-transparent rounded-lg"
                   />
                 </div>
               </div>
@@ -455,8 +446,8 @@ export default function RentabilityView({
           </div>
 
           {/* Financing Override Section */}
-          <div className="border-t border-gray-100 pt-3 mt-3">
-            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+          <div className="border-t theme-border pt-3 mt-3">
+            <h3 className="text-[10px] font-bold theme-text-muted uppercase tracking-widest mb-2">
               Financiamento
             </h3>
             <CurrencyInput
@@ -477,21 +468,21 @@ export default function RentabilityView({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <KPICard
             label="RECEITA"
-            value={formatMoney(metrics.grossRevenue)}
+            value={metrics.grossRevenue}
             subtitle="(bruto)"
             color="teal"
             size="md"
           />
           <KPICard
             label="CUSTOS"
-            value={formatMoney(totalOutflows)}
-            subtitle="Taxas + Cond + Parc." // Adjusted to reflect Financing inclusion if any
+            value={totalOutflows}
+            subtitle="Taxas + Cond + Parc."
             color="red"
             size="md"
           />
           <KPICard
             label="LUCRO MENSAL"
-            value={formatMoney(metrics.cashFlow)}
+            value={metrics.cashFlow}
             subtitle={`${((metrics.cashFlow * 12 / (Number(scenario.propertyValue) || 1)) * 100).toFixed(2)}% a.a. (Yield)`}
             color="green"
             size="lg"
@@ -507,8 +498,8 @@ export default function RentabilityView({
         />
 
         {/* Gráfico */}
-        <div className="flex-1 bg-white p-4 rounded-2xl border border-gray-100 shadow-md flex flex-col min-h-[250px] relative">
-          <h3 className="text-xs font-bold text-gray-800 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+        <div className="flex-1 theme-bg-card p-4 theme-rounded-card theme-border border shadow-md flex flex-col min-h-[250px] relative">
+          <h3 className="text-xs font-bold theme-text-main mb-2 flex items-center gap-1.5 uppercase tracking-wider">
             <TrendingUp size={14} className="text-teal-500" />
             Estrutura de Resultados
           </h3>
@@ -563,7 +554,7 @@ export default function RentabilityView({
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-2 pt-2 border-t border-gray-50 flex justify-between items-center">
+          <div className="mt-2 pt-2 border-t theme-border flex justify-between items-center">
             <p className="text-[10px] text-gray-400">
               Margem de Lucro: <span className="font-bold text-emerald-600">{((metrics.cashFlow / metrics.grossRevenue) * 100).toFixed(1)}%</span>
             </p>
