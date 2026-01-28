@@ -69,7 +69,7 @@ const SmartInput = ({
 
       {/* Render subtitle manually after slider to avoid overlap */}
       {subtitle && (
-        <p className={`text-[10px] text-gray-400 ml-1 ${!props.readOnly && !disableSlider ? 'mt-1' : 'mt-1'}`}>
+        <p className={`text-[10px] ml-1 ${!props.readOnly && !disableSlider ? 'mt-1' : 'mt-1'}`} style={{ color: colors.textMuted }}>
           {subtitle}
         </p>
       )}
