@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import type { ThemeKey } from '../config/themes'
 
-type Theme = 'default' | 'premium'
+type Theme = ThemeKey
 
 interface ThemeContextType {
   theme: Theme
@@ -23,7 +24,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme])
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'default' ? 'premium' : 'default'))
+    setTheme((prev) => {
+      if (prev === 'default') return 'premium'
+      if (prev === 'premium') return 'dark'
+      return 'default'
+    })
   }
 
   return (

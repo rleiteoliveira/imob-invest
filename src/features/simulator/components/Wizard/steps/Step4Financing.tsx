@@ -6,6 +6,7 @@ import SmartInput from '../../../../../components/ui/SmartInput'
 import TimeSliderInput from '../../../../../components/ui/TimeSliderInput'
 import ToggleSwitch from '../../../../../components/ui/ToggleSwitch'
 import { Settings2, Banknote } from 'lucide-react'
+import { useThemeStyles } from '../../../../../hooks/useThemeStyles'
 
 interface StepProps {
   data: SimulationScenario
@@ -13,6 +14,10 @@ interface StepProps {
 }
 
 export default function Step4Financing({ data, setData }: StepProps): ReactElement {
+  const { colors, components } = useThemeStyles()
+  // Remove isRetro
+
+
   const [showProposalModal, setShowProposalModal] = useState(false)
 
 
@@ -29,17 +34,17 @@ export default function Step4Financing({ data, setData }: StepProps): ReactEleme
 
       <div className="space-y-8">
         {/* READY / BANK MAIN SETTINGS */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+        <div className={`p-6 transition-all space-y-6 ${components.card.wrapper}`}>
+          <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: colors.border }}>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <Banknote className="text-blue-500" size={20} />
-                <h3 className="font-bold text-gray-800">Financiamento Bancário</h3>
+                <Banknote size={20} style={{ color: colors.primary }} />
+                <h3 className="font-bold" style={{ color: colors.text }}>Financiamento Bancário</h3>
               </div>
               {!data.useExternalSimulation && (
                 <button
                   onClick={() => setShowProposalModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg transition-colors text-xs font-bold"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 transition-colors text-xs font-bold rounded-lg ${components.button.secondary}`}
                 >
                   <Settings2 size={14} />
                   Configurar Taxas
@@ -47,7 +52,7 @@ export default function Step4Financing({ data, setData }: StepProps): ReactEleme
               )}
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-[10px] md:text-xs text-gray-500 font-medium text-right leading-tight">
+              <span className="text-[10px] md:text-xs font-medium text-right leading-tight" style={{ color: colors.textMuted }}>
                 Simulação Aprovada<br />(Inserir parcela fixa)
               </span>
               <ToggleSwitch
@@ -70,10 +75,22 @@ export default function Step4Financing({ data, setData }: StepProps): ReactEleme
               </div>
             ) : (
               <div className="space-y-2 animate-in fade-in slide-in-from-left-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Sistema de Amortização</label>
-                <div className="flex bg-gray-100 p-1 rounded-lg">
-                  <button className={`flex-1 py-2.5 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'PRICE' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'PRICE' })}>PRICE</button>
-                  <button className={`flex-1 py-2.5 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'SAC' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'}`} onClick={() => setData({ ...data, amortizationSystem: 'SAC' })}>SAC</button>
+                <label className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.textMuted }}>Sistema de Amortização</label>
+                <div className="flex p-1 rounded-lg gap-2" style={{ backgroundColor: colors.surface }}>
+                  <button
+                    className={`flex-1 py-2.5 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'PRICE' ? components.button.primary : 'text-gray-500 hover:text-gray-400'}`}
+                    style={data.amortizationSystem !== 'PRICE' ? { color: colors.textMuted } : {}}
+                    onClick={() => setData({ ...data, amortizationSystem: 'PRICE' })}
+                  >
+                    PRICE
+                  </button>
+                  <button
+                    className={`flex-1 py-2.5 text-xs font-bold rounded-md transition-all ${data.amortizationSystem === 'SAC' ? components.button.primary : 'text-gray-500 hover:text-gray-400'}`}
+                    style={data.amortizationSystem !== 'SAC' ? { color: colors.textMuted } : {}}
+                    onClick={() => setData({ ...data, amortizationSystem: 'SAC' })}
+                  >
+                    SAC
+                  </button>
                 </div>
               </div>
             )}

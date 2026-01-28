@@ -18,10 +18,11 @@ import GlobalSettingsModal from '../../settings/components/GlobalSettingsModal'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import { useSimulation } from '../hooks/useSimulation'
 import Button from '../../../components/ui/Button'
-import { ThemeProvider } from '../../../context/ThemeContext'
-import ThemeSwitcher from '../../settings/components/ThemeSwitcher'
+import { useThemeStyles } from '../../../hooks/useThemeStyles'
 
-function SimulatorLayoutContent(): ReactElement {
+export default function SimulatorLayout(): ReactElement {
+
+  const { colors } = useThemeStyles()
 
   const {
     data,
@@ -43,11 +44,11 @@ function SimulatorLayoutContent(): ReactElement {
   const [reportScenario, setReportScenario] = useState<SimulationScenario | null>(null)
 
   return (
-    <div className="flex h-[100dvh] theme-bg-main theme-text-main font-sans overflow-hidden relative selection:bg-indigo-100 flex-col md:flex-row transition-colors duration-700">
+    <div className="flex h-[100dvh] font-sans overflow-hidden relative selection:bg-indigo-100 flex-col md:flex-row transition-colors duration-700" style={{ backgroundColor: colors.background, color: colors.text }}>
 
       {/* Dynamic Background Mesh Removed for Performance */}
 
-      <ThemeSwitcher />
+      {/* ThemeSwitcher moved to App.tsx */}
 
       {showSuccess && (
         <div className="absolute inset-0 z-[100] flex items-center justify-center bg-white/50 backdrop-blur-sm animate-in fade-in">
@@ -91,11 +92,16 @@ function SimulatorLayoutContent(): ReactElement {
 
       <aside
         className={`
-          fixed md:relative top-0 left-0 h-[100dvh] md:h-full w-[280px] md:w-80 theme-bg-card border-r theme-border flex flex-col z-50 transform transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] theme-shadow md:shadow-none
+          fixed md:relative top-0 left-0 h-[100dvh] md:h-full w-[280px] md:w-80 border-r flex flex-col z-50 transform transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] md:shadow-none
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}
+        style={{
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          color: colors.text
+        }}
       >
-        <div className="p-6 border-b theme-border theme-bg-card">
+        <div className="p-6 border-b" style={{ borderColor: colors.border }}>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 theme-btn-primary rounded-lg flex items-center justify-center shadow-sm">
               <LayoutDashboard size={18} />
@@ -173,7 +179,7 @@ function SimulatorLayoutContent(): ReactElement {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-hidden relative w-full theme-bg-main p-0 md:p-6 transition-all duration-500">
+      <main className="flex-1 overflow-hidden relative w-full p-0 md:p-6 transition-all duration-500">
         {viewMode === 'GLOBAL_SETTINGS' ? (
           <div className="h-full overflow-hidden p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <GlobalSettingsModal
@@ -202,13 +208,5 @@ function SimulatorLayoutContent(): ReactElement {
         )}
       </main>
     </div>
-  )
-}
-
-export default function SimulatorLayout(): ReactElement {
-  return (
-    <ThemeProvider>
-      <SimulatorLayoutContent />
-    </ThemeProvider>
   )
 }

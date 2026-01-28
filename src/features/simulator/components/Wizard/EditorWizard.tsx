@@ -8,6 +8,7 @@ import Step2Values from './steps/Step2Values'
 import Step3Payment from './steps/Step3Payment'
 import Step4Financing from './steps/Step4Financing'
 import Step5LeadCapture from './steps/Step5LeadCapture'
+import { useThemeStyles } from '../../../../hooks/useThemeStyles'
 
 const EditorWizard = ({
   step,
@@ -37,20 +38,22 @@ const EditorWizard = ({
     { title: 'Dados do Cliente', subtitle: 'Personalize a proposta final' }
   ]
 
+  const { colors, components } = useThemeStyles()
+
   const currentStep = steps[step] || steps[0]
 
   return (
-    <div className="h-full flex items-center justify-center p-0 md:p-4 theme-bg-main">
-      <div className="w-full max-w-5xl theme-bg-card theme-rounded-card theme-shadow theme-border overflow-hidden flex flex-col h-full md:h-[90vh] md:max-h-[850px] md:min-h-[600px] transition-all duration-300">
+    <div className="h-full flex items-center justify-center p-0 md:p-4" style={{ backgroundColor: colors.background }}>
+      <div className={`w-full max-w-5xl overflow-hidden flex flex-col h-full md:h-[90vh] md:max-h-[850px] md:min-h-[600px] transition-all duration-300 ${components.card.wrapper}`}>
 
         {/* HEADER */}
-        <div className="theme-bg-card px-6 md:px-8 py-6 border-b theme-border relative shrink-0">
+        <div className="px-6 md:px-8 py-6 border-b relative shrink-0" style={{ borderColor: colors.border }}>
           <div className="flex justify-between items-start mb-4">
             <div className="flex flex-col">
-              <h1 className="text-xl md:text-2xl font-bold theme-text-main tracking-tight">
+              <h1 className="text-xl md:text-2xl font-bold tracking-tight" style={{ color: colors.text }}>
                 {data.id ? 'Editando Cenário' : 'Novo Cenário'}
               </h1>
-              <p className="text-xs md:text-sm theme-text-muted font-medium">
+              <p className="text-xs md:text-sm font-medium" style={{ color: colors.textMuted }}>
                 Passo {step + 1} de {steps.length}: {currentStep.title}
               </p>
             </div>
@@ -59,7 +62,11 @@ const EditorWizard = ({
               {[0, 1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className={`h-2 rounded-full transition-all duration-500 ${step >= i ? 'bg-indigo-600 w-10' : 'bg-gray-200 w-3'}`}
+                  className={`h-2 rounded-full transition-all duration-500`}
+                  style={{
+                    backgroundColor: step >= i ? colors.primary : colors.border,
+                    width: step >= i ? '2.5rem' : '0.75rem'
+                  }}
                 />
               ))}
             </div>
@@ -86,14 +93,15 @@ const EditorWizard = ({
         </div>
 
         {/* FOOTER ACTIONS */}
-        <div className="p-4 md:p-6 theme-bg-card border-t theme-border flex justify-between items-center shrink-0 z-20">
+        <div className="p-4 md:p-6 border-t flex justify-between items-center shrink-0 z-20" style={{ borderColor: colors.border, backgroundColor: colors.surface }}>
 
           <div className="flex gap-2">
             {step > 0 && (
               <Button
                 onClick={() => setStep((s) => s - 1)}
                 variant="ghost"
-                className="gap-2 theme-text-muted hover:theme-text-main"
+                className="gap-2"
+                style={{ color: colors.textMuted }}
               >
                 <ArrowLeft size={18} /> Voltar
               </Button>
@@ -105,7 +113,7 @@ const EditorWizard = ({
               <Button
                 onClick={() => setStep((s) => s + 1)}
                 size="lg"
-                className="pl-8 pr-6 shadow-lg shadow-gray-200 gap-2 theme-btn-primary"
+                className={`pl-8 pr-6 gap-2 ${components.button.primary}`}
               >
                 Próximo <ArrowRight size={18} />
               </Button>
@@ -114,9 +122,13 @@ const EditorWizard = ({
                 {/* Name Input for Saving */}
                 <div className="mr-2 hidden md:block">
                   <input
-                    type="text"
                     placeholder="Nome do Cenário..."
-                    className="border theme-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none theme-bg-main theme-text-main"
+                    className="border rounded-lg px-3 py-2 text-sm focus:ring-2 outline-none"
+                    style={{
+                      borderColor: colors.border,
+                      backgroundColor: colors.surface,
+                      color: colors.text
+                    }}
                     value={currentName}
                     onChange={(e) => setCurrentName(e.target.value)}
                   />
@@ -126,9 +138,8 @@ const EditorWizard = ({
                 <Button
                   onClick={onSave}
                   disabled={!currentName}
-                  variant="secondary"
                   size="lg"
-                  className="gap-2 px-6 shadow-sm"
+                  className={`gap-2 px-6 ${components.button.secondary}`}
                 >
                   <Save size={18} /> {data.id ? 'Atualizar' : 'Salvar'}
                 </Button>
@@ -137,7 +148,7 @@ const EditorWizard = ({
                 <Button
                   onClick={() => onGenerateReport({ ...data, name: currentName || 'Sem Nome' })}
                   size="lg"
-                  className="gap-2 px-8 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 focus:ring-emerald-600 theme-rounded-btn"
+                  className={`gap-2 px-8 ${components.button.primary}`}
                 >
                   <Printer size={18} />
                   Gerar Proposta Personalizada

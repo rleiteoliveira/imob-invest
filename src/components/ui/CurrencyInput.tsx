@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { ReactElement, ChangeEvent, FocusEvent } from 'react'
+import { useThemeStyles } from '../../hooks/useThemeStyles'
 
 const formatFinal = (val: number) => {
   if (val === undefined || val === null) return ''
@@ -32,6 +33,9 @@ const CurrencyInput = ({
   inputClassName?: string
   placeholder?: string
 }): ReactElement => {
+  const { components } = useThemeStyles()
+  const themeInput = components.input
+
   const [displayValue, setDisplayValue] = useState(() => (value === 0 || value === '') ? '0,00' : formatFinal(value as number))
   const [active, setActive] = useState(false)
   const [prevValue, setPrevValue] = useState(value)
@@ -93,7 +97,7 @@ const CurrencyInput = ({
   return (
     <div className="flex-1 w-full">
       {label && (
-        <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 flex justify-between">
+        <label className={themeInput.label + " flex justify-between items-center"}>
           {label}{' '}
           {highlight && (
             <span className="text-blue-600 bg-blue-50 px-1.5 rounded text-[10px]">{highlight}</span>
@@ -101,7 +105,10 @@ const CurrencyInput = ({
         </label>
       )}
       <div
-        className={`relative flex items-center border rounded-xl transition-all ${readOnly ? 'bg-gray-100 border-gray-200' : active ? 'bg-white border-blue-500 ring-2 ring-blue-100' : 'bg-white border-gray-300 hover:border-gray-400'} ${className}`}
+        className={`relative flex items-center transition-all input-wrapper ${themeInput.field} ${readOnly ? 'opacity-70 cursor-not-allowed bg-gray-100' : ''} ${active ? 'ring-2 ring-blue-100 border-blue-500' : ''} ${className}`}
+      // Note: We are appending 'themeInput.field' which brings borders and shadows.
+      // The manual 'border' class was removed.
+      // We might need to adjust 'themeInput.field' to support focus-within if strictly necessary, but for now relying on base styles.
       >
         {prefix && (
           <span className="pl-3 text-gray-400 font-bold text-sm select-none">{prefix}</span>

@@ -9,6 +9,7 @@ import SmartInput from '../../../../../components/ui/SmartInput'
 import TimeSliderInput from '../../../../../components/ui/TimeSliderInput'
 import ToggleSwitch from '../../../../../components/ui/ToggleSwitch'
 import { ChevronDown, Construction, Building2, Edit2 } from 'lucide-react'
+import { useThemeStyles } from '../../../../../hooks/useThemeStyles'
 
 
 interface StepProps {
@@ -17,6 +18,9 @@ interface StepProps {
 }
 
 export default function Step3Payment({ data, setData }: StepProps): ReactElement {
+  const { colors, components } = useThemeStyles()
+  // Remove isRetro, use theme styles instead
+
   const [showBalloonModal, setShowBalloonModal] = useState(false)
   const [showConstructionModal, setShowConstructionModal] = useState(false)
 
@@ -147,20 +151,20 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
 
         {/* CONSTRUCTION PHASE INPUTS */}
         {isConstruction && (
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+          <div className={`p-6 space-y-6 ${components.card.wrapper}`}>
             <div className="flex items-center gap-2 mb-4">
-              <Construction className="text-orange-500" size={20} />
-              <h3 className="font-bold text-gray-800">Fluxo de Pagamento na Obra</h3>
+              <Construction size={20} style={{ color: '#f97316' }} />
+              <h3 className="font-bold" style={{ color: colors.text }}>Fluxo de Pagamento na Obra</h3>
             </div>
 
             {/* Unified Construction Summary Card */}
-            <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+            <div className={`rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6 transition-all ${components.card.wrapper}`} style={{ borderColor: '#fed7aa' /* orange-200 */, backgroundColor: `${colors.surface}` }}>
               <div className="flex items-center gap-3 w-full md:w-auto">
-                <div className="bg-white p-2 rounded-lg shadow-sm text-orange-500 shrink-0">
+                <div className={`p-2 rounded-lg shadow-sm shrink-0`} style={{ backgroundColor: '#fff7ed', color: '#ea580c' }}>
                   <Building2 size={24} />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs font-bold text-orange-800 uppercase tracking-wide mb-1">
+                  <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#9a3412' }}>
                     Empreendimento / Obra
                   </p>
 
@@ -169,7 +173,12 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                     <select
                       value={data.developmentId || ''}
                       onChange={(e) => handleSelectDevelopment(e.target.value)}
-                      className="w-full appearance-none bg-white border border-orange-200 text-gray-800 font-bold py-1.5 pl-3 pr-8 rounded-lg outline-none focus:ring-2 focus:ring-orange-200 cursor-pointer shadow-sm text-sm"
+                      className={`w-full appearance-none font-bold py-1.5 pl-3 pr-8 rounded-lg outline-none cursor-pointer shadow-sm text-sm`}
+                      style={{
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                        color: colors.text
+                      }}
                     >
                       <option value="">Personalizado</option>
                       {developments.map(dev => (
@@ -246,7 +255,7 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                   subtitle="Pago na assinatura"
                 />
 
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                <div className={`p-3 rounded-xl border transition-all ${components.card.wrapper}`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold text-gray-500 uppercase">Utilizar FGTS?</span>
                     <ToggleSwitch
@@ -293,10 +302,11 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
             {/* Configure Balloons Button */}
             <div
               onClick={() => setShowBalloonModal(true)}
-              className="cursor-pointer bg-blue-50 hover:bg-blue-100 border border-blue-200 border-dashed rounded-xl p-4 flex items-center justify-between transition-colors"
+              className={`cursor-pointer rounded-xl p-4 flex items-center justify-between transition-all hover:scale-[1.01] ${components.card.wrapper}`}
+              style={{ borderColor: '#bae6fd' /* blue-200 */ }}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-200 text-blue-700 rounded-full flex items-center justify-center font-bold">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold`} style={{ backgroundColor: '#e0f2fe', color: '#0369a1' }}>
                   {data.builderBalloons?.length || 0}
                 </div>
                 <div>
@@ -304,7 +314,7 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                   <p className="text-xs text-blue-600">Configurar pagamentos anuais/semestrais</p>
                 </div>
               </div>
-              <div className="font-bold text-blue-800">
+              <div className="font-bold" style={{ color: colors.text }}>
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyBalloonsTotal)}
               </div>
             </div>

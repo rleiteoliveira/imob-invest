@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap');
+@import "tailwindcss";
 
 :root {
   /* FONT */
@@ -65,6 +65,91 @@
 
   /* No mesh, just pure style */
   --bg-mesh: none;
+}
+
+/* NEO-RETRO: Deep Component Customization */
+
+/* 1. WRAPPER OVERRIDES (Smart Inputs) */
+[data-theme="premium"] .input-wrapper {
+  border: 2px solid #18181b !important;
+  box-shadow: 2px 2px 0px 0px #18181b !important;
+  border-radius: 0.5rem !important;
+  background-color: #ffffff !important;
+  transition: all 0.1s ease !important;
+}
+
+[data-theme="premium"] .input-wrapper:focus-within {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 4px 4px 0px 0px #18181b !important;
+  border-color: #8b5cf6 !important;
+}
+
+/* 2. INNER INPUT RESET (Prevent double borders) */
+[data-theme="premium"] .input-wrapper input {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  color: #18181b !important;
+  font-weight: 700 !important;
+}
+
+/* 3. STANDALONE INPUTS (Fallback) */
+[data-theme="premium"] input:not(.input-wrapper input),
+[data-theme="premium"] select,
+[data-theme="premium"] textarea {
+  border: 2px solid #18181b !important;
+  box-shadow: 2px 2px 0px 0px #18181b !important;
+  border-radius: 0.5rem !important;
+  background-color: #ffffff !important;
+  font-weight: 600 !important;
+  color: #18181b !important;
+}
+
+[data-theme="premium"] input:not(.input-wrapper input):focus,
+[data-theme="premium"] select:focus,
+[data-theme="premium"] textarea:focus {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 4px 4px 0px 0px #18181b !important;
+  outline: none !important;
+  border-color: #8b5cf6 !important;
+}
+
+/* Typography Overrides */
+[data-theme="premium"] h1,
+[data-theme="premium"] h2,
+[data-theme="premium"] h3,
+[data-theme="premium"] h4 {
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  font-weight: 800 !important;
+}
+
+/* Chart Tooltips - Neo Style */
+[data-theme="premium"] .recharts-tooltip-cursor {
+  stroke: #18181b !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 4 4 !important;
+}
+
+[data-theme="premium"] .recharts-default-tooltip {
+  border: 2px solid #18181b !important;
+  box-shadow: 4px 4px 0px 0px #18181b !important;
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+}
+
+/* Card Hover Effects deepening */
+[data-theme="premium"] .theme-bg-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px #18181b;
+}
+
+/* Custom Highlight Regions */
+[data-theme="premium"] ::selection {
+  background-color: #f472b6;
+  /* pink-400 */
+  color: #000;
 }
 
 /* Utility Classes mapping to Variables for easier usage */

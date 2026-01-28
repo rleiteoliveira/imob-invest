@@ -1,13 +1,7 @@
 import type { ReactElement } from 'react'
 import type { SimulationScenario, ClientLead } from '../../../../../types/ScenarioTypes'
 import { User, Phone, Mail, Building, FileText } from 'lucide-react'
-
-// Helper for labels
-const Label = ({ children, required }: { children: React.ReactNode, required?: boolean }) => (
-  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-    {children} {required && <span className="text-red-500">*</span>}
-  </label>
-)
+import { useThemeStyles } from '../../../../../hooks/useThemeStyles'
 
 // Helper for Input wrapper
 interface InputWrapperProps {
@@ -26,12 +20,21 @@ const InputWrapper = ({ children, icon: Icon }: InputWrapperProps) => (
   </div>
 )
 
+// Label Component adaptable to Theme
+const Label = ({ children, required, colors }: { children: React.ReactNode, required?: boolean, colors: any }) => (
+  <label className="block text-sm font-medium mb-1.5" style={{ color: colors.text }}>
+    {children} {required && <span style={{ color: colors.danger }}>*</span>}
+  </label>
+)
+
 interface Step4Props {
   data: SimulationScenario
   setData: (d: SimulationScenario) => void
 }
 
 export default function Step4LeadCapture({ data, setData }: Step4Props): ReactElement {
+  const { colors, components } = useThemeStyles()
+  // Remove isRetro
 
   const updateLead = (field: keyof ClientLead, value: string) => {
     // Ensure clientLead exists in case of legacy data
@@ -52,13 +55,15 @@ export default function Step4LeadCapture({ data, setData }: Step4Props): ReactEl
   // Safety check for rendering
   const leadData = data.clientLead || { name: '' }
 
+  const inputClass = `${components.input.field}` // Use theme input classes
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500 slide-in-from-right-4 pb-20">
 
       {/* Header Section */}
       <div className="text-center space-y-2 mb-8 mt-4">
-        <h2 className="text-2xl font-bold text-gray-900">Personalizar Proposta</h2>
-        <p className="text-gray-500 max-w-lg mx-auto text-sm">
+        <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Personalizar Proposta</h2>
+        <p className="max-w-lg mx-auto text-sm" style={{ color: colors.textMuted }}>
           Preencha os dados do cliente para gerar um relatório profissional e exclusivo.
           Essas informações aparecerão no cabeçalho do PDF.
         </p>
@@ -68,19 +73,19 @@ export default function Step4LeadCapture({ data, setData }: Step4Props): ReactEl
 
         {/* Nome (Obrigatório) */}
         <div className="col-span-1 md:col-span-2">
-          <Label required>Nome do Cliente</Label>
+          <Label required colors={colors}>Nome do Cliente</Label>
           <InputWrapper icon={User}>
             <input
               type="text"
               placeholder="Ex: João da Silva"
               value={leadData.name}
               onChange={(e) => updateLead('name', e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-300 shadow-sm text-gray-900"
+              className={inputClass}
               autoFocus
             />
           </InputWrapper>
           {!leadData.name && (
-            <p className="text-xs text-amber-600 mt-1.5 ml-1 flex items-center gap-1">
+            <p className="text-xs mt-1.5 ml-1 flex items-center gap-1" style={{ color: colors.textMuted }}>
               <span>⚠</span> Recomendado para identificar a proposta.
             </p>
           )}
@@ -88,51 +93,51 @@ export default function Step4LeadCapture({ data, setData }: Step4Props): ReactEl
 
         {/* Telefone */}
         <div>
-          <Label>Telefone / WhatsApp</Label>
+          <Label colors={colors}>Telefone / WhatsApp</Label>
           <InputWrapper icon={Phone}>
             <input
               type="tel"
               placeholder="(00) 00000-0000"
               value={leadData.phone || ''}
               onChange={(e) => updateLead('phone', e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-300 shadow-sm text-gray-900"
+              className={inputClass}
             />
           </InputWrapper>
         </div>
 
         {/* Email */}
         <div>
-          <Label>Email</Label>
+          <Label colors={colors}>Email</Label>
           <InputWrapper icon={Mail}>
             <input
               type="email"
               placeholder="cliente@email.com"
               value={leadData.email || ''}
               onChange={(e) => updateLead('email', e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-300 shadow-sm text-gray-900"
+              className={inputClass}
             />
           </InputWrapper>
         </div>
 
         {/* Unidade */}
         <div className="col-span-1 md:col-span-2">
-          <Label>Unidade de Interesse</Label>
+          <Label colors={colors}>Unidade de Interesse</Label>
           <InputWrapper icon={Building}>
             <input
               type="text"
               placeholder="Ex: Edifício Horizonte, Apto 402 - Torre B"
               value={leadData.unitOfInterest || ''}
               onChange={(e) => updateLead('unitOfInterest', e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-300 shadow-sm text-gray-900"
+              className={inputClass}
             />
           </InputWrapper>
         </div>
 
         {/* Notas */}
         <div className="col-span-1 md:col-span-2">
-          <Label>Observações Internas (Opcional)</Label>
+          <Label colors={colors}>Observações Internas (Opcional)</Label>
           <div className="relative">
-            <div className="absolute left-3 top-3 text-gray-400">
+            <div className="absolute left-3 top-3" style={{ color: colors.textMuted }}>
               <FileText size={18} />
             </div>
             <textarea
@@ -140,20 +145,20 @@ export default function Step4LeadCapture({ data, setData }: Step4Props): ReactEl
               value={leadData.notes || ''}
               onChange={(e) => updateLead('notes', e.target.value)}
               rows={4}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-300 shadow-sm resize-none text-gray-900"
+              className={inputClass}
             />
           </div>
         </div>
 
       </div>
 
-      <div className="max-w-3xl mx-auto mt-8 p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-3">
-        <div className="bg-emerald-100 p-2 rounded-full text-emerald-600">
+      <div className={`max-w-3xl mx-auto mt-8 p-4 flex items-start gap-3 transition-all ${components.card.wrapper}`} style={{ borderColor: 'rgba(52, 211, 153, 0.3)' /* emerald hint */ }}>
+        <div className={`p-2 rounded-full shrink-0`} style={{ backgroundColor: 'rgba(52, 211, 153, 0.1)', color: '#10b981' }}>
           <FileText size={20} />
         </div>
         <div>
-          <h4 className="text-sm font-bold text-emerald-900">Pronto para gerar!</h4>
-          <p className="text-xs text-emerald-700 mt-0.5">
+          <h4 className="text-sm font-bold" style={{ color: colors.text }}>Pronto para gerar!</h4>
+          <p className="text-xs mt-0.5" style={{ color: colors.textMuted }}>
             Ao clicar em "Gerar Proposta Personalizada", criaremos um documento PDF completo com todas as projeções e os dados acima.
           </p>
         </div>

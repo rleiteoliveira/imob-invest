@@ -20,6 +20,7 @@ import {
 import CurrencyInput from '../../../components/ui/CurrencyInput'
 import NumberInput from '../../../components/ui/NumberInput'
 import AnimatedNumber from '../../../components/ui/AnimatedNumber'
+import { useTheme } from '../../../context/ThemeContext'
 import { calculateRentalReturn } from '../../simulator/services/engines/RentalCalculator'
 import type { SimulationScenario, RentabilityConfig } from '../../../types/ScenarioTypes'
 
@@ -58,31 +59,31 @@ interface KPICardProps {
   highlight?: boolean
 }
 
-const KPICard = ({ label, value, subtitle, color, highlight = false }: KPICardProps) => {
+const KPICard = ({ label, value, subtitle, color, highlight = false, isRetro = false }: KPICardProps & { isRetro?: boolean }) => {
   const colorStyles = {
     teal: {
-      bg: 'theme-bg-card',
-      border: 'theme-border',
-      text: 'text-teal-700',
-      iconBg: 'bg-teal-100',
-      icon: 'text-teal-600',
-      value: 'theme-text-main'
+      bg: isRetro ? 'bg-white' : 'theme-bg-card',
+      border: isRetro ? 'border-2 border-black' : 'theme-border',
+      text: isRetro ? 'text-black' : 'text-teal-700',
+      iconBg: isRetro ? 'bg-teal-200 border-2 border-black' : 'bg-teal-100',
+      icon: isRetro ? 'text-black' : 'text-teal-600',
+      value: isRetro ? 'text-black' : 'theme-text-main'
     },
     red: {
-      bg: 'theme-bg-card',
-      border: 'theme-border',
-      text: 'text-red-700',
-      iconBg: 'bg-red-100',
-      icon: 'text-red-600',
-      value: 'theme-text-main'
+      bg: isRetro ? 'bg-white' : 'theme-bg-card',
+      border: isRetro ? 'border-2 border-black' : 'theme-border',
+      text: isRetro ? 'text-black' : 'text-red-700',
+      iconBg: isRetro ? 'bg-red-200 border-2 border-black' : 'bg-red-100',
+      icon: isRetro ? 'text-black' : 'text-red-600',
+      value: isRetro ? 'text-black' : 'theme-text-main'
     },
     green: {
-      bg: 'theme-bg-card',
-      border: 'theme-border ring-1 ring-emerald-100',
-      text: 'text-emerald-700',
-      iconBg: 'bg-emerald-100',
-      icon: 'text-emerald-600',
-      value: 'text-emerald-600'
+      bg: isRetro ? 'bg-white' : 'theme-bg-card',
+      border: isRetro ? 'border-2 border-black' : 'theme-border ring-1 ring-emerald-100',
+      text: isRetro ? 'text-green-700' : 'text-emerald-700',
+      iconBg: isRetro ? 'bg-green-300 border-2 border-black' : 'bg-emerald-100',
+      icon: isRetro ? 'text-black' : 'text-emerald-600',
+      value: isRetro ? 'text-green-600' : 'text-emerald-600'
     }
   }
 
@@ -91,8 +92,8 @@ const KPICard = ({ label, value, subtitle, color, highlight = false }: KPICardPr
   return (
     <div className={`
       relative overflow-hidden theme-rounded-card flex flex-col justify-between transition-all duration-300 cursor-default
-      ${currentStyle.bg} ${currentStyle.border} theme-shadow border
-      ${highlight ? 'hover:shadow-lg hover:scale-[1.02]' : 'hover:shadow-md hover:scale-[1.01]'}
+      ${currentStyle.bg} ${currentStyle.border} 
+      ${isRetro ? 'rounded-xl shadow-[4px_4px_0px_0px_#000] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000]' : 'theme-shadow border hover:shadow-md hover:scale-[1.01]'}
       p-4
     `}>
       <div className="flex items-start justify-between mb-2">
@@ -112,7 +113,7 @@ const KPICard = ({ label, value, subtitle, color, highlight = false }: KPICardPr
         </div>
         {subtitle && (
           <p className={`font-medium mt-0.5 ${currentStyle.text} text-[10px] flex items-center gap-1`}>
-            {highlight && <Sparkles size={10} className="text-emerald-500" />}
+            {highlight && <Sparkles size={10} className={isRetro ? "text-black" : "text-emerald-500"} />}
             {subtitle}
           </p>
         )}
@@ -121,10 +122,62 @@ const KPICard = ({ label, value, subtitle, color, highlight = false }: KPICardPr
   )
 }
 
-const AnnualProjectionCard = ({ monthlyProfit, occupancyRate, propertyValue }: { monthlyProfit: number, occupancyRate: number, propertyValue: number }) => {
+const AnnualProjectionCard = ({ monthlyProfit, occupancyRate, propertyValue, isRetro = false }: { monthlyProfit: number, occupancyRate: number, propertyValue: number, isRetro?: boolean }) => {
   const annualProfit = monthlyProfit * 12
   const yieldAnnual = propertyValue > 0 ? (annualProfit / propertyValue) * 100 : 0
 
+  if (isRetro) {
+    return (
+      <div className="bg-[#18181b] rounded-xl p-1 border-2 border-black shadow-[8px_8px_0px_0px_#000] relative overflow-hidden group">
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 p-4">
+          {/* Left Section */}
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1 text-white">
+              <div className="p-1 bg-yellow-400 text-black border border-white rounded-md">
+                <TrendingUp size={12} />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-400">Projeção Anual</span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <div className="text-2xl font-black text-white tracking-tight">
+                <AnimatedNumber value={annualProfit} />
+              </div>
+              <span className="text-xs text-gray-400 font-medium">/ ano</span>
+            </div>
+
+            <div className="mt-1 flex items-center gap-2 text-xs">
+              <span className="px-1.5 py-0.5 rounded-full bg-green-500 text-black font-bold text-[10px]">
+                {yieldAnnual.toFixed(2)}% a.a.
+              </span>
+              <span className="text-gray-400 text-[10px]">
+                (Ocupação base: {occupancyRate}%)
+              </span>
+            </div>
+          </div>
+
+          {/* Separator */}
+          <div className="hidden md:block w-px h-12 bg-gray-700 mx-2" />
+
+          {/* Right Section: Tip */}
+          <div className="flex-1 w-full md:w-auto bg-gray-800 rounded-lg border border-gray-600 p-3 relative">
+            <div className="flex items-start gap-3">
+              <div className="bg-yellow-400 text-black p-1.5 rounded-lg shrink-0 border border-black">
+                <Sparkles size={14} />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-white uppercase mb-0.5">Dica de Performance</p>
+                <p className="text-[11px] text-gray-300 leading-snug">
+                  Aumente a ocupação para <strong className="text-yellow-400">{Math.min(occupancyRate + 10, 100)}%</strong> para incrementar seu Yield.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Standard Return
   return (
     <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-1 border border-teal-500/20 shadow-lg relative overflow-hidden group">
       <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -185,7 +238,7 @@ const formatPercent = (val: number) => {
   }).format(val / 100)
 }
 
-const InvestmentHighlights = ({ metrics, propertyValue }: { metrics: { cashFlow: number, grossRevenue: number }, propertyValue: number }) => {
+const InvestmentHighlights = ({ metrics, propertyValue, isRetro = false }: { metrics: { cashFlow: number, grossRevenue: number }, propertyValue: number, isRetro?: boolean }) => {
   const annualProfit = metrics.cashFlow * 12
   const annualYield = propertyValue > 0 ? (annualProfit / propertyValue) * 100 : 0
 
@@ -195,55 +248,51 @@ const InvestmentHighlights = ({ metrics, propertyValue }: { metrics: { cashFlow:
       title: 'Geração Imediata de Renda',
       subtitle: 'Lucro mensal garantido',
       value: <><AnimatedNumber value={metrics.cashFlow} />/mês</>,
-      color: 'emerald',
-      bgColor: 'bg-emerald-50',
-      borderColor: 'border-emerald-200',
-      textColor: 'text-emerald-900',
-      subTextColor: 'text-emerald-700',
-      valueColor: 'text-emerald-600'
+      bgColor: isRetro ? 'bg-white' : 'bg-emerald-50',
+      borderColor: isRetro ? 'border-2 border-black' : 'border-emerald-200',
+      textColor: isRetro ? 'text-black' : 'text-emerald-900',
+      subTextColor: isRetro ? 'text-gray-600' : 'text-emerald-700',
+      valueColor: isRetro ? 'text-green-600' : 'text-emerald-600'
     },
     {
       icon: '📈',
       title: 'Patrimônio Crescente',
       subtitle: 'Imóvel + renda acumulada',
       value: 'A cada mês, seu patrimônio aumenta',
-      color: 'blue',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      textColor: 'text-blue-900',
-      subTextColor: 'text-blue-700',
-      valueColor: 'text-blue-600'
+      bgColor: isRetro ? 'bg-white' : 'bg-blue-50',
+      borderColor: isRetro ? 'border-2 border-black' : 'border-blue-200',
+      textColor: isRetro ? 'text-black' : 'text-blue-900',
+      subTextColor: isRetro ? 'text-gray-600' : 'text-blue-700',
+      valueColor: isRetro ? 'text-blue-600' : 'text-blue-600'
     },
     {
       icon: '💪',
       title: 'Rentabilidade Anual',
       subtitle: 'Retorno sobre o valor do imóvel',
       value: `${formatPercent(annualYield)} a.a.`,
-      color: 'teal',
-      bgColor: 'bg-teal-50',
-      borderColor: 'border-teal-200',
-      textColor: 'text-teal-900',
-      subTextColor: 'text-teal-700',
-      valueColor: 'text-teal-600'
+      bgColor: isRetro ? 'bg-white' : 'bg-teal-50',
+      borderColor: isRetro ? 'border-2 border-black' : 'border-teal-200',
+      textColor: isRetro ? 'text-black' : 'text-teal-900',
+      subTextColor: isRetro ? 'text-gray-600' : 'text-teal-700',
+      valueColor: isRetro ? 'text-purple-600' : 'text-teal-600'
     },
     {
       icon: '🔒',
       title: 'Segurança: Ativo Tangível',
       subtitle: 'Você possui um imóvel real',
       value: <>Valor: <AnimatedNumber value={propertyValue} /></>,
-      color: 'amber',
-      bgColor: 'bg-amber-50',
-      borderColor: 'border-amber-200',
-      textColor: 'text-amber-900',
-      subTextColor: 'text-amber-700',
-      valueColor: 'text-amber-600'
+      bgColor: isRetro ? 'bg-white' : 'bg-amber-50',
+      borderColor: isRetro ? 'border-2 border-black' : 'border-amber-200',
+      textColor: isRetro ? 'text-black' : 'text-amber-900',
+      subTextColor: isRetro ? 'text-gray-600' : 'text-amber-700',
+      valueColor: isRetro ? 'text-yellow-600' : 'text-amber-600'
     }
   ]
 
   return (
     <div className="mt-6">
-      <h3 className="text-sm font-semibold theme-text-main mb-4 flex items-center gap-2 uppercase tracking-wide">
-        <Sparkles className="w-4 h-4 text-teal-600" />
+      <h3 className={`text-sm font-semibold mb-4 flex items-center gap-2 uppercase tracking-wide ${isRetro ? 'text-black font-black' : 'theme-text-main'}`}>
+        <Sparkles className={`w-4 h-4 ${isRetro ? 'text-black' : 'text-teal-600'}`} />
         Destaques
       </h3>
 
@@ -251,7 +300,7 @@ const InvestmentHighlights = ({ metrics, propertyValue }: { metrics: { cashFlow:
         {highlights.map((highlight, idx) => (
           <div
             key={idx}
-            className={`${highlight.bgColor} border ${highlight.borderColor} rounded-xl p-3 hover:shadow-md transition-shadow cursor-default`}
+            className={`${highlight.bgColor} border ${highlight.borderColor} rounded-xl p-3 ${isRetro ? 'shadow-[2px_2px_0px_0px_#000]' : 'hover:shadow-md transition-shadow'} cursor-default`}
           >
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
@@ -297,21 +346,25 @@ export default function RentabilityView({
 
   const totalOutflows = metrics.totalExpenses + effectiveFinancingCost
 
+  /* Colors based on Theme */
+  const { theme } = useTheme()
+  const isRetro = theme === 'premium'
+
   const chartData = [
     {
       name: 'Receita',
       Valor: metrics.grossRevenue,
-      color: '#14b8a6' // teal-500
+      color: isRetro ? '#8b5cf6' : '#14b8a6' // Retro: Violet vs Standard: Teal
     },
     {
       name: 'Custos',
       Valor: totalOutflows,
-      color: '#ef4444' // red-500
+      color: isRetro ? '#f472b6' : '#ef4444' // Retro: Pink vs Standard: Red
     },
     {
       name: 'Lucro Líquido',
       Valor: metrics.cashFlow,
-      color: metrics.cashFlow >= 0 ? '#10b981' : '#f97316' // emerald-500
+      color: isRetro ? '#18181b' : (metrics.cashFlow >= 0 ? '#10b981' : '#f97316') // Retro: BLACK (Bold) vs Standard: Green/Orange
     }
   ]
 
@@ -319,7 +372,7 @@ export default function RentabilityView({
     <div className="h-full flex flex-col lg:flex-row gap-6 p-4 overflow-y-auto w-full max-w-screen-2xl mx-auto">
       {/* Esquerda: Inputs - Fixed width on Desktop */}
       <div className="w-full lg:w-80 flex-shrink-0 flex flex-col gap-4">
-        <div className="theme-bg-card p-6 theme-rounded-card theme-border border-0 shadow-none ring-1 ring-white/20">
+        <div className={`p-6 transition-all ${isRetro ? 'bg-white border-4 border-black shadow-[8px_8px_0px_0px_#000] rounded-xl' : 'theme-bg-card theme-rounded-card theme-border border-0 shadow-none ring-1 ring-white/20'}`}>
           <div className="flex items-center gap-2.5 mb-6">
             <div className="w-8 h-8 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center">
               <Building2 size={16} />
@@ -347,20 +400,21 @@ export default function RentabilityView({
 
                 {/* Modern Segmented Segment Control */}
                 <div
-                  className="flex items-center bg-gray-100/50 rounded-md p-0.5 cursor-pointer relative select-none border border-gray-200"
+                  className={`flex items-center rounded-md p-0.5 cursor-pointer relative select-none border transition-all ${isRetro ? 'bg-white border-2 border-black' : 'bg-gray-100/50 border-gray-200'}`}
                   onClick={() => updateConfig('rentalPeriod', isDaily ? 'monthly' : 'daily')}
                 >
                   {/* Active Indicator */}
                   <div
-                    className={`absolute top-[2px] bottom-[2px] w-[calc(50%-2px)] bg-white rounded shadow-sm transition-all duration-300 ease-out
-                      ${isDaily ? 'translate-x-[calc(100%+0px)]' : 'translate-x-0'}`}
+                    className={`absolute top-[2px] bottom-[2px] w-[calc(50%-2px)] rounded shadow-sm transition-all duration-300 ease-out
+                      ${isDaily ? 'translate-x-[calc(100%+0px)]' : 'translate-x-0'}
+                      ${isRetro ? 'bg-yellow-400 border border-black' : 'bg-white'}`}
                   />
 
                   {/* Labels */}
-                  <div className={`relative z-10 px-2.5 py-0.5 text-[9px] font-bold transition-colors duration-300 ${!isDaily ? 'text-teal-700' : 'text-gray-400'}`}>
+                  <div className={`relative z-10 px-2.5 py-0.5 text-[9px] font-bold transition-colors duration-300 ${!isDaily ? (isRetro ? 'text-black font-extrabold' : 'text-teal-700') : 'text-gray-400'}`}>
                     MENSAL
                   </div>
-                  <div className={`relative z-10 px-2.5 py-0.5 text-[9px] font-bold transition-colors duration-300 ${isDaily ? 'text-teal-700' : 'text-gray-400'}`}>
+                  <div className={`relative z-10 px-2.5 py-0.5 text-[9px] font-bold transition-colors duration-300 ${isDaily ? (isRetro ? 'text-black font-extrabold' : 'text-teal-700') : 'text-gray-400'}`}>
                     DIÁRIA
                   </div>
                 </div>
@@ -472,6 +526,7 @@ export default function RentabilityView({
             subtitle="(bruto)"
             color="teal"
             size="md"
+            isRetro={isRetro}
           />
           <KPICard
             label="CUSTOS"
@@ -479,6 +534,7 @@ export default function RentabilityView({
             subtitle="Taxas + Cond + Parc."
             color="red"
             size="md"
+            isRetro={isRetro}
           />
           <KPICard
             label="LUCRO MENSAL"
@@ -487,6 +543,7 @@ export default function RentabilityView({
             color="green"
             size="lg"
             highlight={true}
+            isRetro={isRetro}
           />
         </div>
 
@@ -495,10 +552,11 @@ export default function RentabilityView({
           monthlyProfit={metrics.cashFlow}
           occupancyRate={Number(config.occupancyRate) || 0}
           propertyValue={Number(scenario.propertyValue) || 1}
+          isRetro={isRetro}
         />
 
         {/* Gráfico */}
-        <div className="flex-1 theme-bg-card p-4 theme-rounded-card theme-border border shadow-md flex flex-col min-h-[250px] relative">
+        <div className={`flex-1 p-4 border flex flex-col min-h-[250px] relative transition-all ${isRetro ? 'bg-white rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_#000]' : 'theme-bg-card theme-rounded-card theme-border shadow-md'}`}>
           <h3 className="text-xs font-bold theme-text-main mb-2 flex items-center gap-1.5 uppercase tracking-wider">
             <TrendingUp size={14} className="text-teal-500" />
             Estrutura de Resultados
@@ -562,7 +620,7 @@ export default function RentabilityView({
         </div>
 
         {/* Destaques do Investimento */}
-        <InvestmentHighlights metrics={metrics} propertyValue={Number(scenario.propertyValue) || 1} />
+        <InvestmentHighlights metrics={metrics} propertyValue={Number(scenario.propertyValue) || 1} isRetro={isRetro} />
       </div>
     </div>
   )

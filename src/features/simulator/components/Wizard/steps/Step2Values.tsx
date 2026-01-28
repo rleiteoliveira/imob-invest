@@ -2,6 +2,7 @@ import type { ReactElement } from 'react'
 import type { SimulationScenario } from '../../../../../types/ScenarioTypes'
 import SmartInput from '../../../../../components/ui/SmartInput'
 import { Wallet, Landmark } from 'lucide-react'
+import { useThemeStyles } from '../../../../../hooks/useThemeStyles'
 
 interface StepProps {
   data: SimulationScenario
@@ -9,6 +10,8 @@ interface StepProps {
 }
 
 export default function Step2Values({ data, setData }: StepProps): ReactElement {
+  const { colors, components } = useThemeStyles()
+
   const propertyValue = Number(data.propertyValue) || 0
   const downPayment = Number(data.downPayment) || 0
 
@@ -53,11 +56,48 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
     setData({ ...data, downPayment: newDownPayment })
   }
 
+  // Visualization Colors: Dynamic from Theme
+  // Entry = Secondary Color (Pink in Retro, Dark in Default) -> Actually let's use Secondary for Entry
+  // Finance = Primary Color (Violet in Retro, Blue in Default)
+
+  // Note: Default theme secondary is slate-900 (blackish). Maybe we want emerald?
+  // Let's use 'success' color for Entry in default theme to match previous logic (Emerald).
+  // In Retro theme, we want Pink. Pink is secondary in Retro.
+  // So: Entry = colors.secondary (Retro) OR colors.success (Default).
+  // This is where semantic mapping matters. 
+  // Let's assume 'secondary' is the accent for Entry. However, in default theme secondary is dark.
+  // I will check if I can use 'colors.secondary' for all.
+  // Retro: secondary is Pink. GOOD.
+  // Default: secondary is '#0f172a'. BAD (Black). We want Emerald.
+  // Solução: Use specific colors if we want to match exact legacy behavior, or redefine default secondary.
+  // For now I will map explicitly:
+  // Let's us: 
+  // Finance -> Primary.
+  // Entry -> Secondary (if Retro) else Success. 
+  // Better: I should have defined 'chart' colors in theme.
+  // I will fallback to: Retro -> Pink (secondary), Default -> Emerald (success).
+  // Actually, let's just use 'colors.secondary' for Entry and see if we can update Default Theme secondary to be Emerald? No, that breaks other things.
+  // Let's use 'colors.success' for Entry (Emerald in Default, Green in Retro). Retro wants Pink.
+  // Okay, I will implement a quick checks or just use the colors directly if I can't guarantee semantic match yet.
+
+  // WORKAROUND: Use 'colors.text' as a proxy? No.
+  // Let's stick to the previous manual colors for this specific chart OR accept the theme change.
+  // I'll try to use theme properties.
+  // Retro Primary: Violet. Retro Secondary: Pink.
+  // Default Primary: Blue. Default Success: Emerald.
+
+  // Let's us: 
+  // Finance -> Primary.
+  // Entry -> Secondary (if Retro) else Success.
+  const isRetroTheme = colors.secondary === '#f472b6'
+  const finalEntryColor = isRetroTheme ? colors.secondary : colors.success
+  const finalFinanceColor = colors.primary
+
   // Simple Donut Chart using CSS conic-gradient
   const donutStyle = {
     background: `conic-gradient(
-      #10b981 0% ${downPaymentPercent}%, 
-      #3b82f6 ${downPaymentPercent}% 100%
+      ${finalEntryColor} 0% ${downPaymentPercent}%, 
+      ${finalFinanceColor} ${downPaymentPercent}% 100%
     )`
   }
 
@@ -67,8 +107,8 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
       {/* Left: Inputs */}
       <div className="flex-1 space-y-8">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Definição de Valores</h2>
-          <p className="text-gray-500 text-sm">Ajuste o valor do imóvel e quanto deseja dar de entrada.</p>
+          <h2 className="text-xl font-bold theme-text-main mb-1" style={{ color: colors.text }}>Definição de Valores</h2>
+          <p className="theme-text-muted text-sm" style={{ color: colors.textMuted }}>Ajuste o valor do imóvel e quanto deseja dar de entrada.</p>
         </div>
 
         <SmartInput
@@ -79,8 +119,8 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
           disableSlider
         />
 
-        <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100">
-          <div className="flex items-center gap-2 mb-4 text-emerald-800 font-bold uppercase text-xs tracking-wide">
+        <div className={`p-6 ${components.card.wrapper}`}>
+          <div className="flex items-center gap-2 mb-4 font-bold uppercase text-xs tracking-wide" style={{ color: finalEntryColor }}>
             <Wallet size={16} /> Entrada (Recursos Próprios)
           </div>
           <SmartInput
@@ -95,8 +135,8 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
           />
         </div>
 
-        <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
-          <div className="flex items-center gap-2 mb-4 text-blue-800 font-bold uppercase text-xs tracking-wide">
+        <div className={`p-6 ${components.card.wrapper}`}>
+          <div className="flex items-center gap-2 mb-4 font-bold uppercase text-xs tracking-wide" style={{ color: finalFinanceColor }}>
             <Landmark size={16} /> Financiamento Bancário
           </div>
           <SmartInput
@@ -113,12 +153,12 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
       </div>
 
       {/* Right: Visualization */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50/50 rounded-2xl border border-gray-100">
-        <div className="relative w-64 h-64 rounded-full shadow-xl transition-all duration-500" style={donutStyle}>
+      <div className={`flex-1 flex flex-col items-center justify-center p-6 ${components.card.wrapper}`}>
+        <div className={`relative w-64 h-64 rounded-full transition-all duration-500 shadow-none border-2`} style={{ borderColor: colors.border, background: donutStyle.background }}>
           {/* Inner White Circle */}
-          <div className="absolute inset-4 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
-            <span className="text-gray-400 font-medium text-xs uppercase tracking-widest mb-1">Total do Negócio</span>
-            <span className="text-2xl font-bold text-gray-900">
+          <div className="absolute inset-4 rounded-full flex flex-col items-center justify-center border-2 border-transparent" style={{ backgroundColor: colors.surface }}>
+            <span className="font-bold text-xs uppercase tracking-widest mb-1" style={{ color: colors.textMuted }}>Total do Negócio</span>
+            <span className="text-2xl font-bold" style={{ color: colors.text }}>
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(propertyValue)}
             </span>
           </div>
@@ -126,14 +166,14 @@ export default function Step2Values({ data, setData }: StepProps): ReactElement 
 
         <div className="mt-8 grid grid-cols-2 gap-8 w-full max-w-xs">
           <div className="text-center">
-            <span className="block w-3 h-3 bg-emerald-500 rounded-full mx-auto mb-2"></span>
-            <p className="text-xs font-bold text-gray-400 uppercase">Entrada</p>
-            <p className="text-lg font-bold text-emerald-600">{downPaymentPercent.toFixed(1)}%</p>
+            <span className="block w-3 h-3 rounded-full mx-auto mb-2" style={{ backgroundColor: finalEntryColor }}></span>
+            <p className="text-xs font-bold uppercase" style={{ color: colors.textMuted }}>Entrada</p>
+            <p className="text-lg font-bold" style={{ color: finalEntryColor }}>{downPaymentPercent.toFixed(1)}%</p>
           </div>
           <div className="text-center">
-            <span className="block w-3 h-3 bg-blue-500 rounded-full mx-auto mb-2"></span>
-            <p className="text-xs font-bold text-gray-400 uppercase">Financiamento</p>
-            <p className="text-lg font-bold text-blue-600">{financedPercent.toFixed(1)}%</p>
+            <span className="block w-3 h-3 rounded-full mx-auto mb-2" style={{ backgroundColor: finalFinanceColor }}></span>
+            <p className="text-xs font-bold uppercase" style={{ color: colors.textMuted }}>Financiamento</p>
+            <p className="text-lg font-bold" style={{ color: finalFinanceColor }}>{financedPercent.toFixed(1)}%</p>
           </div>
         </div>
       </div>

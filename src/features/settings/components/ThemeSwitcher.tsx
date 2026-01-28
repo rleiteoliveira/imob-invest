@@ -4,7 +4,7 @@ import { useTheme } from '../../../context/ThemeContext'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function ThemeSwitcher() {
-  const { theme, toggleTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
   const [isOpen, setIsOpen] = React.useState(false)
 
   return (
@@ -22,7 +22,7 @@ export default function ThemeSwitcher() {
             </span>
             <button
               onClick={() => {
-                if (theme !== 'default') toggleTheme()
+                if (theme !== 'default') setTheme('default')
               }}
               className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${theme === 'default'
                 ? 'bg-blue-600 text-white shadow-md'
@@ -33,14 +33,25 @@ export default function ThemeSwitcher() {
             </button>
             <button
               onClick={() => {
-                if (theme !== 'premium') toggleTheme()
+                if (theme !== 'premium') setTheme('premium')
               }}
               className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${theme === 'premium'
                 ? 'bg-violet-500 text-white border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                 : 'text-gray-400 hover:text-gray-600'
                 }`}
             >
-              Tema 2
+              Retrô
+            </button>
+            <button
+              onClick={() => {
+                if (theme !== 'dark') setTheme('dark')
+              }}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${theme === 'dark'
+                ? 'bg-[#18181b] text-white border border-white/20 shadow-lg'
+                : 'text-gray-400 hover:text-gray-600'
+                }`}
+            >
+              Dark
             </button>
           </motion.div>
         )}

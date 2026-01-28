@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react'
 import * as Slider from '@radix-ui/react-slider'
 import CurrencyInput from './CurrencyInput'
+import { useThemeStyles } from '../../hooks/useThemeStyles'
 
 interface SmartInputProps {
   label?: string
@@ -28,6 +29,7 @@ const SmartInput = ({
   subtitle,
   ...props
 }: SmartInputProps): ReactElement => {
+  const { colors } = useThemeStyles()
   const numericValue = typeof value === 'number' ? value : 0
 
   // Calculate a reasonable max if not provided
@@ -51,10 +53,14 @@ const SmartInput = ({
             onValueChange={(val) => onChange(val[0])}
           >
             <Slider.Track className="bg-gray-200 relative grow rounded-full h-[3px] overflow-hidden shadow-sm">
-              <Slider.Range className="absolute bg-blue-600/80 rounded-full h-full" />
+              <Slider.Range
+                className="absolute rounded-full h-full"
+                style={{ backgroundColor: colors.primary }}
+              />
             </Slider.Track>
             <Slider.Thumb
-              className="block w-3.5 h-3.5 bg-white border border-blue-600 shadow-sm rounded-full hover:scale-125 focus:outline-none transition-transform"
+              className="block w-3.5 h-3.5 bg-white border shadow-sm rounded-full hover:scale-125 focus:outline-none transition-transform"
+              style={{ borderColor: colors.primary }}
               aria-label="Ajustar valor"
             />
           </Slider.Root>
