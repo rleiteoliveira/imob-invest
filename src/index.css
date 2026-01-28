@@ -25,46 +25,45 @@
 }
 
 /* THEME 2: PREMIUM (Clean & Utilitarian / High-Performance) */
+/* THEME 2: NEO-RETRO / POP (Radically Unique) */
 [data-theme="premium"] {
-  /* Typography - System/Inter for max legibility */
-  --font-main: Inter, system-ui, -apple-system, sans-serif;
+  /* Typography - Playful but legible */
+  --font-main: 'Outfit', sans-serif;
 
-  /* Professional/Tool Aesthetic */
-  --brand-primary: #0f172a;
-  /* slate-900 */
-  --brand-secondary: #334155;
-  /* slate-700 */
+  /* Vibrant, Neo-Brutalist Palette */
+  --brand-primary: #8b5cf6;
+  /* violet-500 */
+  --brand-secondary: #f472b6;
+  /* pink-400 */
 
-  /* Solid, opaque surfaces for 0 overhead */
-  --bg-main: #f8fafc;
-  /* slate-50 */
+  /* Warm "Paper" Background */
+  --bg-main: #fffdf5;
+  /* amber-50/cream */
   --bg-card: #ffffff;
-  /* pure white */
 
-  --text-main: #0f172a;
-  /* slate-900 (High Contrast) */
-  --text-muted: #64748b;
-  /* slate-500 */
+  --text-main: #18181b;
+  /* zinc-900 */
+  --text-muted: #52525b;
+  /* zinc-600 */
 
-  /* Functional Buttons */
-  --btn-bg: #0f172a;
-  /* Solid Slate 900 */
+  /* Bold Black Buttons */
+  --btn-bg: #18181b;
 
-  /* SHAPES - Standardized */
-  --radius-card: 0.5rem;
-  /* rounded-lg (8px) */
-  --radius-btn: 0.375rem;
-  /* rounded-md (6px) */
+  /* Chunky Shapes */
+  --radius-card: 0.75rem;
+  /* 12px */
+  --radius-btn: 0.5rem;
+  /* 8px */
 
-  /* EFFECTS - Minimalist/Flat */
-  --shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  /* HARD SHADOWS (The "Pop" Signature) */
+  --shadow-card: 4px 4px 0px 0px #18181b;
 
+  /* No Blur, Hard Lines */
   --backdrop-blur: 0px;
-  /* Disabled for performance */
-  --card-border: 1px solid #e2e8f0;
-  /* slate-200 */
+  --card-border: 2px solid #18181b;
+  /* Thick retro borders */
 
-  /* No mesh */
+  /* No mesh, just pure style */
   --bg-mesh: none;
 }
 

@@ -36,7 +36,7 @@ export default function ThemeSwitcher() {
                 if (theme !== 'premium') toggleTheme()
               }}
               className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${theme === 'premium'
-                ? 'bg-slate-900 text-white shadow-md'
+                ? 'bg-violet-500 text-white border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                 : 'text-gray-400 hover:text-gray-600'
                 }`}
             >
@@ -49,7 +49,7 @@ export default function ThemeSwitcher() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`p-3 rounded-full shadow-xl transition-all hover:scale-105 active:scale-95 ${theme === 'premium'
-          ? 'bg-slate-900 text-white shadow-slate-200'
+          ? 'bg-yellow-400 text-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
           : 'bg-white text-gray-700 shadow-gray-200'
           }`}
       >
