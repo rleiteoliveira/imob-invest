@@ -17,7 +17,11 @@ export const darkTheme: ThemeSchema = {
   components: {
     card: {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       wrapper: "bg-zinc-900 border border-white/10 shadow-lg shadow-black/20 rounded-2xl transition-colors duration-200 hover:bg-zinc-800",
+=======
+      wrapper: "bg-zinc-900 border border-white/10 shadow-lg shadow-black/40 rounded-2xl transition-all duration-300 hover:bg-zinc-800/40 hover:border-zinc-600 hover:shadow-2xl hover:shadow-black/60",
+>>>>>>> Stashed changes
 =======
       wrapper: "bg-zinc-900 border border-white/10 shadow-lg shadow-black/40 rounded-2xl transition-all duration-300 hover:bg-zinc-800/40 hover:border-zinc-600 hover:shadow-2xl hover:shadow-black/60",
 >>>>>>> Stashed changes
@@ -30,7 +34,11 @@ export const darkTheme: ThemeSchema = {
     input: {
       wrapper: "relative group",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       field: "w-full pl-3 pr-4 py-2 bg-zinc-950 border border-white/10 rounded-xl focus:border-zinc-700 focus:bg-zinc-900 outline-none transition-colors duration-200 placeholder:text-gray-600 text-gray-200 shadow-inner",
+=======
+      field: "w-full pl-3 pr-4 py-2 bg-zinc-950 border border-white/10 rounded-xl focus:border-zinc-500 focus:bg-zinc-900/80 outline-none transition-colors duration-200 placeholder:text-gray-600 text-gray-200 shadow-inner",
+>>>>>>> Stashed changes
 =======
       field: "w-full pl-3 pr-4 py-2 bg-zinc-950 border border-white/10 rounded-xl focus:border-zinc-500 focus:bg-zinc-900/80 outline-none transition-colors duration-200 placeholder:text-gray-600 text-gray-200 shadow-inner",
 >>>>>>> Stashed changes
