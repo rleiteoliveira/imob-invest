@@ -43,11 +43,11 @@ const EditorWizard = ({
   const currentStep = steps[step] || steps[0]
 
   return (
-    <div className="h-full flex items-center justify-center p-0 md:p-4" style={{ backgroundColor: colors.background }}>
-      <div className={`w-full max-w-5xl overflow-hidden flex flex-col h-full md:h-[90vh] md:max-h-[850px] md:min-h-[600px] transition-all duration-300 ${components.card.wrapper}`}>
+    <div className="min-h-screen flex items-start justify-center p-4 md:py-12" style={{ backgroundColor: colors.background }}>
+      <div className={`w-full max-w-5xl flex flex-col h-auto min-h-[600px] transition-all duration-300 ${components.card.wrapper}`}>
 
         {/* HEADER */}
-        <div className="px-6 md:px-8 py-6 border-b relative shrink-0" style={{ borderColor: colors.border }}>
+        <div className="px-6 md:px-8 py-6 border-b relative" style={{ borderColor: colors.border }}>
           <div className="flex justify-between items-start mb-4">
             <div className="flex flex-col">
               <h1 className="text-xl md:text-2xl font-bold tracking-tight" style={{ color: colors.text }}>
@@ -74,7 +74,7 @@ const EditorWizard = ({
         </div>
 
         {/* CONTENT */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-8 py-6 relative">
+        <div className="px-4 md:px-8 py-6 relative">
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -158,7 +158,7 @@ const EditorWizard = ({
           </div>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
 

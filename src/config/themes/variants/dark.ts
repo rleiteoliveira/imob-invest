@@ -25,8 +25,8 @@ export const darkTheme: ThemeSchema = {
     },
     input: {
       wrapper: "relative group",
-      field: "w-full pl-3 pr-4 py-3 bg-[#09090b] border border-white/10 rounded-xl focus:border-white/30 focus:bg-[#0f0f11] outline-none transition-all placeholder:text-gray-600 text-gray-200 shadow-inner",
-      label: "block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide ml-1"
+      field: "w-full pl-3 pr-4 py-2 bg-[#09090b] border border-white/10 rounded-xl focus:border-white/30 focus:bg-[#0f0f11] outline-none transition-all placeholder:text-gray-600 text-gray-200 shadow-inner",
+      label: "block text-sm font-medium text-gray-400 mb-1.5"
     },
     button: {
       primary: "bg-zinc-800 text-white border border-zinc-700 hover:bg-zinc-700 hover:border-zinc-500 font-bold rounded-xl shadow-lg transition-all active:scale-95",

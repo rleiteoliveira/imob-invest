@@ -158,13 +158,13 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
             </div>
 
             {/* Unified Construction Summary Card */}
-            <div className={`rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6 transition-all ${components.card.wrapper}`} style={{ borderColor: '#fed7aa' /* orange-200 */, backgroundColor: `${colors.surface}` }}>
+            <div className={`rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6 transition-all ${components.card.wrapper}`} style={{ borderColor: colors.border, backgroundColor: colors.surface }}>
               <div className="flex items-center gap-3 w-full md:w-auto">
-                <div className={`p-2 rounded-lg shadow-sm shrink-0`} style={{ backgroundColor: '#fff7ed', color: '#ea580c' }}>
+                <div className={`p-2 rounded-lg shadow-sm shrink-0`} style={{ backgroundColor: colors.surface === '#18181b' ? 'rgba(249, 115, 22, 0.1)' : '#fff7ed', color: '#f97316' }}>
                   <Building2 size={24} />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#9a3412' }}>
+                  <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: colors.textMuted }}>
                     Empreendimento / Obra
                   </p>
 
@@ -185,10 +185,10 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                         <option key={dev.id} value={dev.id}>{dev.name}</option>
                       ))}
                     </select>
-                    <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: colors.textMuted }} />
                   </div>
 
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs mt-1" style={{ color: colors.textMuted }}>
                     {data.constructionStatus === 'PRE_OBRA' ? 'Lançamento/Pré-Obra' : 'Em Andamento'} • {data.constructionDuration || 36} meses totais
                   </p>
                 </div>
@@ -196,7 +196,7 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
 
               <div className="flex items-center gap-2 self-end md:self-center">
                 <div className="text-right hidden md:block mr-2">
-                  <span className="text-xs font-bold bg-white px-2 py-1 rounded border border-orange-100 text-orange-600 block mb-1">
+                  <span className={`text-xs font-bold px-2 py-1 rounded border block mb-1`} style={{ backgroundColor: 'transparent', borderColor: colors.border, color: colors.text }}>
                     {data.constructionStatus === 'PRE_OBRA'
                       ? `Início em ${data.monthsUntilConstructionStart || 0} m`
                       : `${data.constructionTime} m restantes`
@@ -209,7 +209,7 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                   {selectedDev ? (
                     <button
                       onClick={() => { setEditingDev(selectedDev); setShowDevModal(true); }}
-                      className="p-2 bg-white border border-blue-100 text-blue-500 hover:bg-blue-50 hover:border-blue-200 rounded-lg transition-all shadow-sm"
+                      className={`p-2 border rounded-lg transition-all shadow-sm ${components.button.secondary}`}
                       title="Editar Empreendimento"
                     >
                       <Edit2 size={16} />
@@ -232,7 +232,7 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                         });
                         setShowDevModal(true);
                       }}
-                      className="p-2 bg-white border border-green-100 text-green-500 hover:bg-green-50 hover:border-green-200 rounded-lg transition-all shadow-sm"
+                      className={`p-2 border rounded-lg transition-all shadow-sm ${components.button.secondary}`}
                       title="Salvar como Novo Empreendimento"
                     >
                       <Edit2 size={16} />
@@ -255,9 +255,9 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                   subtitle="Pago na assinatura"
                 />
 
-                <div className={`p-3 rounded-xl border transition-all ${components.card.wrapper}`}>
+                <div className={`p-3 rounded-xl border transition-all ${components.card.wrapper}`} style={{ borderColor: colors.border }}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-gray-500 uppercase">Utilizar FGTS?</span>
+                    <span className="text-xs font-bold uppercase" style={{ color: colors.textMuted }}>Utilizar FGTS?</span>
                     <ToggleSwitch
                       checked={!!data.useFGTS}
                       onChange={(v) => setData({ ...data, useFGTS: v })}
@@ -293,7 +293,7 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
                   min={outstandingEntryBalance > 0 ? 1 : 0}
                   disabled={outstandingEntryBalance <= 0}
                 />
-                <span className="text-[10px] text-gray-400 font-medium ml-2">
+                <span className="text-[10px] font-medium ml-2" style={{ color: colors.textMuted }}>
                   {outstandingEntryBalance > 0 ? `Sugestão: até ${monthsToKeys} meses` : 'Nenhum valor restante para parcelar.'}
                 </span>
               </div>
@@ -303,15 +303,15 @@ export default function Step3Payment({ data, setData }: StepProps): ReactElement
             <div
               onClick={() => setShowBalloonModal(true)}
               className={`cursor-pointer rounded-xl p-4 flex items-center justify-between transition-all hover:scale-[1.01] ${components.card.wrapper}`}
-              style={{ borderColor: '#bae6fd' /* blue-200 */ }}
+              style={{ borderColor: colors.border }}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold`} style={{ backgroundColor: '#e0f2fe', color: '#0369a1' }}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold`} style={{ backgroundColor: colors.surface === '#09090b' ? `${colors.primary}20` : `${colors.primary}20`, color: colors.primary }}>
                   {data.builderBalloons?.length || 0}
                 </div>
                 <div>
-                  <p className="font-bold text-blue-900 text-sm">Intercaladas (Balões)</p>
-                  <p className="text-xs text-blue-600">Configurar pagamentos anuais/semestrais</p>
+                  <p className="font-bold text-sm" style={{ color: colors.text }}>Intercaladas (Balões)</p>
+                  <p className="text-xs" style={{ color: colors.textMuted }}>Configurar pagamentos anuais/semestrais</p>
                 </div>
               </div>
               <div className="font-bold" style={{ color: colors.text }}>

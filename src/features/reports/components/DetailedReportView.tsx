@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import type { ReactElement } from 'react'
-import { X, FileDown, LayoutDashboard, Coins, TrendingUp, Building2 } from 'lucide-react'
 import {
   PieChart,
   Pie,
@@ -9,11 +8,12 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
+import { ArrowLeft, FileDown, LayoutDashboard, Coins, TrendingUp, Building2 } from 'lucide-react'
 import { CaixaMCMV } from '../../simulator/services/engines/CaixaMCMV'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import { ReportPDF } from './ReportPDF'
-import { useBrand } from '../../../context/BrandContext'
+import ThemeSwitcher from '../../settings/components/ThemeSwitcher'
 
 const DetailedReportView = ({
   scenario,
@@ -22,7 +22,6 @@ const DetailedReportView = ({
   scenario: SimulationScenario
   onClose: () => void
 }): ReactElement => {
-  const { brandColor, companyLogo } = useBrand()
 
   // 1. Calcular a linha do tempo completa
   const timeline = useMemo(() => {
@@ -111,24 +110,42 @@ const DetailedReportView = ({
   return (
     <div className="fixed inset-0 z-[100] bg-gray-50 overflow-y-auto custom-scrollbar print:relative print:inset-auto print:bg-white print:overflow-visible print:h-auto print:z-auto">
       {/* BARRA DE AÇÕES (Não sai na impressão) */}
-      <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center shadow-sm print:hidden z-[110]">
-        <div className="min-w-0">
-          <h2 className="text-sm md:text-lg font-bold text-gray-900 flex flex-wrap items-center gap-2">
-            Planejamento Financeiro
-            <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 uppercase truncate max-w-[150px] md:max-w-none">
+      {/* BARRA DE AÇÕES (Não sai na impressão) */}
+      <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 md:px-6 py-3 flex justify-between items-center shadow-sm print:hidden z-[110]">
+
+        {/* Lado Esquerdo: Voltar + Título */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100/80 transition-all font-medium text-sm active:scale-95 group"
+          >
+            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+            <span>Voltar</span>
+          </button>
+
+          <div className="h-6 w-[1px] bg-gray-200 hidden md:block"></div>
+
+          <h2 className="text-sm md:text-base font-bold text-gray-900 hidden md:flex items-center gap-2">
+            Relatório Detalhado
+            <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 uppercase truncate max-w-[150px]">
               {scenario.name}
             </span>
           </h2>
         </div>
-        <div className="flex gap-2 md:gap-3">
+
+        {/* Lado Direito: Tema + Ações */}
+        <div className="flex items-center gap-3 md:gap-4">
+
+          {/* Theme Selector Simplificado */}
+          {/* Theme Selector Oficial (Reutilizado) */}
+          <ThemeSwitcher className="flex items-center gap-2 relative z-50 mr-2" />
+
           <PDFDownloadLink
             document={
               <ReportPDF
                 scenario={scenario}
                 timeline={timeline}
                 summary={summary}
-                brandColor={brandColor}
-                companyLogo={companyLogo}
               />
             }
             fileName={`Simulacao_${scenario.clientLead?.name || scenario.clientName || 'Imovel'}.pdf`}
@@ -141,12 +158,6 @@ const DetailedReportView = ({
               </>
             )}
           </PDFDownloadLink>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
-          >
-            <X size={24} />
-          </button>
         </div>
       </div>
 
@@ -664,13 +675,13 @@ const DetailedReportView = ({
         <p className="text-[8px] md:text-[9px] text-gray-400 text-justify w-2/3 md:w-1/2 leading-tight">
           Atenção: Os valores podem sofrer alterações. Simulação sem valor contratual.
         </p>
-        <div className="text-right">
+        <div className="text-right flex items-center gap-4">
           <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2">
             <LayoutDashboard size={12} /> Imob-Invest Simulator
           </p>
         </div>
       </footer>
-    </div>
+    </div >
   )
 }
 

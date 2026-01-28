@@ -3,6 +3,8 @@ import { X, Save, RotateCcw, Settings2, Banknote, Shield, TrendingUp } from 'luc
 import { useGlobalSettings } from '../../../hooks/useGlobalSettings'
 import SmartInput from '../../../components/ui/SmartInput'
 import ToggleSwitch from '../../../components/ui/ToggleSwitch'
+import { useThemeStyles } from '../../../hooks/useThemeStyles'
+import Button from '../../../components/ui/Button'
 
 interface GlobalSettingsModalProps {
   isOpen: boolean
@@ -12,14 +14,11 @@ interface GlobalSettingsModalProps {
 
 export default function GlobalSettingsModal({ isOpen, onClose, variant = 'modal' }: GlobalSettingsModalProps) {
   const { settings, updateSettings, resetSettings } = useGlobalSettings()
-  // Local state for editing before saving? No, can edit directly or local state then save. 
-  // Let's use local state to allow "Cancel".
   const [localSettings, setLocalSettings] = useState(settings)
+  const { colors } = useThemeStyles()
 
   useEffect(() => {
     if (isOpen) {
-
-
       setLocalSettings(settings)
     }
   }, [isOpen, settings])
@@ -40,9 +39,16 @@ export default function GlobalSettingsModal({ isOpen, onClose, variant = 'modal'
 
   const isPage = variant === 'page'
 
+  // Dynamic Styles
+  const containerStyle = {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    color: colors.text
+  }
+
   const containerClass = isPage
-    ? "bg-white w-full h-full rounded-2xl shadow-sm flex flex-col border border-gray-100 animate-in fade-in duration-300"
-    : "bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
+    ? `w-full h-full rounded-2xl shadow-sm flex flex-col border animate-in fade-in duration-300`
+    : `w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200`
 
   const wrapperClass = isPage
     ? "w-full h-full"
@@ -50,32 +56,32 @@ export default function GlobalSettingsModal({ isOpen, onClose, variant = 'modal'
 
   return (
     <div className={wrapperClass}>
-      <div className={containerClass}>
+      <div className={containerClass} style={containerStyle}>
 
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: colors.border }}>
           <div className="flex items-center gap-3">
-            <div className="bg-gray-100 p-2 rounded-lg text-gray-600">
+            <div className={`p-2 rounded-lg`} style={{ backgroundColor: `${colors.primary}15`, color: colors.primary }}>
               <Settings2 size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-800">Parâmetros Globais</h2>
-              <p className="text-sm text-gray-500">Defina os valores padrão para novas simulações</p>
+              <h2 className="text-xl font-bold" style={{ color: colors.text }}>Parâmetros Globais</h2>
+              <p className="text-sm" style={{ color: colors.textMuted }}>Defina os valores padrão para novas simulações</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
+          <button onClick={onClose} className="p-2 rounded-full transition-colors hover:bg-gray-100/10" style={{ color: colors.textMuted }}>
             <X size={20} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
 
           {/* SECTION 1: BANK */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-2 mb-4">
+            <div className="flex items-center gap-2 border-b pb-2 mb-4" style={{ borderColor: colors.border }}>
               <Banknote className="text-blue-500" size={18} />
-              <h3 className="font-bold text-gray-700 text-sm uppercase tracking-wide">Padrões Bancários</h3>
+              <h3 className="font-bold text-sm uppercase tracking-wide" style={{ color: colors.textMuted }}>Padrões Bancários</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SmartInput
@@ -104,9 +110,9 @@ export default function GlobalSettingsModal({ isOpen, onClose, variant = 'modal'
 
           {/* SECTION 2: INSURANCE */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-2 mb-4">
+            <div className="flex items-center gap-2 border-b pb-2 mb-4" style={{ borderColor: colors.border }}>
               <Shield className="text-emerald-500" size={18} />
-              <h3 className="font-bold text-gray-700 text-sm uppercase tracking-wide">Seguros Estimados</h3>
+              <h3 className="font-bold text-sm uppercase tracking-wide" style={{ color: colors.textMuted }}>Seguros Estimados</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SmartInput
@@ -128,9 +134,9 @@ export default function GlobalSettingsModal({ isOpen, onClose, variant = 'modal'
 
           {/* SECTION 3: CONSTRUCTION & APPRECIATION */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-2 mb-4">
+            <div className="flex items-center gap-2 border-b pb-2 mb-4" style={{ borderColor: colors.border }}>
               <TrendingUp className="text-purple-500" size={18} />
-              <h3 className="font-bold text-gray-700 text-sm uppercase tracking-wide">Obra e Valorização</h3>
+              <h3 className="font-bold text-sm uppercase tracking-wide" style={{ color: colors.textMuted }}>Obra e Valorização</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SmartInput
@@ -151,40 +157,42 @@ export default function GlobalSettingsModal({ isOpen, onClose, variant = 'modal'
               />
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-bold text-gray-700">Juros de Obra (Cobrança)</label>
+                  <label className="text-sm font-bold" style={{ color: colors.text }}>Juros de Obra (Cobrança)</label>
                   <ToggleSwitch
                     checked={localSettings.useWorkEvolution}
                     onChange={(v) => setLocalSettings({ ...localSettings, useWorkEvolution: v })}
                   />
                 </div>
-                <p className="text-xs text-gray-500">Habilitar cobrança gradual de juros por padrão.</p>
+                <p className="text-xs" style={{ color: colors.textMuted }}>Habilitar cobrança gradual de juros por padrão.</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-between gap-3 rounded-b-2xl">
-          <button
+        <div className="p-6 border-t flex justify-between gap-3 rounded-b-2xl" style={{ borderColor: colors.border, backgroundColor: isPage ? 'transparent' : colors.surface }}>
+          <Button
             onClick={handleReset}
-            className="px-4 py-3 font-bold text-red-400 hover:text-red-600 transition-colors flex items-center gap-2 text-sm"
+            variant="ghost"
+            className="text-red-400 hover:text-red-500 font-bold gap-2 text-sm"
           >
             <RotateCcw size={16} /> Restaurar Padrões
-          </button>
+          </Button>
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={onClose}
-              className="px-6 py-3 font-bold text-gray-500 hover:text-gray-800 transition-colors"
+              variant="secondary"
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleSave}
-              className="px-6 py-3 bg-gray-900 hover:bg-black text-white font-bold rounded-xl shadow-lg transition-all flex items-center gap-2"
+              variant="primary"
+              className="gap-2"
             >
               <Save size={18} />
               Salvar Alterações
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -3,12 +3,12 @@ import { Palette } from 'lucide-react'
 import { useTheme } from '../../../context/ThemeContext'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function ThemeSwitcher() {
+export default function ThemeSwitcher({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme()
   const [isOpen, setIsOpen] = React.useState(false)
 
   return (
-    <div className="fixed top-6 right-6 z-[100] flex items-center gap-2">
+    <div className={className || "fixed top-6 right-6 z-[100] flex items-center gap-2"}>
       <AnimatePresence>
         {isOpen && (
           <motion.div

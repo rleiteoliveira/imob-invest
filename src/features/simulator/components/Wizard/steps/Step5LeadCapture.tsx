@@ -7,12 +7,13 @@ import { useThemeStyles } from '../../../../../hooks/useThemeStyles'
 interface InputWrapperProps {
   children: React.ReactNode
   icon?: React.ElementType
+  colors?: any
 }
 
-const InputWrapper = ({ children, icon: Icon }: InputWrapperProps) => (
+const InputWrapper = ({ children, icon: Icon, colors }: InputWrapperProps) => (
   <div className="relative">
     {Icon && (
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+      <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: colors?.textMuted || '#9ca3af' }}>
         <Icon size={18} />
       </div>
     )}
@@ -55,26 +56,25 @@ export default function Step4LeadCapture({ data, setData }: Step4Props): ReactEl
   // Safety check for rendering
   const leadData = data.clientLead || { name: '' }
 
-  const inputClass = `${components.input.field}` // Use theme input classes
+  const inputClass = `${components.input.field} pl-10` // Added padding for icons
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 slide-in-from-right-4 pb-20">
 
-      {/* Header Section */}
-      <div className="text-center space-y-2 mb-8 mt-4">
-        <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Personalizar Proposta</h2>
-        <p className="max-w-lg mx-auto text-sm" style={{ color: colors.textMuted }}>
+      {/* Header Section Compacted */}
+      <div className="text-center space-y-1 mb-6 mt-2">
+        <h2 className="text-xl font-bold" style={{ color: colors.text }}>Personalizar Proposta</h2>
+        <p className="max-w-lg mx-auto text-xs" style={{ color: colors.textMuted }}>
           Preencha os dados do cliente para gerar um relatório profissional e exclusivo.
-          Essas informações aparecerão no cabeçalho do PDF.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
 
-        {/* Nome (Obrigatório) */}
-        <div className="col-span-1 md:col-span-2">
+        {/* Nome */}
+        <div className="col-span-1">
           <Label required colors={colors}>Nome do Cliente</Label>
-          <InputWrapper icon={User}>
+          <InputWrapper icon={User} colors={colors}>
             <input
               type="text"
               placeholder="Ex: João da Silva"
@@ -85,16 +85,16 @@ export default function Step4LeadCapture({ data, setData }: Step4Props): ReactEl
             />
           </InputWrapper>
           {!leadData.name && (
-            <p className="text-xs mt-1.5 ml-1 flex items-center gap-1" style={{ color: colors.textMuted }}>
-              <span>⚠</span> Recomendado para identificar a proposta.
+            <p className="text-[10px] mt-1 ml-1 flex items-center gap-1" style={{ color: colors.textMuted }}>
+              <span>⚠</span> Obrigatório para o PDF.
             </p>
           )}
         </div>
 
         {/* Telefone */}
-        <div>
+        <div className="col-span-1">
           <Label colors={colors}>Telefone / WhatsApp</Label>
-          <InputWrapper icon={Phone}>
+          <InputWrapper icon={Phone} colors={colors}>
             <input
               type="tel"
               placeholder="(00) 00000-0000"
@@ -106,9 +106,9 @@ export default function Step4LeadCapture({ data, setData }: Step4Props): ReactEl
         </div>
 
         {/* Email */}
-        <div>
+        <div className="col-span-1">
           <Label colors={colors}>Email</Label>
-          <InputWrapper icon={Mail}>
+          <InputWrapper icon={Mail} colors={colors}>
             <input
               type="email"
               placeholder="cliente@email.com"
@@ -120,12 +120,12 @@ export default function Step4LeadCapture({ data, setData }: Step4Props): ReactEl
         </div>
 
         {/* Unidade */}
-        <div className="col-span-1 md:col-span-2">
+        <div className="col-span-1">
           <Label colors={colors}>Unidade de Interesse</Label>
-          <InputWrapper icon={Building}>
+          <InputWrapper icon={Building} colors={colors}>
             <input
               type="text"
-              placeholder="Ex: Edifício Horizonte, Apto 402 - Torre B"
+              placeholder="Ex: Apto 402 - Torre B"
               value={leadData.unitOfInterest || ''}
               onChange={(e) => updateLead('unitOfInterest', e.target.value)}
               className={inputClass}
@@ -137,29 +137,29 @@ export default function Step4LeadCapture({ data, setData }: Step4Props): ReactEl
         <div className="col-span-1 md:col-span-2">
           <Label colors={colors}>Observações Internas (Opcional)</Label>
           <div className="relative">
-            <div className="absolute left-3 top-3" style={{ color: colors.textMuted }}>
+            <div className="absolute left-3 top-3 pointer-events-none" style={{ color: colors.textMuted }}>
               <FileText size={18} />
             </div>
             <textarea
               placeholder="Ex: Cliente busca financiamento com entrada parcelada..."
               value={leadData.notes || ''}
               onChange={(e) => updateLead('notes', e.target.value)}
-              rows={4}
-              className={inputClass}
+              rows={3}
+              className={`${inputClass} min-h-[80px]`}
             />
           </div>
         </div>
 
       </div>
 
-      <div className={`max-w-3xl mx-auto mt-8 p-4 flex items-start gap-3 transition-all ${components.card.wrapper}`} style={{ borderColor: 'rgba(52, 211, 153, 0.3)' /* emerald hint */ }}>
-        <div className={`p-2 rounded-full shrink-0`} style={{ backgroundColor: 'rgba(52, 211, 153, 0.1)', color: '#10b981' }}>
-          <FileText size={20} />
+      <div className={`max-w-4xl mx-auto mt-4 p-3 flex items-center gap-3 transition-all rounded-lg border ${components.card.wrapper}`} style={{ borderColor: 'rgba(52, 211, 153, 0.3)' }}>
+        <div className={`p-1.5 rounded-full shrink-0`} style={{ backgroundColor: 'rgba(52, 211, 153, 0.1)', color: '#10b981' }}>
+          <FileText size={18} />
         </div>
         <div>
           <h4 className="text-sm font-bold" style={{ color: colors.text }}>Pronto para gerar!</h4>
-          <p className="text-xs mt-0.5" style={{ color: colors.textMuted }}>
-            Ao clicar em "Gerar Proposta Personalizada", criaremos um documento PDF completo com todas as projeções e os dados acima.
+          <p className="text-xs" style={{ color: colors.textMuted }}>
+            Clique em "Gerar Proposta" para criar o PDF completo.
           </p>
         </div>
       </div>

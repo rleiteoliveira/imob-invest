@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Save, Building2, TrendingUp, Construction } from 'lucide-react'
 import { useThemeStyles } from '../../../../hooks/useThemeStyles'
 import type { DevelopmentConfig } from '../../../../types/ScenarioTypes'
@@ -59,7 +60,7 @@ export default function DevelopmentEditorModal({ isOpen, onClose, onSave, initia
     onClose()
   }
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className={`w-full max-w-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200 ${components.card.wrapper}`}>
 
@@ -235,6 +236,7 @@ export default function DevelopmentEditorModal({ isOpen, onClose, onSave, initia
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

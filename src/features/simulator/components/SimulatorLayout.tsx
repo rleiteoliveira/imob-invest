@@ -7,17 +7,14 @@ import {
   Plus,
   Check,
   Hotel,
-  Settings,
   Settings2
 } from 'lucide-react'
 import DetailedReportView from '../../reports/components/DetailedReportView'
 import EditorWizard from './Wizard/EditorWizard'
 import RentabilityView from '../../rentability/components/RentabilityView'
-import BrandSettingsModal from '../../settings/components/BrandSettingsModal'
 import GlobalSettingsModal from '../../settings/components/GlobalSettingsModal'
 import type { SimulationScenario } from '../../../types/ScenarioTypes'
 import { useSimulation } from '../hooks/useSimulation'
-import Button from '../../../components/ui/Button'
 import { useThemeStyles } from '../../../hooks/useThemeStyles'
 
 export default function SimulatorLayout(): ReactElement {
@@ -40,11 +37,10 @@ export default function SimulatorLayout(): ReactElement {
   const [viewMode, setViewMode] = useState<'EDITOR' | 'GLOBAL_SETTINGS'>('EDITOR')
   const [editorTab, setEditorTab] = useState<'FINANCING' | 'RENTAL'>('FINANCING')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [showBrandSettings, setShowBrandSettings] = useState(false)
   const [reportScenario, setReportScenario] = useState<SimulationScenario | null>(null)
 
   return (
-    <div className="flex h-[100dvh] font-sans overflow-hidden relative selection:bg-indigo-100 flex-col md:flex-row transition-colors duration-700" style={{ backgroundColor: colors.background, color: colors.text }}>
+    <div className="flex min-h-screen font-sans relative selection:bg-indigo-100 flex-col md:flex-row transition-colors duration-700" style={{ backgroundColor: colors.background, color: colors.text }}>
 
       {/* Dynamic Background Mesh Removed for Performance */}
 
@@ -64,8 +60,6 @@ export default function SimulatorLayout(): ReactElement {
       {reportScenario && (
         <DetailedReportView scenario={reportScenario} onClose={() => setReportScenario(null)} />
       )}
-
-      <BrandSettingsModal isOpen={showBrandSettings} onClose={() => setShowBrandSettings(false)} />
 
       <header className="md:hidden theme-bg-card border-b theme-border p-4 flex justify-between items-center z-40 shrink-0 shadow-sm">
         <div className="flex items-center gap-2.5">
@@ -92,7 +86,7 @@ export default function SimulatorLayout(): ReactElement {
 
       <aside
         className={`
-          fixed md:relative top-0 left-0 h-[100dvh] md:h-full w-[280px] md:w-80 border-r flex flex-col z-50 transform transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] md:shadow-none
+          fixed md:sticky top-0 left-0 h-[100dvh] md:h-screen w-[280px] md:w-80 border-r flex flex-col z-50 transform transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] md:shadow-none bg-white
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}
         style={{
@@ -149,37 +143,25 @@ export default function SimulatorLayout(): ReactElement {
                 setViewMode('EDITOR')
                 setEditorTab('RENTAL')
               }}
-              className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${viewMode === 'EDITOR' && editorTab === 'RENTAL' ? 'bg-rose-50/50 text-rose-700 shadow-sm ring-1 ring-rose-100' : 'bg-transparent theme-text-muted hover:bg-gray-100/30'}`}
+              className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${viewMode === 'EDITOR' && editorTab === 'RENTAL' ? 'bg-gray-100/50 theme-text-main shadow-sm ring-1 ring-gray-200/50' : 'bg-transparent theme-text-muted hover:bg-gray-100/30'}`}
             >
               <Hotel size={18} /> Análise Lucro
             </button>
           </div>
 
-          <div className="mt-2 space-y-1">
-            <Button
-              onClick={() => {
-                setViewMode('GLOBAL_SETTINGS')
-                setIsMobileMenuOpen(false)
-              }}
-              variant="ghost"
-              fullWidth
-              className={`justify-start gap-3 theme-text-muted ${viewMode === 'GLOBAL_SETTINGS' ? 'bg-gray-100/50 theme-text-main font-bold' : ''}`}
-            >
-              <Settings2 size={18} /> Parâmetros Globais
-            </Button>
-            <Button
-              onClick={() => setShowBrandSettings(true)}
-              variant="ghost"
-              fullWidth
-              className="justify-start gap-3 theme-text-muted"
-            >
-              <Settings size={18} /> Config. Marca
-            </Button>
-          </div>
+          <button
+            onClick={() => {
+              setViewMode('GLOBAL_SETTINGS')
+              setIsMobileMenuOpen(false)
+            }}
+            className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all font-medium text-sm ${viewMode === 'GLOBAL_SETTINGS' ? 'bg-gray-100/50 theme-text-main shadow-sm ring-1 ring-gray-200/50' : 'bg-transparent theme-text-muted hover:bg-gray-100/30'}`}
+          >
+            <Settings2 size={18} /> Parâmetros Globais
+          </button>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-hidden relative w-full p-0 md:p-6 transition-all duration-500">
+      <main className="flex-1 relative w-full p-0 md:p-6 transition-all duration-500">
         {viewMode === 'GLOBAL_SETTINGS' ? (
           <div className="h-full overflow-hidden p-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <GlobalSettingsModal
@@ -207,6 +189,6 @@ export default function SimulatorLayout(): ReactElement {
           />
         )}
       </main>
-    </div>
+    </div >
   )
 }

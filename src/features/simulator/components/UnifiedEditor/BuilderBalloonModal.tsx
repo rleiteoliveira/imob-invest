@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { ReactElement } from 'react'
 import { X, Check } from 'lucide-react'
 import BalloonPaymentList from './BalloonPaymentList'
+import { useThemeStyles } from '../../../../hooks/useThemeStyles'
 import type { BuilderBalloon } from '../../../../types/ScenarioTypes'
 
 const BuilderBalloonModal = ({
@@ -21,6 +23,9 @@ const BuilderBalloonModal = ({
   // Since component unmounts when !isOpen, we don't need to sync state in useEffect
   const [currentList, setCurrentList] = useState<BuilderBalloon[]>(balloons || [])
 
+  /* import useThemeStyles missing here, need to add import first, doing replace locally */
+  const { colors, components } = useThemeStyles()
+
   if (!isOpen) return null
 
   const handleSave = () => {
@@ -28,23 +33,26 @@ const BuilderBalloonModal = ({
     onSave(currentList)
   }
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col h-[600px] max-h-[90vh]">
+      <div className={`rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col h-[600px] max-h-[90vh] ${components.card.wrapper}`} style={{ margin: 0 }}>
+        {/* Style override margin to 0 just in case wrapper adds margins */}
 
         {/* Header */}
-        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+        <div className="p-4 border-b flex justify-between items-center shrink-0" style={{ borderColor: colors.border, backgroundColor: colors.surface }}>
           <div>
-            <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
+            <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: colors.text }}>
               Configurar Balões / Intercaladas
             </h3>
-            <p className="text-xs text-gray-400">Parcelas extras durante a obra.</p>
+            <p className="text-xs" style={{ color: colors.textMuted }}>Parcelas extras durante a obra.</p>
           </div>
-          <button onClick={onClose} className="hover:bg-gray-100 p-2 rounded-full transition-colors text-gray-500"><X size={20} /></button>
+          <button onClick={onClose} className={`p-2 rounded-full transition-colors ${components.button.ghost}`}>
+            <X size={20} />
+          </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-hidden bg-gray-50/50 p-4">
+        <div className="flex-1 overflow-hidden p-4" style={{ backgroundColor: `${colors.surface}80` }}>
           <BalloonPaymentList
             balloons={currentList}
             onChange={setCurrentList}
@@ -53,14 +61,15 @@ const BuilderBalloonModal = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100 bg-white flex justify-end gap-3 z-10 shrink-0">
-          <button onClick={onClose} className="px-5 py-2.5 text-gray-500 font-bold text-sm hover:bg-gray-100 rounded-xl transition-colors">Cancelar</button>
-          <button onClick={handleSave} className="px-8 py-2.5 bg-gray-900 text-white font-bold rounded-xl hover:bg-black shadow-lg shadow-gray-200 transition-all active:scale-95 flex items-center gap-2">
+        <div className="p-4 border-t flex justify-end gap-3 z-10 shrink-0" style={{ borderColor: colors.border, backgroundColor: colors.surface }}>
+          <button onClick={onClose} className={`px-5 py-2.5 font-bold text-sm rounded-xl transition-colors ${components.button.ghost}`}>Cancelar</button>
+          <button onClick={handleSave} className={`px-8 py-2.5 font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2 ${components.button.primary}`}>
             <Check size={18} /> Salvar Alterações
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

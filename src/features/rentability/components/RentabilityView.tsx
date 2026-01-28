@@ -473,23 +473,23 @@ export default function RentabilityView({
                 margin={{ top: 0, right: 60, left: 0, bottom: 0 }}
                 barSize={24}
               >
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={colors.border} />
                 <XAxis type="number" hide />
                 <YAxis
                   dataKey="name"
                   type="category"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+                  tick={{ fill: colors.textMuted, fontSize: 10, fontWeight: 600 }}
                   width={70}
                 />
                 <Tooltip
-                  cursor={{ fill: '#f8fafc' }}
+                  cursor={{ fill: 'rgba(128,128,128,0.1)' }}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const val = payload[0].value as number;
                       return (
-                        <div className="bg-gray-900 text-white text-[10px] py-1 px-2 rounded shadow-lg">
+                        <div className="text-[10px] py-1 px-2 rounded shadow-lg" style={{ backgroundColor: colors.surface, color: colors.text, border: `1px solid ${colors.border}` }}>
                           {formatMoney(val)}
                         </div>
                       )
@@ -507,7 +507,7 @@ export default function RentabilityView({
                     position="right"
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     formatter={(val: any) => formatMoney(val)}
-                    style={{ fontSize: '10px', fontWeight: 'bold', fill: '#64748b' }}
+                    style={{ fontSize: '10px', fontWeight: 'bold', fill: colors.textMuted }}
                   />
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
