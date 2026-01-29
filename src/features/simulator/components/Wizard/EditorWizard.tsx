@@ -42,9 +42,17 @@ const EditorWizard = ({
 
   const currentStep = steps[step] || steps[0]
 
+  // Create a static version of the card wrapper by removing hover and transition effects
+  // This ensures the outer container doesn't react to mouse events, while inner cards do.
+  const staticWrapper = (components?.card?.wrapper || '')
+    .replace(/hover:\S+/g, '')
+    // We can keep transition for smooth theme switching, but if it causes issues we can remove it too.
+    // .replace(/transition-\S+/g, '') 
+    .trim()
+
   return (
     <div className="min-h-screen flex items-start justify-center p-4 md:py-12" style={{ backgroundColor: colors.background }}>
-      <div className={`w-full max-w-5xl flex flex-col h-auto min-h-[600px] transition-all duration-300 ${components.card.wrapper}`}>
+      <div className={`w-full max-w-5xl flex flex-col h-auto min-h-[600px] transition-all duration-300 ${staticWrapper}`}>
 
         {/* HEADER */}
         <div className="px-6 md:px-8 py-6 border-b relative" style={{ borderColor: colors.border }}>
