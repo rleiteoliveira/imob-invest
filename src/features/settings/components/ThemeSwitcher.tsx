@@ -1,11 +1,15 @@
 import React from 'react'
 import { Palette } from 'lucide-react'
 import { useTheme } from '../../../context/ThemeContext'
+import { useThemeStyles } from '../../../hooks/useThemeStyles'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function ThemeSwitcher({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme()
+  const { colors } = useThemeStyles()
   const [isOpen, setIsOpen] = React.useState(false)
+
+  const inactiveStyle = { color: colors.textMuted }
 
   return (
     <div className={className || "fixed top-6 right-6 z-[100] flex items-center gap-2"}>
@@ -15,9 +19,10 @@ export default function ThemeSwitcher({ className }: { className?: string }) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="bg-white/90 backdrop-blur-md shadow-xl rounded-full px-4 py-2 flex items-center gap-3 border border-white/50"
+            className="backdrop-blur-md shadow-xl rounded-full px-4 py-2 flex items-center gap-3 border"
+            style={{ backgroundColor: `${colors.surface}E6`, borderColor: colors.border }}
           >
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: colors.textMuted }}>
               Tema
             </span>
             <button
@@ -26,8 +31,9 @@ export default function ThemeSwitcher({ className }: { className?: string }) {
               }}
               className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${theme === 'default'
                 ? 'bg-blue-600 text-white shadow-md'
-                : 'text-gray-400 hover:text-gray-600'
+                : ''
                 }`}
+              style={theme === 'default' ? undefined : inactiveStyle}
             >
               Padrão
             </button>
@@ -37,8 +43,9 @@ export default function ThemeSwitcher({ className }: { className?: string }) {
               }}
               className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${theme === 'premium'
                 ? 'bg-violet-500 text-white border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                : 'text-gray-400 hover:text-gray-600'
+                : ''
                 }`}
+              style={theme === 'premium' ? undefined : inactiveStyle}
             >
               Retrô
             </button>
@@ -48,8 +55,9 @@ export default function ThemeSwitcher({ className }: { className?: string }) {
               }}
               className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${theme === 'dark'
                 ? 'bg-[#18181b] text-white border border-white/20 shadow-lg'
-                : 'text-gray-400 hover:text-gray-600'
+                : ''
                 }`}
+              style={theme === 'dark' ? undefined : inactiveStyle}
             >
               Dark
             </button>
@@ -59,6 +67,7 @@ export default function ThemeSwitcher({ className }: { className?: string }) {
 
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Alternar tema"
         className={`p-3 rounded-full shadow-sm transition-all hover:scale-105 active:scale-95 ${theme === 'premium'
           ? 'bg-yellow-400 text-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
           : theme === 'dark'

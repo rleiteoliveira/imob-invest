@@ -248,21 +248,27 @@ const DetailedReportView = ({
             </div>
 
             <div className="space-y-4 relative z-10">
-              <div className="flex justify-between items-center border-b border-gray-50 pb-2">
-                <span className="text-xs text-gray-500 font-medium">Sinal (Ato)</span>
-                <span className="font-bold text-gray-900">{fmtMoney(Number(scenario.entrySignal) || 0)}</span>
+              <div className="flex justify-between items-center border-b pb-2" style={{ borderColor: colors.border }}>
+                <span className="text-xs font-medium" style={{ color: colors.textMuted }}>Sinal (Ato)</span>
+                <span className="font-bold" style={{ color: colors.text }}>{fmtMoney(Number(scenario.entrySignal) || 0)}</span>
               </div>
 
-              <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+              <div className="flex justify-between items-center border-b pb-2" style={{ borderColor: colors.border }}>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500 font-medium">FGTS</span>
+                  <span className="text-xs font-medium" style={{ color: colors.textMuted }}>FGTS</span>
                   {scenario.useFGTS ? (
-                    <span className="text-[9px] bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded">UTILIZADO</span>
+                    <span
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                      style={{ backgroundColor: `${colors.success}20`, color: colors.success }}
+                    >UTILIZADO</span>
                   ) : (
-                    <span className="text-[9px] bg-gray-100 text-gray-400 font-bold px-1.5 py-0.5 rounded">NÃO UTILIZADO</span>
+                    <span
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                      style={{ backgroundColor: `${colors.textMuted}15`, color: colors.textMuted }}
+                    >NÃO UTILIZADO</span>
                   )}
                 </div>
-                <span className={`font-bold ${scenario.useFGTS ? 'text-green-600' : 'text-gray-300'}`}>
+                <span className="font-bold" style={{ color: scenario.useFGTS ? colors.success : colors.textMuted, opacity: scenario.useFGTS ? 1 : 0.6 }}>
                   {fmtMoney(scenario.useFGTS ? (Number(scenario.fgtsValue) || 0) : 0)}
                 </span>
               </div>
@@ -270,12 +276,12 @@ const DetailedReportView = ({
               {/* Parcelamento - Corrigido */}
               <div className="flex justify-between items-center">
                 <div className="flex flex-col">
-                  <span className="text-xs text-gray-500 font-medium">Saldo Parcelado</span>
-                  <span className="text-[9px] text-gray-400">
+                  <span className="text-xs font-medium" style={{ color: colors.textMuted }}>Saldo Parcelado</span>
+                  <span className="text-[9px]" style={{ color: colors.textMuted, opacity: 0.7 }}>
                     {summary.installmentsCount}x de {fmtMoney(summary.firstEntryInstallment)}
                   </span>
                 </div>
-                <span className="font-bold">{fmtMoney(summary.entryBalanceToParcel)}</span>
+                <span className="font-bold" style={{ color: colors.text }}>{fmtMoney(summary.entryBalanceToParcel)}</span>
               </div>
             </div>
             {/* Decorative blob */}
@@ -285,15 +291,18 @@ const DetailedReportView = ({
           {/* Card: Balões / Intercaladas */}
           <div className="rounded-2xl p-6 border shadow-sm relative overflow-hidden flex flex-col justify-between h-full" style={{ backgroundColor: `${colors.text}10`, borderColor: colors.border }}>
             <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+              <div
+                className="p-2 rounded-lg"
+                style={{ backgroundColor: '#f9731620', color: '#f97316' }}
+              >
                 <TrendingUp size={18} />
               </div>
               <h3 className="font-bold text-sm uppercase tracking-wide" style={{ color: colors.text }}>Reforços (Intercaladas)</h3>
             </div>
 
             {(!scenario.builderBalloons || scenario.builderBalloons.length === 0) ? (
-              <div className="flex flex-col items-center justify-center flex-grow text-gray-400 text-center py-2 h-full">
-                <p className="text-xs italic" style={{ color: colors.textMuted }}>Nenhum reforço configurado.</p>
+              <div className="flex flex-col items-center justify-center flex-grow text-center py-2 h-full" style={{ color: colors.textMuted }}>
+                <p className="text-xs italic">Nenhum reforço configurado.</p>
               </div>
             ) : (
               <div className="relative z-10 flex flex-col gap-4">
@@ -304,15 +313,18 @@ const DetailedReportView = ({
                   </p>
                 </div>
 
-                <div className="border-t border-amber-50 pt-3">
+                <div className="border-t pt-3" style={{ borderColor: colors.border }}>
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs text-gray-500 font-medium">Recorrência</span>
-                    <span className="text-[10px] bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-medium" style={{ color: colors.textMuted }}>Recorrência</span>
+                    <span
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: '#f9731620', color: '#f97316' }}
+                    >
                       {scenario.builderBalloons.length} Parcelas
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400 leading-snug mt-2">
-                    Meses: <span className="font-bold text-amber-700">{scenario.builderBalloons.map(b => b.month).join(', ')}</span>
+                  <p className="text-xs leading-snug mt-2" style={{ color: colors.textMuted }}>
+                    Meses: <span className="font-bold" style={{ color: '#f97316' }}>{scenario.builderBalloons.map(b => b.month).join(', ')}</span>
                   </p>
                 </div>
               </div>
@@ -407,7 +419,10 @@ const DetailedReportView = ({
               <div className="hidden md:block h-10 w-[1px] mx-4 print:hidden" style={{ backgroundColor: colors.border }}></div>
 
               <div className="text-right hidden md:block print:hidden">
-                <div className="text-[10px] bg-blue-600/10 border border-blue-500/30 text-blue-500 px-3 py-1 rounded-full inline-block mb-1">
+                <div
+                  className="text-[10px] font-semibold px-3 py-1 rounded-full inline-block mb-1 border"
+                  style={{ backgroundColor: `${colors.primary}14`, borderColor: `${colors.primary}30`, color: colors.primary }}
+                >
                   Investimento na Fase 1
                 </div>
                 <p className="text-[10px] max-w-[200px] leading-tight mt-1" style={{ color: colors.textMuted }}>
@@ -502,14 +517,17 @@ const DetailedReportView = ({
                     ? ((item.val / totalWithFinancing) * 100).toFixed(1)
                     : 0;
                   return (
-                    <div key={item.label} className="flex justify-between items-center text-xs border-b border-gray-50 pb-1">
+                    <div key={item.label} className="flex justify-between items-center text-xs border-b pb-1" style={{ borderColor: colors.border }}>
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
                         <span className="font-medium" style={{ color: colors.textMuted }}>{item.label}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-bold text-gray-900">{fmtMoney(item.val)}</span>
-                        <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{pct}%</span>
+                        <span className="font-bold" style={{ color: colors.text }}>{fmtMoney(item.val)}</span>
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
+                          style={{ backgroundColor: `${colors.textMuted}15`, color: colors.textMuted }}
+                        >{pct}%</span>
                       </div>
                     </div>
                   )
@@ -525,21 +543,21 @@ const DetailedReportView = ({
             Fase de Obras (Detalhamento)
           </h3>
 
-          <div className="border rounded-2xl overflow-hidden shadow-sm print:rounded-none print:border-l-0 print:border-r-0 print:border-gray-300 print:shadow-none" style={{ borderColor: colors.border }}>
+          <div className="border rounded-2xl overflow-hidden shadow-sm print:rounded-none print:border-l-0 print:border-r-0 print:border-gray-300 print:shadow-none" style={{ borderColor: colors.border, backgroundColor: colors.surface }}>
             {/* HEADERS */}
-            <div className="grid grid-cols-12 p-3 md:p-4 font-bold uppercase tracking-widest text-[10px] border-b print:bg-gray-100 print:text-black print:border-gray-300 print:py-2" style={{ backgroundColor: `${colors.surface}80`, color: colors.textMuted, borderColor: colors.border }}>
+            <div className="grid grid-cols-12 p-3 md:p-4 font-bold uppercase tracking-widest text-[10px] border-b print:bg-gray-100 print:text-black print:border-gray-300 print:py-2" style={{ backgroundColor: `${colors.text}08`, color: colors.textMuted, borderColor: colors.border }}>
               <div className="col-span-1 text-center">Mês</div>
               <div className={`text-right ${scenario.useWorkEvolution ? 'col-span-2' : 'col-span-3'}`}>Mensal</div>
               <div className="col-span-2 text-right">Reforço</div>
               {scenario.useWorkEvolution && <div className="col-span-2 text-right">Evolução</div>}
-              <div className={`text-right text-gray-900 border-l border-gray-100 ml-2 print:border-gray-300 ${scenario.useWorkEvolution ? 'col-span-3' : 'col-span-4'}`}>
+              <div className={`text-right border-l ml-2 print:border-gray-300 ${scenario.useWorkEvolution ? 'col-span-3' : 'col-span-4'}`} style={{ color: colors.text, borderColor: colors.border }}>
                 Total Mensal
               </div>
               <div className="col-span-2 text-right">Saldo Dev.</div>
             </div>
 
             {/* LISTA DE MESES DE OBRA */}
-            <div className="divide-y divide-gray-50 print:divide-gray-200">
+            <div className="[&>*]:border-b [&>*:last-child]:border-b-0" style={{ borderColor: colors.border }}>
               {reportData.constructionRows.map((row) => {
                 // Check if there is a balloon (heuristic: if builderInstallment > summary.firstEntryInstallment * 1.5)
                 // Or better: check scenario balloons.
@@ -559,7 +577,8 @@ const DetailedReportView = ({
                 return (
                   <div
                     key={row.month}
-                    className="grid grid-cols-12 p-3 md:p-4 text-xs items-center hover:bg-gray-50/50 transition-colors break-inside-avoid print:p-1.5 print:text-[10px] print:leading-tight even:print:bg-gray-50"
+                    className="grid grid-cols-12 p-3 md:p-4 text-xs items-center theme-hover-surface break-inside-avoid print:p-1.5 print:text-[10px] print:leading-tight even:print:bg-gray-50"
+                    style={{ borderColor: colors.border }}
                   >
                     <div className="col-span-1 text-center font-bold text-[10px] print:text-black" style={{ color: colors.textMuted }}>
                       {row.month}
@@ -571,7 +590,7 @@ const DetailedReportView = ({
                     </div>
 
                     {/* Reforço */}
-                    <div className="col-span-2 text-right font-medium text-amber-600 print:text-black">
+                    <div className="col-span-2 text-right font-medium print:text-black" style={{ color: '#f97316' }}>
                       {balloonPart > 0 ? (
                         <span className="font-bold print:font-bold">{fmtMoney(balloonPart)}</span>
                       ) : '-'}
@@ -597,7 +616,7 @@ const DetailedReportView = ({
           </div>
 
           {/* AVISO SE FOR MUITO LONGO NO MOBILE */}
-          <div className="md:hidden mt-2 text-center text-[10px] text-gray-400 italic">
+          <div className="md:hidden mt-2 text-center text-[10px] italic" style={{ color: colors.textMuted }}>
             (Visualização completa disponível em PDF ou Desktop)
           </div>
         </div>
@@ -613,14 +632,14 @@ const DetailedReportView = ({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
 
                 {/* COLUNA 1: VALOR */}
-                <div className="text-center md:text-left border-b md:border-b-0 md:border-r border-gray-100 pb-4 md:pb-0 md:pr-8">
+                <div className="text-center md:text-left border-b md:border-b-0 md:border-r pb-4 md:pb-0 md:pr-8" style={{ borderColor: colors.border }}>
                   <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: colors.textMuted }}>
                     Saldo a Financiar
                   </p>
                   <p className="text-2xl font-black tracking-tight" style={{ color: colors.text }}>
                     {fmtMoney(reportData.financingSummary.first.bankBalance + reportData.financingSummary.first.bankAmortization)}
                   </p>
-                  <p className="text-[10px] text-gray-400 mt-1 font-medium">
+                  <p className="text-[10px] mt-1 font-medium" style={{ color: colors.textMuted, opacity: 0.7 }}>
                     Valor sujeito a aprovação bancária
                   </p>
                 </div>
@@ -631,14 +650,14 @@ const DetailedReportView = ({
                     Condições do Plano
                   </p>
                   <div className="flex flex-col gap-1">
-                    <p className="text-sm font-bold text-gray-700">
-                      <span className="text-gray-400 font-normal">Sistema:</span> {reportData.financingSummary.system}
+                    <p className="text-sm font-bold" style={{ color: colors.text }}>
+                      <span className="font-normal" style={{ color: colors.textMuted }}>Sistema:</span> {reportData.financingSummary.system}
                     </p>
-                    <p className="text-sm font-bold text-gray-700">
-                      <span className="text-gray-400 font-normal">Taxa:</span> {reportData.financingSummary.interest}% a.a.
+                    <p className="text-sm font-bold" style={{ color: colors.text }}>
+                      <span className="font-normal" style={{ color: colors.textMuted }}>Taxa:</span> {reportData.financingSummary.interest}% a.a.
                     </p>
-                    <p className="text-sm font-bold text-gray-700">
-                      <span className="text-gray-400 font-normal">Prazo:</span> {reportData.financingSummary.totalMonths} meses ({reportData.financingSummary.years} anos)
+                    <p className="text-sm font-bold" style={{ color: colors.text }}>
+                      <span className="font-normal" style={{ color: colors.textMuted }}>Prazo:</span> {reportData.financingSummary.totalMonths} meses ({reportData.financingSummary.years} anos)
                     </p>
                   </div>
                 </div>
@@ -650,12 +669,12 @@ const DetailedReportView = ({
                   </p>
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center md:justify-start md:gap-4">
-                      <span className="text-xs text-gray-500 font-medium w-16 text-left">1ª Parcela:</span>
-                      <span className="text-lg font-bold text-blue-600">{fmtMoney(reportData.financingSummary.first.totalInstallment)}</span>
+                      <span className="text-xs font-medium w-16 text-left" style={{ color: colors.textMuted }}>1ª Parcela:</span>
+                      <span className="text-lg font-bold" style={{ color: colors.primary }}>{fmtMoney(reportData.financingSummary.first.totalInstallment)}</span>
                     </div>
                     <div className="flex justify-between items-center md:justify-start md:gap-4">
-                      <span className="text-xs text-gray-500 font-medium w-16 text-left">Última:</span>
-                      <span className="text-lg font-bold text-emerald-600">{fmtMoney(reportData.financingSummary.last.totalInstallment)}</span>
+                      <span className="text-xs font-medium w-16 text-left" style={{ color: colors.textMuted }}>Última:</span>
+                      <span className="text-lg font-bold" style={{ color: colors.success }}>{fmtMoney(reportData.financingSummary.last.totalInstallment)}</span>
                     </div>
                   </div>
                 </div>
@@ -671,11 +690,14 @@ const DetailedReportView = ({
 
       {/* RODAPÉ FIXO (Status Bar style) */}
       <footer className="fixed bottom-0 left-0 w-full border-t py-2 px-6 md:px-12 flex justify-between items-center z-[120] print:fixed print:bottom-0 print:left-0 print:w-full print:px-8 print:py-2" style={{ backgroundColor: colors.surface, borderColor: colors.border }}>
-        <p className="text-[8px] md:text-[9px] text-gray-400 text-justify w-2/3 md:w-1/2 leading-tight">
+        <p className="text-[8px] md:text-[9px] text-justify w-2/3 md:w-1/2 leading-tight" style={{ color: colors.textMuted, opacity: 0.7 }}>
           Atenção: Os valores podem sofrer alterações. Simulação sem valor contratual.
         </p>
         <div className="text-right flex items-center gap-4">
-          <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2">
+          <p
+            className="text-[9px] font-bold uppercase tracking-widest flex items-center gap-2"
+            style={{ color: colors.textMuted }}
+          >
             <LayoutDashboard size={12} /> Imob-Invest Simulator
           </p>
         </div>
